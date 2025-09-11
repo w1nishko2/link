@@ -1,0 +1,1 @@
+'ID: ' . \$article- . ', Title: ' . \$article- . ', Slug: ' . \$article- . ', Published: ' . (\$article- ? 'Yes' : 'No') . ', User: ' . (\$article- ? \$article- : 'N/A') . PHP_EOL;

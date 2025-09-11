@@ -1,0 +1,415 @@
+/* =======================================
+   CSS стили для админской панели
+   Адаптивные стили для hero секции
+   ======================================= */
+
+/* Базовые стили для hero предпросмотра */
+.hero-preview-container {
+    position: relative;
+    min-height: 500px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+/* Hero блок с информацией */
+.hero-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+    margin: 0;
+}
+
+.hero-info {
+    flex: 1;
+    padding-right: 20px;
+}
+
+.hero-info h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.hero-info p {
+    margin: 0;
+    color: #666;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+/* Аватар */
+.hero-avatar {
+    width: 140px;
+    height: 140px;
+    position: relative;
+    top: -70px;
+    flex-shrink: 0;
+}
+
+.hero-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid white;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Viewport индикаторы */
+.device-viewports {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.desktop-viewport,
+.tablet-viewport,
+.mobile-viewport {
+    position: absolute;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.desktop-viewport {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 3px solid #007bff;
+    border-radius: 8px;
+}
+
+.tablet-viewport {
+    top: 5%;
+    left: 15%;
+    right: 15%;
+    bottom: 10%;
+    border: 3px solid #28a745;
+    border-radius: 12px;
+}
+
+.mobile-viewport {
+    top: 10%;
+    left: 35%;
+    right: 35%;
+    bottom: 20%;
+    border: 3px solid #dc3545;
+    border-radius: 16px;
+}
+
+/* Viewport контролы */
+.viewport-controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 15;
+}
+
+.viewport-toggle {
+    font-size: 11px;
+    padding: 4px 8px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    color: rgba(255,255,255,0.9);
+    transition: all 0.3s ease;
+}
+
+.viewport-toggle:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.viewport-toggle.active {
+    background: rgba(255,255,255,0.9);
+    color: #333;
+    border-color: #fff;
+}
+
+/* =======================================
+   АДАПТИВНЫЕ СТИЛИ
+   ======================================= */
+
+/* Планшеты (768px и меньше) */
+@media (max-width: 768px) {
+    .hero-preview-container {
+        min-height: 400px !important;
+    }
+    
+    .hero-bottom {
+        flex-direction: column !important;
+        text-align: center !important;
+        padding: 15px !important;
+    }
+    
+    .hero-info {
+        width: 100% !important;
+        padding-right: 0 !important;
+        margin-bottom: 15px;
+        order: 2;
+    }
+    
+    .hero-info h1 {
+        font-size: 1.5rem !important;
+    }
+    
+    .hero-avatar {
+        width: 120px !important;
+        height: 120px !important;
+        top: -60px !important;
+        left: 50%;
+        transform: translateX(-50%);
+        order: 1;
+        margin: 0 auto;
+    }
+    
+    /* Скрываем viewport индикаторы на планшетах */
+    .device-viewports {
+        display: none !important;
+    }
+    
+    .viewport-controls {
+        display: none !important;
+    }
+}
+
+/* Мобильные устройства (576px и меньше) */
+@media (max-width: 576px) {
+    .hero-preview-container {
+        min-height: 320px !important;
+        margin: 0 -15px; /* Выходим за края контейнера на мобильных */
+        border-radius: 8px;
+    }
+    
+    .hero-bottom {
+        padding: 12px !important;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .hero-info h1 {
+        font-size: 1.3rem !important;
+        margin-bottom: 6px;
+    }
+    
+    .hero-info p {
+        font-size: 0.9rem !important;
+        line-height: 1.3;
+    }
+    
+    .hero-avatar {
+        width: 100px !important;
+        height: 100px !important;
+        top: -50px !important;
+    }
+    
+    .hero-avatar img {
+        border-width: 2px;
+    }
+}
+
+/* Очень маленькие экраны (480px и меньше) */
+@media (max-width: 480px) {
+    .hero-preview-container {
+        min-height: 280px !important;
+    }
+    
+    .hero-info h1 {
+        font-size: 1.2rem !important;
+    }
+    
+    .hero-info p {
+        font-size: 0.85rem !important;
+    }
+    
+    .hero-avatar {
+        width: 90px !important;
+        height: 90px !important;
+        top: -45px !important;
+    }
+}
+
+/* =======================================
+   АНИМАЦИИ И ЭФФЕКТЫ
+   ======================================= */
+
+/* Анимация смены фона */
+.hero-preview-container.bg-changing {
+    animation: bgShimmer 0.8s ease-in-out;
+}
+
+@keyframes bgShimmer {
+    0%, 100% { 
+        filter: brightness(1); 
+    }
+    50% { 
+        filter: brightness(1.1) saturate(1.1); 
+    }
+}
+
+/* Пульсирующий эффект для viewport индикаторов */
+.device-viewports > div::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: inherit;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: borderPulse 3s infinite;
+    z-index: -1;
+}
+
+@keyframes borderPulse {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+/* Hover эффекты */
+.hero-preview-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* =======================================
+   УТИЛИТЫ ДЛЯ АДАПТИВНОСТИ
+   ======================================= */
+
+/* Скрытие элементов на мобильных */
+@media (max-width: 768px) {
+    .d-none-mobile {
+        display: none !important;
+    }
+}
+
+/* Показ только на мобильных */
+.d-mobile-only {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .d-mobile-only {
+        display: block !important;
+    }
+}
+
+/* Адаптивные размеры текста */
+.text-responsive {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+}
+
+.heading-responsive {
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+}
+
+/* Социальные иконки */
+.social-icon {
+    transition: all 0.2s ease;
+}
+
+.social-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+
+/* Дополнительные стили для hero блока */
+.hero-bottom {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 15px;
+    box-shadow: 1px -11px 20px rgba(0,0,0,0.063);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* Адаптивные изменения для hero-info */
+@media (max-width: 768px) {
+    .hero-info {
+        width: 100% !important;
+        padding-top: 0 !important;
+        text-align: center;
+    }
+    
+    .social-icon {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    .social-icon i {
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-info h1 {
+        margin-bottom: 6px !important;
+    }
+    
+    .hero-info p {
+        margin-bottom: 8px !important;
+    }
+    
+    .social-icon {
+        width: 24px !important;
+        height: 24px !important;
+    }
+    
+    .social-icon i {
+        font-size: 10px !important;
+    }
+}
+
+/* Улучшения для viewport переключателей */
+.viewport-controls {
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+/* Дополнительные viewport стили */
+.device-viewports > div {
+    transition: all 0.3s ease;
+    animation: fadeInViewport 0.5s ease;
+}
+
+.device-viewports > div:hover {
+    opacity: 1 !important;
+    transform: scale(1.02);
+}
+
+@keyframes fadeInViewport {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 0.7; transform: scale(1); }
+}
+
+/* Дополнительные стили контейнера */
+.hero-preview-container {
+    max-width: 800px;
+    margin: 0 auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Скрытие hero-preview-container на мобильных устройствах */
+@media (max-width: 768px) {
+    .hero-preview-container {
+        display: none !important;
+    }
+}

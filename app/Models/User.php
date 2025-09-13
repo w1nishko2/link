@@ -98,6 +98,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Получить пользовательские социальные ссылки
+     */
+    public function socialLinks()
+    {
+        return $this->hasMany(UserSocialLink::class)->ordered();
+    }
+
+    /**
+     * Получить настройки секций пользователя
+     */
+    public function sectionSettings()
+    {
+        return $this->hasMany(UserSectionSettings::class)->ordered();
+    }
+
+    /**
      * Проверить, является ли пользователь администратором
      */
     public function isAdmin()

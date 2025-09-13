@@ -8,6 +8,7 @@ use App\Models\GalleryImage;
 use App\Models\Service;
 use App\Models\Article;
 use App\Models\Banner;
+use App\Models\UserSectionSettings;
 
 class HomeController extends Controller
 {
@@ -47,16 +48,28 @@ class HomeController extends Controller
         // Получаем текущего пользователя (может быть null для неавторизованных)
         $currentUser = auth()->user();
         
+        // Получаем настройки секций пользователя
+        $sectionSettings = $pageUser->sectionSettings()->visible()->ordered()->get()->keyBy('section_key');
+        
+        // Если у пользователя нет настроек секций, создаем настройки по умолчанию
+        if ($sectionSettings->isEmpty()) {
+            $this->createDefaultSectionSettings($pageUser);
+            $sectionSettings = $pageUser->sectionSettings()->visible()->ordered()->get()->keyBy('section_key');
+        }
+        
         // Получаем реальные данные пользователя
         $galleryImages = $pageUser->galleryImages()->active()->ordered()->get();
         $services = $pageUser->services()->active()->ordered()->get();
         $articles = $pageUser->articles()->published()->latest()->limit(5)->get();
         $banners = $pageUser->banners()->active()->ordered()->get();
+        
+        // Получаем дополнительные социальные ссылки пользователя
+        $socialLinks = $pageUser->socialLinks()->ordered()->get();
 
         // Генерируем блоки галереи из реальных изображений
         $galleryBlocks = $this->generateGalleryBlocks($galleryImages->toArray());
 
-        return view('home', compact('galleryBlocks', 'services', 'articles', 'banners', 'pageUser', 'currentUser'));
+        return view('home', compact('galleryBlocks', 'services', 'articles', 'banners', 'pageUser', 'currentUser', 'socialLinks', 'sectionSettings'));
     }
 
     /**
@@ -138,5 +151,34 @@ class HomeController extends Controller
         }
         
         return $blocks;
+    }
+
+    /**
+     * Создать настройки секций по умолчанию для пользователя
+     */
+    private function createDefaultSectionSettings($user)
+    {
+        $defaultSections = [
+            ['section_key' => 'hero', 'order' => 1],
+            ['section_key' => 'services', 'order' => 2],
+            ['section_key' => 'gallery', 'order' => 3],
+            ['section_key' => 'articles', 'order' => 4],
+            ['section_key' => 'banners', 'order' => 5],
+        ];
+
+        foreach ($defaultSections as $section) {
+            UserSectionSettings::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'section_key' => $section['section_key']
+                ],
+                [
+                    'title' => null, // Пустой заголовок по умолчанию
+                    'subtitle' => null, // Пустой подзаголовок по умолчанию
+                    'is_visible' => true,
+                    'order' => $section['order'],
+                ]
+            );
+        }
     }
 }

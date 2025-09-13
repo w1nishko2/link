@@ -47,9 +47,9 @@
 @endpush
 
 @section('content')
-<div class="container py-5">
+<div class="container" style="padding-top: 100px">
     <!-- Заголовок и статистика -->
-    <div class="row mb-5">
+    <div class="row">
         <div class="col-lg-12 mx-auto ">
             <h1 class="display-5 fw-bold mb-3">
                 <i class="bi bi-collection text-primary"></i>
@@ -60,21 +60,12 @@
             </p>
             
             <!-- Отладочная информация о пагинации -->
-            @if(config('app.debug'))
-            <div class="alert alert-info small">
-                <strong>Debug Info:</strong>
-                Текущая страница: {{ $articles->currentPage() }} / {{ $articles->lastPage() }} | 
-                Всего статей: {{ $articles->total() }} | 
-                На странице: {{ $articles->count() }} | 
-                Есть еще страницы: {{ $articles->hasMorePages() ? 'Да' : 'Нет' }}
-            </div>
-            @endif
-        
+          
         </div>
     </div>
 
     <!-- Поисковая форма -->
-    <div class="row mb-5">
+    <div class="row  mb-5">
         <div class="col-lg-12 mx-auto">
             <form method="GET" action="{{ route('articles.all') }}" class="search-form">
                 <div class="input-group input-group-lg shadow-sm">
@@ -132,15 +123,7 @@
             <p class="text-muted">Все статьи загружены</p>
         </div>
 
-        <!-- Кнопка для ручного тестирования (только в debug режиме) -->
-        @if(config('app.debug') && $articles->hasMorePages())
-        <div class="text-center mt-4">
-            <button type="button" class="btn btn-outline-primary" id="loadMoreBtn">
-                Загрузить еще (тест)
-            </button>
-        </div>
-        @endif
-
+       
         <!-- Обычная пагинация для fallback -->
         <div class="d-flex justify-content-center mt-5">
             {{ $articles->appends(request()->query())->links('pagination.custom') }}

@@ -17,7 +17,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
-    @vite(['resources/css/app.css'])
+    @vite(['resources/css/app.css', 'resources/css/admin.css'])
     
     <style>
        
@@ -61,22 +61,30 @@
                         <i class="bi bi-person-circle me-2"></i>
                         Профиль
                     </a>
+                    @if(isset($userSectionSettings) && $userSectionSettings->has('gallery'))
                     <a class="nav-link {{ request()->routeIs('admin.gallery*') ? 'active' : '' }}" href="{{ route('admin.gallery', $currentUserId) }}">
                         <i class="bi bi-images me-2"></i>
                         Галерея
                     </a>
+                    @endif
+                    @if(isset($userSectionSettings) && $userSectionSettings->has('services'))
                     <a class="nav-link {{ request()->routeIs('admin.services*') ? 'active' : '' }}" href="{{ route('admin.services', $currentUserId) }}">
                         <i class="bi bi-briefcase me-2"></i>
                         Услуги
                     </a>
+                    @endif
+                    @if(isset($userSectionSettings) && $userSectionSettings->has('articles'))
                     <a class="nav-link {{ request()->routeIs('admin.articles*') ? 'active' : '' }}" href="{{ route('admin.articles', $currentUserId) }}">
                         <i class="bi bi-journal-text me-2"></i>
                         Статьи
                     </a>
+                    @endif
+                    @if(isset($userSectionSettings) && $userSectionSettings->has('banners'))
                     <a class="nav-link {{ request()->routeIs('admin.banners*') ? 'active' : '' }}" href="{{ route('admin.banners', $currentUserId) }}">
                         <i class="bi bi-flag me-2"></i>
                         Баннеры
                     </a>
+                    @endif
                     
                     @if(auth()->user()->isAdmin())
                     <hr class="my-3">

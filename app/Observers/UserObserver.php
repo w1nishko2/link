@@ -22,7 +22,7 @@ class UserObserver
     public function updated(User $user): void
     {
         // Обновляем sitemap только если изменились важные для SEO поля
-        if ($user->wasChanged(['name', 'username', 'bio'])) {
+        if ($user->wasChanged(['name', 'username', 'bio', 'account_type'])) {
             $this->updateSitemap('User updated');
         }
     }

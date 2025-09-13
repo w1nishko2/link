@@ -17,7 +17,9 @@ class Service extends Model
         'price',
         'price_type',
         'order_index',
-        'is_active'
+        'is_active',
+        'button_text',
+        'button_link'
     ];
 
     protected $casts = [

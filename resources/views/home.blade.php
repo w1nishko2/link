@@ -126,338 +126,98 @@
     @endif
 
     <main role="main">
-        <section class="hero"
-            style="background-image: url('{{ $pageUser->background_image ? asset('storage/' . $pageUser->background_image) : '/hero.png' }}');"
-            aria-label="Главная информация о {{ $pageUser->name }}">
-        <div class="container">
-            <div class="hero-section">
-                <div class="hero-info">
-                    <h1>{{ $pageUser->name }}</h1>
-                    <p>@ {{ $pageUser->username }}</p>
-                    @if ($pageUser->bio)
-                        <p>{{ $pageUser->bio }}</p>
-                    @else
-                        <p>Добро пожаловать на мою страницу!</p>
-                    @endif
-                    <ul class="hero-links">
-                        @if ($pageUser->telegram_url)
-                            <a href="{{ $pageUser->telegram_url }}" target="_blank" class="social-link telegram"
-                                title="Telegram">
-                                <i class="bi bi-telegram"></i>
-                            </a>
-                        @endif
-
-                        @if ($pageUser->whatsapp_url)
-                            <a href="{{ $pageUser->whatsapp_url }}" target="_blank" class="social-link whatsapp"
-                                title="WhatsApp">
-                                <i class="bi bi-whatsapp"></i>
-                            </a>
-                        @endif
-
-                        @if ($pageUser->vk_url)
-                            <a href="{{ $pageUser->vk_url }}" target="_blank" class="social-link vk" title="ВКонтакте">
-                                <i class="bi bi-chat-square-text"></i>
-                            </a>
-                        @endif
-
-                        @if ($pageUser->youtube_url)
-                            <a href="{{ $pageUser->youtube_url }}" target="_blank" class="social-link youtube"
-                                title="YouTube">
-                                <i class="bi bi-youtube"></i>
-                            </a>
-                        @endif
-
-                        @if ($pageUser->ok_url)
-                            <a href="{{ $pageUser->ok_url }}" target="_blank" class="social-link ok" title="Одноклассники">
-                                <i class="bi bi-people-fill"></i>
-                            </a>
-                        @endif
-                    </ul>
-                </div>
-                <div class="hero-logo">
-                    @if($pageUser->avatar)
-                        <img src="{{ asset('storage/' . $pageUser->avatar) }}" alt="Фотография {{ $pageUser->name }}" loading="lazy">
-                    @else
-                        <img src="/hero.png" alt="Изображение профиля" loading="lazy">
-                    @endif
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-   <section class="services" aria-label="Услуги">
-        <div class="container">
+        {{-- Динамическое отображение секций согласно настройкам пользователя --}}
+        @php
+            $orderedSections = $sectionSettings->sortBy('order');
+        @endphp
         
-            <div class="swiper services-swiper" dir="rtl">
-                <div class="swiper-wrapper">
-                      <div class="swiper-slide">
-                            <div class="service-card">
-                                <div class="service-image">
-                                        <img src="{{ $pageUser->background_image ? asset('storage/' . $pageUser->background_image) : '/hero.png' }}" alt="Услуги {{ $pageUser->name }}" loading="lazy">
-                                </div>
-                                <div class="service-content">
-                                    <h3>Мои услуги</h3>
-                                    <p>Листай в право чтобы увидеть все мои услуги!</p>
-                                   
-                                </div>
-                            </div>
-                        </div>
-                    @forelse($services as $service)
-                        <div class="swiper-slide">
-                            <div class="service-card">
-                                <div class="service-image">
-                                    @if ($service->image_path)
-                                        <img src="{{ asset('storage/' . $service->image_path) }}"
-                                            alt="{{ $service->title }}" loading="lazy">
-                                    @else
-                                        <img src="/hero.png" alt="{{ $service->title }}" loading="lazy">
-                                    @endif
-                                </div>
-                                <div class="service-content">
-                                    <h3>{{ $service->title }}</h3>
-                                    <p>{{ $service->description }}</p>
-                                    @if ($service->price)
-                                        <div class="service-price">{{ $service->formatted_price }}</div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="swiper-slide">
-                            <div class="service-card text-center">
-                                <h3>Услуги не найдены</h3>
-                                <p>Здесь будут отображены ваши услуги</p>
-                                @if ($currentUser && $currentUser->id === $pageUser->id)
-                                    <a href="{{ route('admin.services.create', $currentUser->id) }}" class="btn btn-primary">Добавить
-                                        услугу</a>
-                                @endif
-                            </div>
-                        </div>
-                    @endforelse
-                </div>
+        @foreach($orderedSections as $section)
+            @if($section->is_visible)
+                @if($section->section_key === 'hero')
+                    @include('sections.hero', ['section' => $section])
+                @elseif($section->section_key === 'services')
+                    @include('sections.services', ['section' => $section])
+                @elseif($section->section_key === 'gallery')
+                    @include('sections.gallery', ['section' => $section])
+                @elseif($section->section_key === 'articles')
+                    @include('sections.articles', ['section' => $section])
+                @elseif($section->section_key === 'banners')
+                    @include('sections.banners', ['section' => $section])
+                @endif
+            @endif
+        @endforeach
 
-                <!-- Навигационные кнопки для слайдера услуг -->
-                <div class="swiper-button-next services-button-next"></div>
-                <div class="swiper-button-prev services-button-prev"></div>
-            </div>
-        </div>
-    </section>
-    
-    <section class="gallery" aria-label="Галерея работ">
-        <div class="container">
-            <header class="gallery-header mb-4">
-                <h2>{{ $currentUser && $currentUser->id === $pageUser->id ? 'Моя галерея' : 'Галерея работ ' . $pageUser->name }}</h2>
-                <p class="text-muted">Портфолио и примеры работ</p>
-            </header>
-         
-            <div class="gallery-wrapper">
-                <div class="gallery-grid" id="galleryGrid" role="region" aria-label="Галерея изображений">
-                    @forelse($galleryBlocks as $index => $block)
-                        <div class="gallery-block type-{{ $block['type'] }}">
-                            @foreach ($block['images'] as $image)
-                                <figure class="gallery-item" data-bs-toggle="modal" data-bs-target="#galleryModal"
-                                    data-image="{{ $image['src'] }}" data-alt="{{ $image['alt'] }}">
-                                    <img src="{{ $image['src'] }}" alt="{{ $image['alt'] ?: 'Работа из портфолио ' . $pageUser->name }}" loading="lazy" itemscope itemtype="https://schema.org/ImageObject">
-                                    <div class="gallery-item-overlay">
-                                        <figcaption class="gallery-item-text">{{ $image['alt'] ?: 'Портфолио' }}</figcaption>
-                                    </div>
-                                </figure>
-                            @endforeach
-                        </div>
-                    @empty
-                        <div class="text-center">
-                            <p class="text-muted">Галерея пуста</p>
-                        </div>
-                    @endforelse
-                </div>
+        {{-- Если у пользователя нет настроек секций, показываем всё по умолчанию --}}
+        @if($orderedSections->isEmpty())
+            @include('sections.hero')
+            @include('sections.services')
+            @include('sections.gallery')
+            @include('sections.articles')
+            @include('sections.banners')
+        @endif
 
-                <!-- Навигационные кнопки -->
-                <button class="gallery-nav gallery-nav-left" id="galleryPrev" type="button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                    </svg>
-                </button>
-                <button class="gallery-nav gallery-nav-right" id="galleryNext" type="button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                    </svg>
-                </button>
-            </div>
-        </div>
+        <!-- Фиксированная кнопка социальных сетей -->
+        <div class="social-floating-button">
+            <button class="social-main-btn" id="socialMainBtn">
+                <i class="bi bi-share-fill"></i>
+            </button>
 
-        <!-- Модальное окно для просмотра изображений -->
-        <div class="modal fade" id="galleryModal" tabindex="-1" aria-labelledby="galleryModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="galleryModalLabel">Просмотр изображения</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <img id="modalImage" src="" alt="" class="img-fluid rounded">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            <div class="social-links" id="socialLinks">
+                @if ($pageUser->telegram_url)
+                    <a href="{{ $pageUser->telegram_url }}" target="_blank" class="social-link telegram" title="Telegram">
+                        <i class="bi bi-telegram"></i>
+                    </a>
+                @endif
 
-    @if($banners->count() > 0)
-    <section class="banners" aria-label="Рекламные блоки">
-        <div class="container">
-            <h2 class="visually-hidden">Реклама и предложения</h2>
-            <div class="swiper banners-swiper">
-                <div class="swiper-wrapper">
-                    @forelse($banners as $banner)
-                        <div class="swiper-slide">
-                            <div class="banners-banner" data-analytics="banner" data-analytics-id="{{ $banner->id }}"
-                                data-analytics-text="{{ $banner->title }}">
-                                <div class="banners-banner-block">
-                                    <h3>{{ $banner->title }}</h3>
-                                    @if ($banner->description)
-                                        <p>{{ $banner->description }}</p>
-                                    @endif
-                                    {{-- @if ($banner->link_url && $banner->link_text)
-                                        <a href="{{ $banner->link_url }}" class="btn btn-primary">{{ $banner->link_text }}</a>
-                                    @endif --}}
-                                </div>
-                                <div class="banners-banner-block-img">
-                                    @if ($banner->image_path)
-                                        <img src="{{ asset('storage/' . $banner->image_path) }}"
-                                            alt="{{ $banner->title }}">
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="swiper-slide">
-                            <div class="banners-banner">
-                                <div class="banners-banner-block">
-                                    <h3>Добро пожаловать!</h3>
-                                    <p>Здесь будут размещены ваши баннеры</p>
-                                    @if ($currentUser && $currentUser->id === $pageUser->id)
-                                        <a href="{{ route('admin.banners', $currentUser->id) }}" class="btn btn-primary">Добавить
-                                            баннер</a>
-                                    @endif
-                                </div>
-                                <div class="banners-banner-block-img">
-                                    <img src="/hero.png" alt="Добро пожаловать">
-                                </div>
-                            </div>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-    </section>
-    @endif
-    
-    <section class="articles" aria-label="Статьи блога">
-        <div class="container">
-            <header class="articles-header">
-                <h2>{{ $currentUser && $currentUser->id === $pageUser->id ? 'Мои статьи' : 'Статьи от ' . $pageUser->name }}
-                </h2>
-                <p class="text-muted">Полезные материалы и советы</p>
-            </header>
+                @if ($pageUser->whatsapp_url)
+                    <a href="{{ $pageUser->whatsapp_url }}" target="_blank" class="social-link whatsapp" title="WhatsApp">
+                        <i class="bi bi-whatsapp"></i>
+                    </a>
+                @endif
 
+                @if ($pageUser->vk_url)
+                    <a href="{{ $pageUser->vk_url }}" target="_blank" class="social-link vk" title="ВКонтакте">
+                        <i class="bi bi-chat-square-text"></i>
+                    </a>
+                @endif
 
-            <div class="articles-list">
-                @forelse($articles as $article)
-                    <article class="article-preview" itemscope itemtype="https://schema.org/Article">
-                        <a href="{{ route('articles.show', ['username' => $pageUser->username, 'slug' => $article->slug]) }}"
-                            class="article-item">
-                            <div class="article-image">
-                                @if ($article->image_path)
-                                    <img src="{{ asset('storage/' . $article->image_path) }}" alt="{{ $article->title }}"
-                                        loading="lazy" itemprop="image">
-                                @else
-                                    <img src="/hero.png" alt="{{ $article->title }}" loading="lazy" itemprop="image">
-                                @endif
-                                <time class="article-date" datetime="{{ $article->created_at->toISOString() }}" itemprop="datePublished">
-                                    <span>{{ $article->created_at->format('d') }}</span>
-                                    <span>{{ $article->created_at->format('M') }}</span>
-                                </time>
-                            </div>
-                            <div class="article-content">
-                                
-                                <h3 class="article-title" itemprop="headline">
-                                    {{ $article->title }}
-                                </h3>
-                                <p class="article-excerpt" itemprop="description">
-                                    {{ $article->excerpt }}
-                                </p>
-                                <div class="article-meta">
-                                    <span class="article-author" itemprop="author" itemscope itemtype="https://schema.org/Person">
-                                        <span itemprop="name">Автор: {{ $pageUser->name }}</span>
-                                    </span>
-                                    <span class="article-read-time">{{ $article->read_time }} мин чтения</span>
-                                </div>
-                            </div>
+                @if ($pageUser->youtube_url)
+                    <a href="{{ $pageUser->youtube_url }}" target="_blank" class="social-link youtube" title="YouTube">
+                        <i class="bi bi-youtube"></i>
+                    </a>
+                @endif
+
+                @if ($pageUser->ok_url)
+                    <a href="{{ $pageUser->ok_url }}" target="_blank" class="social-link ok" title="Одноклассники">
+                        <i class="bi bi-people-fill"></i>
+                    </a>
+                @endif
+
+                {{-- Дополнительные социальные ссылки --}}
+                @if($socialLinks && $socialLinks->count() > 0)
+                    @foreach($socialLinks as $link)
+                        @php
+                            $serviceClass = '';
+                            $serviceName = strtolower($link->service_name);
+                            if (str_contains($serviceName, 'instagram')) $serviceClass = 'instagram';
+                            elseif (str_contains($serviceName, 'github')) $serviceClass = 'github';
+                            elseif (str_contains($serviceName, 'linkedin')) $serviceClass = 'linkedin';
+                            elseif (str_contains($serviceName, 'facebook')) $serviceClass = 'facebook';
+                            elseif (str_contains($serviceName, 'twitter')) $serviceClass = 'twitter';
+                            elseif (str_contains($serviceName, 'discord')) $serviceClass = 'discord';
+                            elseif (str_contains($serviceName, 'tiktok')) $serviceClass = 'tiktok';
+                            elseif (str_contains($serviceName, 'pinterest')) $serviceClass = 'pinterest';
+                            elseif (str_contains($serviceName, 'email') || str_contains($serviceName, 'mail')) $serviceClass = 'email';
+                            elseif (str_contains($serviceName, 'портфолио') || str_contains($serviceName, 'portfolio')) $serviceClass = 'portfolio';
+                            elseif (str_contains($serviceName, 'сайт') || str_contains($serviceName, 'website') || str_contains($serviceName, 'ссылка')) $serviceClass = 'website';
+                        @endphp
+                        <a href="{{ $link->url }}" target="_blank" class="social-link custom {{ $serviceClass }}" title="{{ $link->service_name }}">
+                            <i class="bi {{ $link->icon_class }}"></i>
                         </a>
-                    </article>
-                @empty
-                    <div class="text-center py-5">
-                        <h4>Статьи не найдены</h4>
-                        <p class="text-muted">Здесь будут отображаться ваши статьи</p>
-                        @if ($currentUser && $currentUser->id === $pageUser->id)
-                            <a href="{{ route('admin.articles.create', $currentUser->id) }}" class="btn btn-primary">Создать статью</a>
-                        @endif
-                    </div>
-                @endforelse
+                    @endforeach
+                @endif
             </div>
-
-            @if($articles->count() > 0)
-            <div class="articles-footer text-center mt-5">
-                <a href="{{ route('articles.index', ['username' => $pageUser->username]) }}" class="btn btn-outline-primary">Все статьи</a>
-            </div>
-            @endif
         </div>
-    </section>
-
-    <!-- Фиксированная кнопка социальных сетей -->
-    <div class="social-floating-button">
-        <button class="social-main-btn" id="socialMainBtn">
-            <i class="bi bi-share-fill"></i>
-        </button>
-
-        <div class="social-links" id="socialLinks">
-            @if ($pageUser->telegram_url)
-                <a href="{{ $pageUser->telegram_url }}" target="_blank" class="social-link telegram" title="Telegram">
-                    <i class="bi bi-telegram"></i>
-                </a>
-            @endif
-
-            @if ($pageUser->whatsapp_url)
-                <a href="{{ $pageUser->whatsapp_url }}" target="_blank" class="social-link whatsapp" title="WhatsApp">
-                    <i class="bi bi-whatsapp"></i>
-                </a>
-            @endif
-
-            @if ($pageUser->vk_url)
-                <a href="{{ $pageUser->vk_url }}" target="_blank" class="social-link vk" title="ВКонтакте">
-                    <i class="bi bi-chat-square-text"></i>
-                </a>
-            @endif
-
-            @if ($pageUser->youtube_url)
-                <a href="{{ $pageUser->youtube_url }}" target="_blank" class="social-link youtube" title="YouTube">
-                    <i class="bi bi-youtube"></i>
-                </a>
-            @endif
-
-            @if ($pageUser->ok_url)
-                <a href="{{ $pageUser->ok_url }}" target="_blank" class="social-link ok" title="Одноклассники">
-                    <i class="bi bi-people-fill"></i>
-                </a>
-            @endif
-        </div>
-    </div>
     </main>
-
-
 
 @endsection

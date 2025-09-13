@@ -21,8 +21,8 @@ Disallow: /vendor/
 # Ограничиваем доступ к API
 Disallow: /api/
 
-# Sitemap (раскомментировать после создания)
-# Sitemap: https://your-domain.com/sitemap.xml
+# Sitemap
+Sitemap: https://link/sitemap.xml
 
 # Время задержки между запросами (в секундах)
 Crawl-delay: 1

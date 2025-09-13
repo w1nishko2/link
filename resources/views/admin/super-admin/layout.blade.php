@@ -151,14 +151,6 @@
                         <i class="bi bi-journal-text me-2"></i>
                         Все статьи
                     </a>
-                    <a class="nav-link {{ request()->routeIs('super-admin.gpt-generator*') ? 'active' : '' }}" href="{{ route('super-admin.gpt-generator') }}">
-                        <i class="bi bi-robot me-2"></i>
-                        GPT Генератор
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('super-admin.gpt-logs*') ? 'active' : '' }}" href="{{ route('super-admin.gpt-logs') }}">
-                        <i class="bi bi-file-text me-2"></i>
-                        Логи GPT
-                    </a>
                     <a class="nav-link {{ request()->routeIs('super-admin.settings*') ? 'active' : '' }}" href="{{ route('super-admin.settings') }}">
                         <i class="bi bi-gear me-2"></i>
                         Настройки системы
@@ -212,8 +204,6 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <script>
         function toggleSidebar() {

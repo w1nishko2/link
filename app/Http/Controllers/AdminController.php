@@ -8,8 +8,11 @@ use App\Models\GalleryImage;
 use App\Models\Service;
 use App\Models\Article;
 use App\Models\Banner;
+use App\Models\UserSocialLink;
+use App\Models\UserSectionSettings;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Services\ImageProcessingService;
 
@@ -127,7 +130,10 @@ class AdminController extends Controller
             abort(403, 'Доступ запрещен');
         }
 
-        return view('admin.profile', compact('user'));
+        // По умолчанию показываем первую вкладку (основная информация)
+        $tab = 'basic';
+
+        return view('admin.profile', compact('user', 'tab'));
     }
 
     public function updateProfile(Request $request, User $user = null)
@@ -208,6 +214,207 @@ class AdminController extends Controller
         $user->update($data);
 
         return redirect()->route('admin.profile', $user->id)->with('success', 'Профиль успешно обновлен!');
+    }
+
+    /**
+     * Показ профиля с определенной вкладкой
+     */
+    public function profileTab(User $user = null, $tab = 'basic')
+    {
+        // Если параметр user не передан, используем текущего авторизованного пользователя
+        if (!$user) {
+            $user = auth()->user();
+        }
+        
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        // Валидируем вкладку
+        $validTabs = ['basic', 'images', 'social', 'security'];
+        if (!in_array($tab, $validTabs)) {
+            $tab = 'basic';
+        }
+
+        return view('admin.profile', compact('user', 'tab'));
+    }
+
+    /**
+     * Обновление основной информации
+     */
+    public function updateBasicInfo(Request $request, User $user = null)
+    {
+        $request->validate([
+            'name' => 'required|string|max:50',
+            'bio' => 'nullable|string|max:190',
+        ]);
+
+        // Если параметр user не передан, используем текущего авторизованного пользователя
+        if (!$user) {
+            $user = auth()->user();
+        }
+        
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        $user->update($request->only(['name', 'bio']));
+
+        return redirect()->route('admin.profile.tab', [$user->id, 'basic'])
+                        ->with('success', 'Основная информация успешно обновлена!');
+    }
+
+    /**
+     * Обновление изображений
+     */
+    public function updateImages(Request $request, User $user = null)
+    {
+        $request->validate([
+            'background_image' => 'nullable|file|max:10240',
+            'avatar' => 'nullable|file|max:10240',
+        ]);
+
+        // Если параметр user не передан, используем текущего авторизованного пользователя
+        if (!$user) {
+            $user = auth()->user();
+        }
+        
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        $data = [];
+        
+        if ($request->hasFile('background_image')) {
+            // Валидируем изображение
+            $validationErrors = $this->imageService->validateImage($request->file('background_image'), 'background');
+            if (!empty($validationErrors)) {
+                return redirect()->back()->withErrors(['background_image' => $validationErrors[0]]);
+            }
+            
+            // Обрабатываем и сохраняем изображение
+            $imagePath = $this->imageService->processAndStore(
+                $request->file('background_image'), 
+                'background', 
+                'backgrounds/' . $user->id,
+                $user->background_image
+            );
+            
+            if ($imagePath) {
+                $data['background_image'] = $imagePath;
+            }
+        }
+
+        if ($request->hasFile('avatar')) {
+            // Валидируем изображение
+            $validationErrors = $this->imageService->validateImage($request->file('avatar'), 'avatar');
+            if (!empty($validationErrors)) {
+                return redirect()->back()->withErrors(['avatar' => $validationErrors[0]]);
+            }
+            
+            // Обрабатываем и сохраняем изображение
+            $imagePath = $this->imageService->processAndStore(
+                $request->file('avatar'), 
+                'avatar', 
+                'avatars/' . $user->id,
+                $user->avatar
+            );
+            
+            if ($imagePath) {
+                $data['avatar'] = $imagePath;
+            }
+        }
+
+        if (!empty($data)) {
+            $user->update($data);
+        }
+
+        return redirect()->route('admin.profile.tab', [$user->id, 'images'])
+                        ->with('success', 'Изображения успешно обновлены!');
+    }
+
+    /**
+     * Обновление социальных сетей
+     */
+    public function updateSocialMedia(Request $request, User $user = null)
+    {
+        $request->validate([
+            'telegram_url' => 'nullable|url|max:255',
+            'whatsapp_url' => 'nullable|url|max:255',
+            'vk_url' => 'nullable|url|max:255',
+            'youtube_url' => 'nullable|url|max:255',
+            'ok_url' => 'nullable|url|max:255',
+        ]);
+
+        // Если параметр user не передан, используем текущего авторизованного пользователя
+        if (!$user) {
+            $user = auth()->user();
+        }
+        
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        $user->update($request->only([
+            'telegram_url', 
+            'whatsapp_url', 
+            'vk_url', 
+            'youtube_url', 
+            'ok_url'
+        ]));
+
+        return redirect()->route('admin.profile.tab', [$user->id, 'social'])
+                        ->with('success', 'Ссылки на социальные сети успешно обновлены!');
+    }
+
+    /**
+     * Обновление настроек безопасности
+     */
+    public function updateSecurity(Request $request, User $user = null)
+    {
+        $rules = [];
+        $data = [];
+
+        // Если пользователь хочет изменить пароль
+        if ($request->filled('current_password')) {
+            $rules = [
+                'current_password' => 'required',
+                'password' => 'required|string|min:8|confirmed',
+            ];
+
+            $request->validate($rules);
+
+            // Проверяем текущий пароль
+            if (!Hash::check($request->current_password, auth()->user()->password)) {
+                return redirect()->back()->withErrors(['current_password' => 'Неверный текущий пароль']);
+            }
+
+            $data['password'] = Hash::make($request->password);
+        }
+
+        // Если параметр user не передан, используем текущего авторизованного пользователя
+        if (!$user) {
+            $user = auth()->user();
+        }
+        
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        if (!empty($data)) {
+            $user->update($data);
+            $message = 'Пароль успешно изменен!';
+        } else {
+            $message = 'Настройки безопасности обновлены!';
+        }
+
+        return redirect()->route('admin.profile.tab', [$user->id, 'security'])
+                        ->with('success', $message);
     }
 
     /**
@@ -368,9 +575,11 @@ class AdminController extends Controller
             'price' => 'nullable|numeric|min:0',
             'price_type' => 'required|in:fixed,hourly,project',
             'order_index' => 'nullable|integer',
+            'button_text' => 'nullable|string|max:50',
+            'button_link' => 'nullable|string|max:255',
         ]);
 
-        $data = $request->only(['title', 'description', 'price', 'price_type', 'order_index']);
+        $data = $request->only(['title', 'description', 'price', 'price_type', 'order_index', 'button_text', 'button_link']);
         $data['user_id'] = $user->id;
         // Используем прямой запрос к базе вместо отношения
         $data['order_index'] = $data['order_index'] ?: Service::where('user_id', $user->id)->count();
@@ -446,9 +655,11 @@ class AdminController extends Controller
             'price_type' => 'required|in:fixed,hourly,project',
             'order_index' => 'nullable|integer',
             'is_active' => 'boolean',
+            'button_text' => 'nullable|string|max:50',
+            'button_link' => 'nullable|string|max:255',
         ]);
 
-        $data = $request->only(['title', 'description', 'price', 'price_type', 'order_index', 'is_active']);
+        $data = $request->only(['title', 'description', 'price', 'price_type', 'order_index', 'is_active', 'button_text', 'button_link']);
 
         if ($request->hasFile('image')) {
             // Валидируем изображение
@@ -758,5 +969,342 @@ class AdminController extends Controller
         $banner->delete();
 
         return redirect()->route('admin.banners', auth()->user()->id)->with('success', 'Баннер удален!');
+    }
+
+    /**
+     * Управление пользовательскими социальными ссылками
+     */
+    
+    /**
+     * Добавить новую пользовательскую социальную ссылку
+     */
+    public function socialLinksStore(Request $request, User $user = null)
+    {
+        if (!$user) {
+            $user = auth()->user();
+        }
+        
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+        
+        // Проверяем лимит дополнительных социальных ссылок (максимум 5)
+        $existingSocialLinksCount = $user->socialLinks()->count();
+        if ($existingSocialLinksCount >= 5) {
+            return redirect()->route('admin.profile.tab', [$user->id, 'social'])
+                            ->with('error', 'Достигнут максимальный лимит дополнительных социальных ссылок (5)');
+        }
+
+        $request->validate([
+            'service_name' => 'required|string|max:255',
+            'url' => 'required|url|max:255',
+            'icon_class' => 'required|string|max:50',
+        ]);
+
+        // Определяем порядок для новой ссылки
+        $maxOrder = $user->socialLinks()->max('order') ?? 0;
+
+        $user->socialLinks()->create([
+            'service_name' => $request->service_name,
+            'url' => $request->url,
+            'icon_class' => $request->icon_class,
+            'order' => $maxOrder + 1,
+        ]);
+
+        return redirect()->route('admin.profile.tab', [$user->id, 'social'])
+                        ->with('success', 'Социальная ссылка добавлена!');
+    }
+
+    /**
+     * Обновить пользовательскую социальную ссылку
+     */
+    public function socialLinksUpdate(Request $request, User $user, UserSocialLink $socialLink)
+    {
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id || $socialLink->user_id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        $request->validate([
+            'service_name' => 'required|string|max:255',
+            'url' => 'required|url|max:255',
+            'icon_class' => 'required|string|max:50',
+        ]);
+
+        $socialLink->update([
+            'service_name' => $request->service_name,
+            'url' => $request->url,
+            'icon_class' => $request->icon_class,
+        ]);
+
+        return redirect()->route('admin.profile.tab', [$user->id, 'social'])
+                        ->with('success', 'Социальная ссылка обновлена!');
+    }
+
+    /**
+     * Удалить пользовательскую социальную ссылку
+     */
+    public function socialLinksDestroy(User $user, UserSocialLink $socialLink)
+    {
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id || $socialLink->user_id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        $socialLink->delete();
+
+        return redirect()->route('admin.profile.tab', [$user->id, 'social'])
+                        ->with('success', 'Социальная ссылка удалена!');
+    }
+
+    /**
+     * Обновить порядок социальных ссылок
+     */
+    public function socialLinksUpdateOrder(Request $request, User $user)
+    {
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        $request->validate([
+            'links' => 'required|array',
+            'links.*.id' => 'required|integer|exists:user_social_links,id',
+            'links.*.order' => 'required|integer|min:0',
+        ]);
+
+        foreach ($request->links as $linkData) {
+            $socialLink = $user->socialLinks()->find($linkData['id']);
+            if ($socialLink) {
+                $socialLink->update(['order' => $linkData['order']]);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Получить настройки секций пользователя
+     */
+    public function getSectionSettings(User $user = null)
+    {
+        if (!$user) {
+            $user = auth()->user();
+        }
+
+        // Проверяем права доступа
+        if (auth()->user()->id !== $user->id && !auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Доступ запрещен'], 403);
+        }
+
+        // Получаем существующие настройки
+        $existingSettings = $user->sectionSettings()->get()->keyBy('section_key');
+
+        // Определяем все доступные секции в фиксированном порядке
+        $fixedSections = [
+            'hero' => [
+                'name' => 'Главный экран',
+                'titles' => [
+                    'Пусто',
+                    $user->name,
+                    'Добро пожаловать!',
+                    'Привет! Я ' . $user->name,
+                    'Обо мне',
+                    'Моя страница'
+                ],
+                'subtitles' => [
+                    'Пусто',
+                    'Добро пожаловать на мою страницу',
+                    'Узнайте больше обо мне',
+                    'Профессионал своего дела',
+                    'Рад вас видеть',
+                    'Делаю мир лучше'
+                ],
+                'order' => 1,
+            ],
+            'services' => [
+                'name' => 'Услуги',
+                'titles' => [
+                    'Пусто',
+                    'Мои услуги',
+                    'Что я предлагаю',
+                    'Мои возможности',
+                    'Чем могу помочь',
+                    'Услуги и консультации'
+                ],
+                'subtitles' => [
+                    'Пусто',
+                    'Что я предлагаю',
+                    'Качественные услуги для вас',
+                    'Профессиональный подход',
+                    'Решения для ваших задач',
+                    'Индивидуальный подход'
+                ],
+                'order' => 2,
+            ],
+            'gallery' => [
+                'name' => 'Портфолио',
+                'titles' => [
+                    'Пусто',
+                    'Портфолио',
+                    'Мои работы',
+                    'Галерея проектов',
+                    'Примеры работ',
+                    'Что я делаю'
+                ],
+                'subtitles' => [
+                    'Пусто',
+                    'Мои работы и проекты',
+                    'Портфолио выполненных работ',
+                    'Примеры моих проектов',
+                    'Результаты моего труда',
+                    'Лучшие работы'
+                ],
+                'order' => 3,
+            ],
+            'banners' => [
+                'name' => 'Банер',
+                'titles' => [
+                    'Пусто',
+                    'Важная информация',
+                    'Актуальные предложения',
+                    'Специальные предложения',
+                    'Новости и акции',
+                    'Обратите внимание'
+                ],
+                'subtitles' => [
+                    'Пусто',
+                    'Актуальные предложения',
+                    'Не пропустите важное',
+                    'Специально для вас',
+                    'Лучшие предложения',
+                    'Ограниченное предложение'
+                ],
+                'order' => 4,
+            ],
+            'articles' => [
+                'name' => 'Статьи',
+                'titles' => [
+                    'Пусто',
+                    'Статьи',
+                    'Мой блог',
+                    'Полезные материалы',
+                    'Последние публикации',
+                    'Советы и рекомендации'
+                ],
+                'subtitles' => [
+                    'Пусто',
+                    'Последние публикации',
+                    'Полезные материалы и советы',
+                    'Делюсь опытом',
+                    'Интересные статьи',
+                    'Читайте и применяйте'
+                ],
+                'order' => 5,
+            ],
+        ];
+
+        $sections = [];
+        foreach ($fixedSections as $key => $sectionInfo) {
+            if (isset($existingSettings[$key])) {
+                $setting = $existingSettings[$key];
+                
+                // Если title пустой или null, то выбираем "Пусто", иначе сохраненное значение
+                $selectedTitle = (!empty($setting->title)) ? $setting->title : 'Пусто';
+                $selectedSubtitle = (!empty($setting->subtitle)) ? $setting->subtitle : 'Пусто';
+                
+                $sections[] = [
+                    'section_key' => $key,
+                    'section_name' => $sectionInfo['name'],
+                    'title' => $selectedTitle,
+                    'subtitle' => $selectedSubtitle,
+                    'available_titles' => $sectionInfo['titles'],
+                    'available_subtitles' => $sectionInfo['subtitles'],
+                    'order' => $sectionInfo['order'],
+                ];
+            } else {
+                // Для новых секций устанавливаем пустые значения по умолчанию
+                $sections[] = [
+                    'section_key' => $key,
+                    'section_name' => $sectionInfo['name'],
+                    'title' => 'Пусто', // Отображаем как "Пусто" в админке
+                    'subtitle' => 'Пусто', // Отображаем как "Пусто" в админке
+                    'available_titles' => $sectionInfo['titles'],
+                    'available_subtitles' => $sectionInfo['subtitles'],
+                    'order' => $sectionInfo['order'],
+                ];
+            }
+        }
+
+        // Сортируем по фиксированному порядку
+        usort($sections, function ($a, $b) {
+            return $a['order'] <=> $b['order'];
+        });
+
+        return response()->json([
+            'success' => true,
+            'sections' => $sections
+        ]);
+    }
+
+    /**
+     * Обновить настройки секций пользователя
+     */
+    public function updateSectionSettings(Request $request, User $user = null)
+    {
+        if (!$user) {
+            $user = auth()->user();
+        }
+
+        // Проверяем права доступа
+        if (auth()->user()->id !== $user->id && !auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Доступ запрещен'], 403);
+        }
+
+        $request->validate([
+            'sections' => 'required|array',
+            'sections.*.section_key' => 'required|string|in:hero,services,gallery,articles,banners',
+            'sections.*.title' => 'nullable|string|max:100',
+            'sections.*.subtitle' => 'nullable|string|max:200',
+        ]);
+
+        try {
+            // Фиксированный порядок секций
+            $fixedOrder = [
+                'hero' => 1,
+                'services' => 2,
+                'gallery' => 3,
+                'banners' => 4,
+                'articles' => 5,
+            ];
+
+            foreach ($request->sections as $sectionData) {
+                $order = $fixedOrder[$sectionData['section_key']] ?? 999;
+                
+                // Преобразуем пустые строки в null для корректного сохранения
+                $title = !empty(trim($sectionData['title'])) ? $sectionData['title'] : null;
+                $subtitle = !empty(trim($sectionData['subtitle'])) ? $sectionData['subtitle'] : null;
+                
+                $user->sectionSettings()->updateOrCreate(
+                    ['section_key' => $sectionData['section_key']],
+                    [
+                        'title' => $title,
+                        'subtitle' => $subtitle,
+                        'is_visible' => true, // Все секции всегда видимы
+                        'order' => $order,
+                    ]
+                );
+            }
+
+            return response()->json(['success' => true, 'message' => 'Настройки секций успешно сохранены']);
+        } catch (\Exception $e) {
+            Log::error('Ошибка сохранения настроек секций: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'sections' => $request->input('sections', []),
+                'exception' => $e->getTraceAsString()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Произошла ошибка при сохранении: ' . $e->getMessage()], 500);
+        }
     }
 }

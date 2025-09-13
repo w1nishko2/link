@@ -1177,3 +1177,59 @@ ul.hero-links {
         font-size: 0.7rem;
     }
 }
+
+/* Стили для пользовательских социальных ссылок */
+.social-link.custom {
+    background: linear-gradient(135deg, #6f42c1, #5a32a3);
+}
+
+.social-link.custom:hover {
+    background: linear-gradient(135deg, #5a32a3, #4c2a8f);
+}
+
+/* Специальные цвета для популярных сервисов в пользовательских ссылках */
+.social-link.custom.instagram {
+    background: linear-gradient(135deg, #e4405f, #833ab4);
+}
+
+.social-link.custom.github {
+    background: linear-gradient(135deg, #333, #24292e);
+}
+
+.social-link.custom.linkedin {
+    background: linear-gradient(135deg, #0077b5, #005885);
+}
+
+.social-link.custom.facebook {
+    background: linear-gradient(135deg, #1877f2, #1564c0);
+}
+
+.social-link.custom.twitter {
+    background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+}
+
+.social-link.custom.discord {
+    background: linear-gradient(135deg, #7289da, #5b6eae);
+}
+
+.social-link.custom.tiktok {
+    background: linear-gradient(135deg, #ff0050, #000);
+}
+
+.social-link.custom.pinterest {
+    background: linear-gradient(135deg, #bd081c, #8c0613);
+}
+
+.social-link.custom.website,
+.social-link.custom.link {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.social-link.custom.email {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+.social-link.custom.portfolio,
+.social-link.custom.briefcase {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+}

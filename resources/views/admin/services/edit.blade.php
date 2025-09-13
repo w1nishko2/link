@@ -113,6 +113,82 @@
                         </div>
                     </div>
 
+                    <!-- Настройки кнопки действия -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="button_text" class="form-label">Текст кнопки</label>
+                                <select class="form-select @error('button_text') is-invalid @enderror" 
+                                        id="button_text" name="button_text">
+                                    <option value="">Без кнопки</option>
+                                    <option value="Заказать услугу" {{ old('button_text', $service->button_text) == 'Заказать услугу' ? 'selected' : '' }}>Заказать услугу</option>
+                                    <option value="Связаться с нами" {{ old('button_text', $service->button_text) == 'Связаться с нами' ? 'selected' : '' }}>Связаться с нами</option>
+                                    <option value="Узнать подробнее" {{ old('button_text', $service->button_text) == 'Узнать подробнее' ? 'selected' : '' }}>Узнать подробнее</option>
+                                    <option value="Написать в WhatsApp" {{ old('button_text', $service->button_text) == 'Написать в WhatsApp' ? 'selected' : '' }}>Написать в WhatsApp</option>
+                                    <option value="Написать в Telegram" {{ old('button_text', $service->button_text) == 'Написать в Telegram' ? 'selected' : '' }}>Написать в Telegram</option>
+                                    <option value="Позвонить" {{ old('button_text', $service->button_text) == 'Позвонить' ? 'selected' : '' }}>Позвонить</option>
+                                    <option value="Отправить email" {{ old('button_text', $service->button_text) == 'Отправить email' ? 'selected' : '' }}>Отправить email</option>
+                                </select>
+                                @error('button_text')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="button_link" class="form-label">Ссылка для кнопки</label>
+                                <select class="form-select @error('button_link') is-invalid @enderror" 
+                                        id="button_link" name="button_link">
+                                    <option value="">Выберите ссылку</option>
+                                    @if($user->phone)
+                                        <option value="tel:{{ $user->phone }}" {{ old('button_link', $service->button_link) == 'tel:' . $user->phone ? 'selected' : '' }}>
+                                            Телефон: {{ $user->phone }}
+                                        </option>
+                                    @endif
+                                    @if($user->email)
+                                        <option value="mailto:{{ $user->email }}" {{ old('button_link', $service->button_link) == 'mailto:' . $user->email ? 'selected' : '' }}>
+                                            Email: {{ $user->email }}
+                                        </option>
+                                    @endif
+                                    @if($user->telegram_url)
+                                        <option value="{{ $user->telegram_url }}" {{ old('button_link', $service->button_link) == $user->telegram_url ? 'selected' : '' }}>
+                                            Telegram
+                                        </option>
+                                    @endif
+                                    @if($user->whatsapp_url)
+                                        <option value="{{ $user->whatsapp_url }}" {{ old('button_link', $service->button_link) == $user->whatsapp_url ? 'selected' : '' }}>
+                                            WhatsApp
+                                        </option>
+                                    @endif
+                                    @if($user->vk_url)
+                                        <option value="{{ $user->vk_url }}" {{ old('button_link', $service->button_link) == $user->vk_url ? 'selected' : '' }}>
+                                            VK
+                                        </option>
+                                    @endif
+                                    @if($user->instagram_url)
+                                        <option value="{{ $user->instagram_url }}" {{ old('button_link', $service->button_link) == $user->instagram_url ? 'selected' : '' }}>
+                                            Instagram
+                                        </option>
+                                    @endif
+                                    @if($user->website_url)
+                                        <option value="{{ $user->website_url }}" {{ old('button_link', $service->button_link) == $user->website_url ? 'selected' : '' }}>
+                                            Сайт
+                                        </option>
+                                    @endif
+                                    @foreach($user->socialLinks as $socialLink)
+                                        <option value="{{ $socialLink->url }}" {{ old('button_link', $service->button_link) == $socialLink->url ? 'selected' : '' }}>
+                                            {{ $socialLink->service_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('button_link')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Выберите куда будет вести кнопка</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-2"></i>

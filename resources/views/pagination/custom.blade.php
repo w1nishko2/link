@@ -58,10 +58,5 @@
         </ul>
     </nav>
 
-    {{-- Информация о текущих результатах --}}
-    <div class="d-flex justify-content-center mt-3">
-        <small class="text-muted">
-            Показано {{ $paginator->firstItem() }} - {{ $paginator->lastItem() }} из {{ $paginator->total() }} результатов
-        </small>
-    </div>
+   
 @endif

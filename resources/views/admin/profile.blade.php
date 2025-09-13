@@ -16,537 +16,99 @@
 @endif
 
 <div class="row">
-    <div class="col-lg-8 order-2 order-lg-1">
+    <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">Редактировать профиль</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.profile.update', $currentUserId) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-                    
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">Основная информация</h6>
-                        
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Имя</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                   id="name" name="name" value="{{ old('name', $user->name) }}" required maxlength="50">
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Максимум 50 символов. Осталось: <span id="name-counter">50</span></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" 
-                                   value="{{ $user->username }}" readonly>
-                            <div class="form-text">Username нельзя изменить</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Телефон</label>
-                            <input type="text" class="form-control" id="phone" 
-                                   value="{{ $user->phone }}" readonly>
-                            <div class="form-text">Номер телефона нельзя изменить</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="bio" class="form-label">О себе</label>
-                            <textarea class="form-control @error('bio') is-invalid @enderror" 
-                                      id="bio" name="bio" rows="4" maxlength="190"
-                                      placeholder="Расскажите о себе...">{{ old('bio', $user->bio) }}</textarea>
-                            @error('bio')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">
-                                Максимум 190 символов. Осталось: <span id="bio-counter">190</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">Аватар</h6>
-                        
-                        <div class="mb-3">
-                            <label for="avatar" class="form-label">Загрузить аватар</label>
-                            <input type="file" class="form-control @error('avatar') is-invalid @enderror" 
-                                   id="avatar" name="avatar" accept="image/*">
-                            @error('avatar')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Рекомендуемый размер: 200x200px. Поддерживаются изображения в любых форматах. Максимальный размер: 10MB. Автоматически конвертируется в WebP.</div>
-                            
-                            @if($user->avatar)
-                                <div class="mt-2">
-                                    <small class="text-muted">Текущий аватар:</small>
-                                    <div class="mt-1">
-                                        <img src="{{ asset('storage/' . $user->avatar) }}" 
-                                             style="width: 80px; height: 80px; object-fit: cover;" 
-                                             class="rounded-circle">
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">Фоновое изображение</h6>
-                        
-                        <div class="mb-3">
-                            <label for="background_image" class="form-label">Загрузить фон</label>
-                            <input type="file" class="form-control @error('background_image') is-invalid @enderror" 
-                                   id="background_image" name="background_image" accept="image/*">
-                            @error('background_image')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Рекомендуемый размер: 1920x1080px. Поддерживаются изображения в любых форматах. Максимальный размер: 10MB. Автоматически конвертируется в WebP.</div>
-                            
-                            <!-- Предварительный просмотр фона для разных устройств -->
-                            <div class="mt-3" id="background-preview">
-                                <small class="text-muted">Предварительный просмотр hero секции на устройствах:</small>
-                                
-                                <!-- Уведомление для мобильных пользователей -->
-                                <div class="alert alert-info d-mobile-only mt-2" role="alert">
-                                    <i class="bi bi-phone me-2"></i>
-                                    <strong>Мобильный просмотр:</strong> Вы видите адаптированную версию для вашего устройства.
-                                </div>
-                                
-                                <!-- Hero секция как на реальной странице -->
-                                <div class="hero-preview-container mt-3" style="background-image: url('{{ $user->background_image ? asset('storage/' . $user->background_image) : '/hero.png' }}');">
-                                    
-                                    <!-- Белая секция внизу (точно как на реальной странице) -->
-                                    <div class="hero-bottom">
-                                        
-                                        <!-- Информация о пользователе -->
-                                        <div class="hero-info">
-                                            <h1 class="heading-responsive">{{ $user->name }}</h1>
-                                            <p class="text-responsive text-muted">@ {{ $user->username }}</p>
-                                            <p class="text-responsive">{{ Str::limit($user->bio ?: 'Добро пожаловать на мою страницу!', 60) }}</p>
-                                            
-                                            <!-- Социальные ссылки -->
-                                            <div class="d-flex gap-2 flex-wrap">
-                                                @if($user->telegram_url)
-                                                    <div class="social-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, #0088cc, #005591); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);">
-                                                        <i class="bi bi-telegram" style="color: white; font-size: 14px;"></i>
-                                                    </div>
-                                                @endif
-                                                @if($user->whatsapp_url)
-                                                    <div class="social-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, #25d366, #1da851); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);">
-                                                        <i class="bi bi-whatsapp" style="color: white; font-size: 14px;"></i>
-                                                    </div>
-                                                @endif
-                                                @if($user->vk_url)
-                                                    <div class="social-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, #4c75a3, #2b4969); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);">
-                                                        <i class="bi bi-chat-square-text" style="color: white; font-size: 14px;"></i>
-                                                    </div>
-                                                @endif
-                                                @if($user->youtube_url)
-                                                    <div class="social-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, #ff0000, #cc0000); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);">
-                                                        <i class="bi bi-youtube" style="color: white; font-size: 14px;"></i>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Аватар -->
-                                        <div class="hero-avatar">
-                                            @if($user->avatar)
-                                                <img src="{{ asset('storage/' . $user->avatar) }}" alt="Аватар">
-                                            @else
-                                                <img src="/hero.png" alt="Заглушка">
-                                            @endif
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Области видимости устройств -->
-                                    <div class="device-viewports" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 10;">
-                                        
-                                        <!-- Десктоп viewport -->
-                                        <div class="desktop-viewport" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 3px solid #007bff; border-radius: 8px; opacity: 0.7;">
-                                            <div style="position: absolute; top: -35px; left: 10px; background: #007bff; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap;">
-                                                <i class="bi bi-display me-1"></i>Десктоп (100% видимость)
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Планшет viewport -->
-                                        <div class="tablet-viewport" style="position: absolute; top: 5%; left: 15%; right: 15%; bottom: 10%; border: 3px solid #28a745; border-radius: 12px; opacity: 0.7;">
-                                            <div style="position: absolute; top: -35px; left: 10px; background: #28a745; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap;">
-                                                <i class="bi bi-tablet me-1"></i>Планшет (70% ширины)
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Мобильный viewport -->
-                                        <div class="mobile-viewport" style="position: absolute; top: 10%; left: 35%; right: 35%; bottom: 20%; border: 3px solid #dc3545; border-radius: 16px; opacity: 0.7;">
-                                            <div style="position: absolute; top: -35px; left: 10px; background: #dc3545; color: white; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; white-space: nowrap;">
-                                                <i class="bi bi-phone me-1"></i>Мобильный
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Переключатель видимости областей -->
-                                    <div class="viewport-controls" style="position: absolute; top: 15px; right: 15px; z-index: 15;">
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <button type="button" class="btn btn-outline-light viewport-toggle active" data-viewport="all" style="font-size: 11px; padding: 4px 8px; backdrop-filter: blur(10px); background: rgba(255,255,255,0.9);">
-                                                Все
-                                            </button>
-                                            <button type="button" class="btn btn-outline-primary viewport-toggle" data-viewport="desktop" style="font-size: 11px; padding: 4px 8px;">
-                                                ПК
-                                            </button>
-                                            <button type="button" class="btn btn-outline-success viewport-toggle" data-viewport="tablet" style="font-size: 11px; padding: 4px 8px;">
-                                                Планшет
-                                            </button>
-                                            <button type="button" class="btn btn-outline-danger viewport-toggle" data-viewport="mobile" style="font-size: 11px; padding: 4px 8px;">
-                                                Мобильный
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Индикатор фона -->
-                                    <div style="position: absolute; bottom: 15px; left: 15px; z-index: 15;">
-                                        <div style="background: rgba(0,0,0,0.7); color: white; border-radius: 20px; padding: 6px 12px; font-size: 11px; backdrop-filter: blur(10px);">
-                                            <i class="bi bi-image me-1"></i>Hero фон
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            @if($user->background_image)
-                                <div class="mt-3">
-                                    <small class="text-muted">Текущий фон:</small>
-                                    <div class="mt-1">
-                                        <img src="{{ asset('storage/' . $user->background_image) }}" 
-                                             style="max-width: 200px; height: 100px; object-fit: cover;" 
-                                             class="rounded">
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">Социальные сети</h6>
-                        
-                        <div class="mb-3">
-                            <label for="telegram_url" class="form-label">
-                                <i class="bi bi-telegram text-info me-1"></i>
-                                Telegram
-                            </label>
-                            <input type="url" class="form-control @error('telegram_url') is-invalid @enderror" 
-                                   id="telegram_url" name="telegram_url" 
-                                   value="{{ old('telegram_url', $user->telegram_url) }}"
-                                   placeholder="https://t.me/username" maxlength="255">
-                            @error('telegram_url')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Максимум 255 символов. Осталось: <span id="telegram-counter">255</span></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="whatsapp_url" class="form-label">
-                                <i class="bi bi-whatsapp text-success me-1"></i>
-                                WhatsApp
-                            </label>
-                            <input type="url" class="form-control @error('whatsapp_url') is-invalid @enderror" 
-                                   id="whatsapp_url" name="whatsapp_url" 
-                                   value="{{ old('whatsapp_url', $user->whatsapp_url) }}"
-                                   placeholder="https://wa.me/79XXXXXXXXX" maxlength="255">
-                            @error('whatsapp_url')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Максимум 255 символов. Осталось: <span id="whatsapp-counter">255</span></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="vk_url" class="form-label">
-                                <i class="bi bi-link-45deg text-primary me-1"></i>
-                                ВКонтакте
-                            </label>
-                            <input type="url" class="form-control @error('vk_url') is-invalid @enderror" 
-                                   id="vk_url" name="vk_url" 
-                                   value="{{ old('vk_url', $user->vk_url) }}"
-                                   placeholder="https://vk.com/username" maxlength="255">
-                            @error('vk_url')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Максимум 255 символов. Осталось: <span id="vk-counter">255</span></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="youtube_url" class="form-label">
-                                <i class="bi bi-youtube text-danger me-1"></i>
-                                YouTube
-                            </label>
-                            <input type="url" class="form-control @error('youtube_url') is-invalid @enderror" 
-                                   id="youtube_url" name="youtube_url" 
-                                   value="{{ old('youtube_url', $user->youtube_url) }}"
-                                   placeholder="https://youtube.com/@username" maxlength="255">
-                            @error('youtube_url')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Максимум 255 символов. Осталось: <span id="youtube-counter">255</span></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="ok_url" class="form-label">
-                                <i class="bi bi-link-45deg text-warning me-1"></i>
-                                Одноклассники
-                            </label>
-                            <input type="url" class="form-control @error('ok_url') is-invalid @enderror" 
-                                   id="ok_url" name="ok_url" 
-                                   value="{{ old('ok_url', $user->ok_url) }}"
-                                   placeholder="https://ok.ru/profile/username" maxlength="255">
-                            @error('ok_url')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Максимум 255 символов. Осталось: <span id="ok-counter">255</span></div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex flex-column flex-sm-row gap-2">
-                        <button type="submit" class="btn btn-primary flex-fill">
-                            <i class="bi bi-check-circle me-2"></i>
-                            Сохранить изменения
+                <!-- Bootstrap Nav Tabs -->
+                <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ (!isset($tab) || $tab === 'basic') ? 'active' : '' }}" 
+                                id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" 
+                                type="button" role="tab" aria-controls="basic" aria-selected="{{ (!isset($tab) || $tab === 'basic') ? 'true' : 'false' }}">
+                            <i class="bi bi-person"></i>
+                            <span class="d-none d-md-inline ms-2">Основная информация</span>
+                            <span class="d-md-none">Инфо</span>
                         </button>
-                        <a href="{{ route('admin.dashboard', $currentUserId) }}" class="btn btn-outline-secondary flex-fill">
-                            <i class="bi bi-arrow-left me-2"></i>
-                            Назад к панели
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ (isset($tab) && $tab === 'images') ? 'active' : '' }}" 
+                                id="images-tab" data-bs-toggle="tab" data-bs-target="#images" 
+                                type="button" role="tab" aria-controls="images" aria-selected="{{ (isset($tab) && $tab === 'images') ? 'true' : 'false' }}">
+                            <i class="bi bi-image"></i>
+                            <span class="d-none d-md-inline ms-2">Изображения</span>
+                            <span class="d-md-none">Фото</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ (isset($tab) && $tab === 'social') ? 'active' : '' }}" 
+                                id="social-tab" data-bs-toggle="tab" data-bs-target="#social" 
+                                type="button" role="tab" aria-controls="social" aria-selected="{{ (isset($tab) && $tab === 'social') ? 'true' : 'false' }}">
+                            <i class="bi bi-share"></i>
+                            <span class="d-none d-md-inline ms-2">Социальные сети</span>
+                            <span class="d-md-none">Соцсети</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ (isset($tab) && $tab === 'security') ? 'active' : '' }}" 
+                                id="security-tab" data-bs-toggle="tab" data-bs-target="#security" 
+                                type="button" role="tab" aria-controls="security" aria-selected="{{ (isset($tab) && $tab === 'security') ? 'true' : 'false' }}">
+                            <i class="bi bi-shield-lock"></i>
+                            <span class="d-none d-md-inline ms-2">Безопасность</span>
+                            <span class="d-md-none">Пароль</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ (isset($tab) && $tab === 'sections') ? 'active' : '' }}" 
+                                id="sections-tab" data-bs-toggle="tab" data-bs-target="#sections" 
+                                type="button" role="tab" aria-controls="sections" aria-selected="{{ (isset($tab) && $tab === 'sections') ? 'true' : 'false' }}">
+                            <i class="bi bi-layout-text-window"></i>
+                            <span class="d-none d-md-inline ms-2">Управление разделами</span>
+                            <span class="d-md-none">Разделы</span>
+                        </button>
+                    </li>
+                </ul>
 
-    <div class="col-lg-4 order-1 order-lg-2 mb-4 mb-lg-0">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Предварительный просмотр</h5>
-            </div>
-            <div class="card-body">
-                <div class="text-center">
-                    <div class="mb-3">
-                        @if($user->avatar)
-                            <img src="{{ asset('storage/' . $user->avatar) }}" 
-                                 class="rounded-circle" 
-                                 style="width: 80px; height: 80px; object-fit: cover;" 
-                                 alt="Аватар">
-                        @else
-                            <i class="bi bi-person-circle display-4 text-muted"></i>
-                        @endif
+                <!-- Tab Content -->
+                <div class="tab-content" id="profileTabContent">
+                    <!-- Основная информация -->
+                    <div class="tab-pane fade {{ (!isset($tab) || $tab === 'basic') ? 'show active' : '' }}" 
+                         id="basic" role="tabpanel" aria-labelledby="basic-tab">
+                        @include('admin.profile.basic')
                     </div>
-                    <h5>{{ $user->name }}</h5>
-                    <p class="text-muted">@{{ $user->username }}</p>
-                    @if($user->bio)
-                        <p class="small">{{ $user->bio }}</p>
-                    @else
-                        <p class="small text-muted">Добро пожаловать на мою страницу!</p>
-                    @endif
-                </div>
-                
-                <hr>
-                
-                <div class="d-grid">
-                    <a href="{{ route('user.page', ['username' => $user->username]) }}" 
-                       class="btn btn-outline-primary" target="_blank">
-                        <i class="bi bi-eye me-2"></i>
-                        Посмотреть страницу
-                    </a>
-                </div>
-            </div>
-        </div>
 
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Статистика</h5>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <div class="border-end">
-                            <h6 class="text-primary">{{ $user->galleryImages()->count() }}</h6>
-                            <small class="text-muted">Фото</small>
-                        </div>
+                    <!-- Изображения -->
+                    <div class="tab-pane fade {{ (isset($tab) && $tab === 'images') ? 'show active' : '' }}" 
+                         id="images" role="tabpanel" aria-labelledby="images-tab">
+                        @include('admin.profile.images')
                     </div>
-                    <div class="col-6">
-                        <h6 class="text-success">{{ $user->services()->count() }}</h6>
-                        <small class="text-muted">Услуг</small>
+
+                    <!-- Социальные сети -->
+                    <div class="tab-pane fade {{ (isset($tab) && $tab === 'social') ? 'show active' : '' }}" 
+                         id="social" role="tabpanel" aria-labelledby="social-tab">
+                        @include('admin.profile.social')
                     </div>
-                </div>
-                <hr class="my-2">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <div class="border-end">
-                            <h6 class="text-info">{{ $user->articles()->count() }}</h6>
-                            <small class="text-muted">Статей</small>
-                        </div>
+
+                    <!-- Безопасность -->
+                    <div class="tab-pane fade {{ (isset($tab) && $tab === 'security') ? 'show active' : '' }}" 
+                         id="security" role="tabpanel" aria-labelledby="security-tab">
+                        @include('admin.profile.security')
                     </div>
-                    <div class="col-6">
-                        <h6 class="text-warning">{{ $user->banners()->count() }}</h6>
-                        <small class="text-muted">Баннеров</small>
+
+                    <!-- Управление разделами -->
+                    <div class="tab-pane fade {{ (isset($tab) && $tab === 'sections') ? 'show active' : '' }}" 
+                         id="sections" role="tabpanel" aria-labelledby="sections-tab">
+                        @include('admin.profile.sections')
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+@include('admin.profile.social-modals')
+@include('admin.profile.scripts')
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Функция для настройки счетчика символов
-    function setupCharCounter(inputId, counterId, maxLength) {
-        const input = document.getElementById(inputId);
-        const counter = document.getElementById(counterId);
-        
-        if (!input || !counter) return;
-        
-        function updateCounter() {
-            const currentLength = input.value.length;
-            const remaining = maxLength - currentLength;
-            counter.textContent = remaining;
-            
-            if (remaining < 0) {
-                counter.style.color = '#dc3545';
-            } else if (remaining < 20) {
-                counter.style.color = '#fd7e14';
-            } else {
-                counter.style.color = '#6c757d';
-            }
-        }
-        
-        updateCounter();
-        input.addEventListener('input', updateCounter);
-        input.addEventListener('keydown', updateCounter);
-        input.addEventListener('paste', function() {
-            setTimeout(updateCounter, 10);
-        });
-    }
 
-    // Настраиваем счетчики для всех полей
-    setupCharCounter('name', 'name-counter', 50);
-    setupCharCounter('bio', 'bio-counter', 190);
-    setupCharCounter('telegram_url', 'telegram-counter', 255);
-    setupCharCounter('whatsapp_url', 'whatsapp-counter', 255);
-    setupCharCounter('vk_url', 'vk-counter', 255);
-    setupCharCounter('youtube_url', 'youtube-counter', 255);
-    setupCharCounter('ok_url', 'ok-counter', 255);
-
-    // Предварительный просмотр аватара
-    const avatarInput = document.getElementById('avatar');
-    const previewAvatar = document.querySelector('.rounded-circle');
-    const defaultIcon = document.querySelector('.bi-person-circle');
-    
-    avatarInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                if (previewAvatar) {
-                    previewAvatar.src = e.target.result;
-                } else if (defaultIcon) {
-                    // Заменяем иконку на изображение
-                    const imgElement = document.createElement('img');
-                    imgElement.src = e.target.result;
-                    imgElement.className = 'rounded-circle';
-                    imgElement.style.width = '80px';
-                    imgElement.style.height = '80px';
-                    imgElement.style.objectFit = 'cover';
-                    imgElement.alt = 'Аватар';
-                    defaultIcon.parentNode.replaceChild(imgElement, defaultIcon);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Предварительный просмотр фонового изображения
-    const backgroundInput = document.getElementById('background_image');
-    const heroPreviewContainer = document.querySelector('.hero-preview-container');
-    
-    backgroundInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imageUrl = e.target.result;
-                
-                // Обновляем фон hero секции с плавным переходом
-                if (heroPreviewContainer) {
-                    heroPreviewContainer.style.transition = 'background-image 0.5s ease';
-                    heroPreviewContainer.style.backgroundImage = `url('${imageUrl}')`;
-                    
-                    // Добавляем эффект загрузки
-                    heroPreviewContainer.style.opacity = '0.9';
-                    setTimeout(() => {
-                        heroPreviewContainer.style.opacity = '1';
-                    }, 250);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Переключение видимости областей устройств
-    const viewportToggles = document.querySelectorAll('.viewport-toggle');
-    const desktopViewport = document.querySelector('.desktop-viewport');
-    const tabletViewport = document.querySelector('.tablet-viewport');
-    const mobileViewport = document.querySelector('.mobile-viewport');
-    
-    viewportToggles.forEach(toggle => {
-        toggle.addEventListener('click', function() {
-            // Убираем активный класс со всех кнопок
-            viewportToggles.forEach(btn => btn.classList.remove('active'));
-            // Добавляем активный класс на нажатую кнопку
-            this.classList.add('active');
-            
-            const viewport = this.getAttribute('data-viewport');
-            
-            // Скрываем все области
-            if (desktopViewport) desktopViewport.style.display = 'none';
-            if (tabletViewport) tabletViewport.style.display = 'none';
-            if (mobileViewport) mobileViewport.style.display = 'none';
-            
-            // Показываем нужные области
-            switch (viewport) {
-                case 'all':
-                    if (desktopViewport) desktopViewport.style.display = 'block';
-                    if (tabletViewport) tabletViewport.style.display = 'block';
-                    if (mobileViewport) mobileViewport.style.display = 'block';
-                    break;
-                case 'desktop':
-                    if (desktopViewport) desktopViewport.style.display = 'block';
-                    break;
-                case 'tablet':
-                    if (tabletViewport) tabletViewport.style.display = 'block';
-                    break;
-                case 'mobile':
-                    if (mobileViewport) mobileViewport.style.display = 'block';
-                    break;
-            }
-        });
-    });
-
-    // CSS стили теперь находятся в admin.css, убираем дублирование
-
-    // Добавляем эффект анимации при изменении фона
-    backgroundInput.addEventListener('change', function() {
-        if (heroPreviewContainer) {
-            heroPreviewContainer.classList.add('bg-changing');
-            setTimeout(() => {
-                heroPreviewContainer.classList.remove('bg-changing');
-            }, 800);
-        }
-    });
-});
-</script>
-@endsection

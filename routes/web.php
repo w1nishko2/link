@@ -23,6 +23,30 @@ Route::get('/test-ajax', function() {
     return response()->json(['message' => 'AJAX работает', 'time' => now()]);
 });
 
+// Тестовый маршрут для отладки секций
+Route::get('/test-sections/{user}', function($userId) {
+    $user = \App\Models\User::find($userId);
+    if (!$user) {
+        return response()->json(['success' => false, 'message' => 'Пользователь не найден']);
+    }
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Тестовый запрос секций работает',
+        'user_id' => $user->id,
+        'user_name' => $user->name,
+        'sections' => [
+            [
+                'section_key' => 'hero',
+                'title' => 'Тестовая секция',
+                'subtitle' => 'Тестовый подзаголовок',
+                'is_visible' => true,
+                'order' => 0
+            ]
+        ]
+    ]);
+})->middleware('auth');
+
 // Тестовая страница для отладки пагинации
 Route::get('/test-pagination', function() {
     return view('test-ajax');
@@ -58,15 +82,6 @@ Route::middleware(['auth'])->prefix('super-admin')->name('super-admin.')->group(
     Route::get('/users', [App\Http\Controllers\SuperAdminController::class, 'users'])->name('users');
     Route::get('/articles', [App\Http\Controllers\SuperAdminController::class, 'articles'])->name('articles');
     Route::get('/settings', [App\Http\Controllers\SuperAdminController::class, 'settings'])->name('settings');
-    
-    // GPT генератор статей
-    Route::get('/gpt-generator', [App\Http\Controllers\SuperAdminController::class, 'gptGenerator'])->name('gpt-generator');
-    Route::post('/generate-article', [App\Http\Controllers\SuperAdminController::class, 'generateArticle'])->name('generate-article');
-    Route::post('/generate-topic-ideas', [App\Http\Controllers\SuperAdminController::class, 'generateTopicIdeas'])->name('generate-topic-ideas');
-    
-    // Просмотр и управление логами GPT
-    Route::get('/gpt-logs', [App\Http\Controllers\SuperAdminController::class, 'gptLogs'])->name('gpt-logs');
-    Route::post('/clear-gpt-logs', [App\Http\Controllers\SuperAdminController::class, 'clearGptLogs'])->name('clear-gpt-logs');
 });
 
 // Маршруты админки (требуют авторизации) - должны быть ПЕРЕД публичными маршрутами
@@ -79,6 +94,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // Управление профилем
     Route::get('/user/{user}/profile', [App\Http\Controllers\AdminController::class, 'profile'])->name('profile');
+    Route::get('/user/{user}/profile/{tab?}', [App\Http\Controllers\AdminController::class, 'profileTab'])->name('profile.tab');
+    Route::put('/user/{user}/profile/basic', [App\Http\Controllers\AdminController::class, 'updateBasicInfo'])->name('profile.update.basic');
+    Route::put('/user/{user}/profile/images', [App\Http\Controllers\AdminController::class, 'updateImages'])->name('profile.update.images');
+    Route::put('/user/{user}/profile/social', [App\Http\Controllers\AdminController::class, 'updateSocialMedia'])->name('profile.update.social');
+    Route::put('/user/{user}/profile/security', [App\Http\Controllers\AdminController::class, 'updateSecurity'])->name('profile.update.security');
     Route::put('/user/{user}/profile', [App\Http\Controllers\AdminController::class, 'updateProfile'])->name('profile.update');
     
     // Управление галереей
@@ -109,6 +129,16 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/user/{user}/banners/{banner}/edit', [App\Http\Controllers\AdminController::class, 'bannersEdit'])->name('banners.edit');
     Route::put('/user/{user}/banners/{banner}', [App\Http\Controllers\AdminController::class, 'bannersUpdate'])->name('banners.update');
     Route::delete('/user/{user}/banners/{banner}', [App\Http\Controllers\AdminController::class, 'bannersDestroy'])->name('banners.destroy');
+    
+    // Управление пользовательскими социальными ссылками
+    Route::post('/user/{user}/social-links', [App\Http\Controllers\AdminController::class, 'socialLinksStore'])->name('social-links.store');
+    Route::put('/user/{user}/social-links/{socialLink}', [App\Http\Controllers\AdminController::class, 'socialLinksUpdate'])->name('social-links.update');
+    Route::delete('/user/{user}/social-links/{socialLink}', [App\Http\Controllers\AdminController::class, 'socialLinksDestroy'])->name('social-links.destroy');
+    Route::post('/user/{user}/social-links/update-order', [App\Http\Controllers\AdminController::class, 'socialLinksUpdateOrder'])->name('social-links.update-order');
+    
+    // Управление разделами сайта
+    Route::get('/user/{user}/sections', [App\Http\Controllers\AdminController::class, 'getSectionSettings'])->name('sections.get');
+    Route::post('/user/{user}/sections', [App\Http\Controllers\AdminController::class, 'updateSectionSettings'])->name('sections.update');
     
     // Обратная совместимость со старыми маршрутами
     Route::get('/gallery', function() {
@@ -208,3 +238,5 @@ Route::get('/user/{username}/article/{slug}', [App\Http\Controllers\ArticleContr
 
 // Маршрут для обновления профиля пользователя (требует авторизации)
 Route::put('/user/{username}/update', [App\Http\Controllers\HomeController::class, 'updateProfile'])->name('user.update')->middleware('auth');
+
+

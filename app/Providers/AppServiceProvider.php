@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\User;
 use App\Models\Article;
+use App\Models\UserSectionSettings;
 use App\Observers\UserObserver;
 use App\Observers\ArticleObserver;
 
@@ -28,6 +29,19 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             if (auth()->check()) {
                 $view->with('currentUserId', auth()->user()->id);
+            }
+        });
+
+        // Делаем настройки секций доступными в админских шаблонах
+        View::composer('admin.*', function ($view) {
+            if (auth()->check()) {
+                $user = auth()->user();
+                $sectionSettings = $user->sectionSettings()
+                    ->visible()
+                    ->get()
+                    ->keyBy('section_key');
+                
+                $view->with('userSectionSettings', $sectionSettings);
             }
         });
 

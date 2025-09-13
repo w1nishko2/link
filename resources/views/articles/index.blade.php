@@ -53,7 +53,7 @@
 @endpush
 
 @section('content')
-<div class="container py-5">
+<div class="container ">
     <!-- Breadcrumb навигация -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">

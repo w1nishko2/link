@@ -37,6 +37,7 @@ class GenerateSitemap extends Command
                 'weekly',
                 '0.7'
             );
+
         }
 
         // Статьи

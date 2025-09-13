@@ -168,7 +168,7 @@
 
                         <!-- Краткое описание -->
                         @if($article->excerpt)
-                            <div class="article-excerpt">
+                            <div class="">
                                 <p class="lead" itemprop="description">{{ $article->excerpt }}</p>
                             </div>
                         @endif
@@ -240,7 +240,7 @@
 
             <!-- Похожие статьи -->
             @if($relatedArticles->count() > 0)
-                <section class="row mt-5" aria-label="Похожие статьи">
+                <section class="row " aria-label="Похожие статьи">
                     <div class="col-lg-10 mx-auto">
                         <h3>Другие статьи автора</h3>
                         <div class="row">

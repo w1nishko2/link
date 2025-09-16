@@ -1,5 +1,20 @@
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<!doctype >
+    <title>@yield('title', config('app.name', 'Laravel'))</title>
+    <meta name="description" content="@yield('description', 'Персональный сайт-визитка. Узнайте больше о моих услугах, статьях и проектах.')">
+    <meta name="keywords" content="@yield('keywords', 'персональный сайт, визитка, услуги, портфолио, контакты')">
+    <meta name="author" content="@yield('author', config('app.name'))">
+    <meta name="robots" content="@yield('robots', 'index, follow')">
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="theme-color" content="#2A5885">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Preconnect для улучшения производительности -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net"><html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
@@ -7,6 +22,14 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <!-- User Data for JavaScript -->
+    @if(isset($currentUser) && $currentUser)
+        <meta name="current-user-id" content="{{ $currentUser->id }}">
+    @endif
+    @if(isset($pageUser) && $pageUser)
+        <meta name="page-user-id" content="{{ $pageUser->id }}">
+    @endif
 
     <!-- SEO Meta Tags -->
     <title>@yield('title', config('app.name', 'Laravel'))</title>
@@ -44,8 +67,10 @@
     <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
 
     <!-- Fonts -->
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="preload" href="https://fonts.bunny.net/css?family=Nunito" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.bunny.net/css?family=Nunito"></noscript>
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"></noscript>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -56,7 +81,16 @@
     <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
 
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/services-reels.css', 'resources/js/app.js'])
+    
+    {{-- Подключаем мобильную навигацию для владельца страницы --}}
+    @if(isset($pageUser) && isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id)
+        @vite(['resources/css/mobile-navigation.css', 'resources/js/mobile-navigation.js'])
+        @vite(['resources/css/owner-defaults.css'])
+        @vite(['resources/css/image-editor.css', 'resources/js/image-editor.js'])
+        @vite(['resources/js/long-press-editor.js'])
+        @vite(['resources/js/long-press-editor.js'])
+    @endif
 
     <!-- Additional Head Content -->
     @stack('head')
@@ -64,67 +98,53 @@
 
 <body>
     <div id="app">
-        <!-- Навигация для всех пользователей -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-            <div class="container nowrap">
-                <a class="navbar-brand fw-bold" href="{{ route('home') }}">
-                    {{ config('app.name', 'Персональные Сайты') }}
-                </a>
-
-                <!-- Общие ссылки для всех пользователей -->
-                <div class="navbar-nav ">
-                    <a class="nav-link" href="{{ route('articles.all') }}">
-                        <i class="bi bi-collection me-1"></i>Мир линка
+        @if(isset($pageUser) && isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id)
+            {{-- Мобильная навигация для владельца страницы --}}
+            @php
+                $userSectionSettings = \App\Models\UserSectionSettings::where('user_id', $currentUser->id)->get()->keyBy('section_key');
+            @endphp
+            <x-mobile-navigation 
+                :currentUserId="$currentUser->id" 
+                :userSectionSettings="$userSectionSettings" 
+                :currentUser="$currentUser" 
+            />
+        @else
+            {{-- Обычная навигация для всех остальных --}}
+            <!-- Навигация для всех пользователей -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="container nowrap">
+                    <a class="navbar-brand fw-bold" href="{{ route('home') }}">
+                        {{ config('app.name', 'Персональные Сайты') }}
                     </a>
-                </div>
 
-                @auth
-                    <!-- Меню для авторизованных пользователей -->
-                    <div class="navbar-nav ms-auto">
-                        <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ auth()->user()->name }}
+                    <!-- Общие ссылки для всех пользователей -->
+                    <div class="navbar-nav ">
+                        <a class="nav-link" href="{{ route('articles.all') }}">
+                            <i class="bi bi-collection me-1"></i>Мир линка
+                        </a>
+                    </div>
+
+                    @auth
+                  
+
+                      
+                    @else
+                        <!-- Меню для неавторизованных пользователей -->
+                        <div class="navbar-nav ms-auto">
+                            <a class="nav-link" href="{{ route('login') }}" title="Вход">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>
+                                <span class="d-none d-md-inline">Вход</span>
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item"
-                                        href="{{ route('user.page', ['username' => auth()->user()->username]) }}">Моя
-                                        страница</a></li>
-                                <li><a class="dropdown-item"
-                                        href="{{ route('admin.dashboard', auth()->user()->id) }}">Админка</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="openQRModal()">
-                                        <i class="bi bi-qr-code me-1"></i>QR моей страницы
-                                    </a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
-                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        Выйти
-                                    </a>
-                                </li>
-                            </ul>
+                            <a class="nav-link" href="{{ route('register') }}" title="Регистрация">
+                                <i class="bi bi-person-plus me-1"></i>
+                                <span class="d-none d-md-inline">Регистрация</span>
+                            </a>
                         </div>
-                    </div>
-
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                        @csrf
-                    </form>
-                @else
-                    <!-- Меню для неавторизованных пользователей -->
-                    <div class="navbar-nav ms-auto">
-                        <a class="nav-link" href="{{ route('login') }}">
-                            <i class="bi bi-box-arrow-in-right me-1"></i>Вход
-                        </a>
-                        <a class="nav-link" href="{{ route('register') }}">
-                            <i class="bi bi-person-plus me-1"></i>Регистрация
-                        </a>
-                    </div>
-                @endauth
-            </div>
-        </nav>
-
+                    @endauth
+                </div>
+            </nav>
+        @endif
+        
         <main class="">
             @yield('content')
         </main>
@@ -167,14 +187,11 @@
                             <div class="banner-post-body">
                                 <h2 id="bannerModalTitle" class="banner-post-title"></h2>
                                 <div id="bannerModalDescription" class="banner-post-description"></div>
-
                                 <!-- Кнопка ссылки баннера -->
                                 <div id="bannerLinkContainer" class="mt-3" style="display: none;">
                                     <a id="bannerLink" href="#" class="btn btn-primary" target="_blank"></a>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
                 </div>
@@ -245,8 +262,8 @@
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM загружен, инициализация...');
@@ -266,11 +283,11 @@
                 breakpoints: {
                     320: {
                         slidesPerView: 1.1,
-                        spaceBetween: 10,
+                        spaceBetween: 20,
                     },
                     768: {
                         slidesPerView: 2.1,
-                        spaceBetween: 15,
+                        spaceBetween: 20,
                     },
                     1024: {
                         slidesPerView: 2.1,
@@ -294,28 +311,28 @@
                 },
                 breakpoints: {
                     320: {
-                        slidesPerView: 1.3,
-                        spaceBetween: 15,
+                        slidesPerView: 1.1,
+                        spaceBetween: 20,
                     },
                     480: {
-                        slidesPerView: 2.5,
-                        spaceBetween: 15,
+                        slidesPerView: 2.1,
+                        spaceBetween:20,
                     },
                     700: {
-                        slidesPerView: 2.5,
+                          slidesPerView: 2.1,
                         spaceBetween: 20,
                     },
                     768: {
-                        slidesPerView: 2.5,
+                        slidesPerView: 2.1,
                         spaceBetween: 20,
                     },
                     1024: {
-                        slidesPerView: 2.8,
-                        spaceBetween: 25,
+                        slidesPerView: 2.1,
+                        spaceBetween: 20,
                     },
                     1200: {
                         slidesPerView: 3.2,
-                        spaceBetween: 30,
+                        spaceBetween: 20,
                     }
                 }
             });
@@ -333,8 +350,9 @@
             console.log('Все модули инициализированы');
         });
 
-        // Функция инициализации галереи
+        // Функция инициализации галереи с Swiper
         function initializeGallery() {
+            // Инициализация модального окна (оставляем как есть)
             const galleryModal = document.getElementById('galleryModal');
             const modalImage = document.getElementById('modalImage');
             const modalTitle = document.getElementById('galleryModalLabel');
@@ -351,56 +369,64 @@
                 });
             }
 
-            // Инициализация навигации галереи
-            const galleryGrid = document.getElementById('galleryGrid');
-            const prevButton = document.getElementById('galleryPrev');
-            const nextButton = document.getElementById('galleryNext');
-
-            if (galleryGrid && prevButton && nextButton) {
-                const scrollAmount = 320; // Размер прокрутки
-
-                prevButton.addEventListener('click', function() {
-                    galleryGrid.scrollBy({
-                        left: -scrollAmount,
-                        behavior: 'smooth'
-                    });
+            // Инициализация Swiper галереи
+            const gallerySwiper = document.querySelector('.gallery-swiper');
+            if (gallerySwiper) {
+                const swiper = new Swiper('.gallery-swiper', {
+                    slidesPerView: 1.2,
+                    spaceBetween: 20,
+                    centeredSlides: false,
+                      loop: true,
+                    navigation: {
+                        nextEl: '.gallery-swiper .swiper-button-next',
+                        prevEl: '.gallery-swiper .swiper-button-prev',
+                    },
+                    pagination: {
+                        el: '.gallery-swiper .swiper-pagination',
+                        clickable: true,
+                        dynamicBullets: true,
+                    },
+                    breakpoints: {
+                        320: {
+                            slidesPerView: 1.1,
+                            spaceBetween: 20,
+                            centeredSlides: true,
+                        },
+                        480: {
+                            slidesPerView: 2.1,
+                            spaceBetween: 20,
+                            centeredSlides: false,
+                        },
+                        640: {
+                             slidesPerView: 2.1,
+                            spaceBetween: 20,
+                        },
+                        768: {
+                            slidesPerView: 2.5,
+                            spaceBetween: 20,
+                        },
+                        1024: {
+                            slidesPerView: 3,
+                            spaceBetween: 20,
+                        },
+                        1200: {
+                            slidesPerView: 3,
+                            spaceBetween: 20,
+                        }
+                    },
+                    // Настройки для мобильных устройств
+                    touchEventsTarget: 'container',
+                    touchRatio: 1,
+                    touchAngle: 45,
+                    grabCursor: true,
+                    // Отключаем автовоспроизведение для лучшего UX
+                    autoplay: false,
+                    // Плавная анимация
+                    speed: 300,
+                    effect: 'slide',
                 });
 
-                nextButton.addEventListener('click', function() {
-                    galleryGrid.scrollBy({
-                        left: scrollAmount,
-                        behavior: 'smooth'
-                    });
-                });
-
-                // Обновление состояния кнопок при прокрутке
-                function updateNavButtons() {
-                    const scrollLeft = galleryGrid.scrollLeft;
-                    const scrollWidth = galleryGrid.scrollWidth;
-                    const clientWidth = galleryGrid.clientWidth;
-
-                    prevButton.disabled = scrollLeft <= 0;
-                    nextButton.disabled = scrollLeft >= scrollWidth - clientWidth;
-                }
-
-                galleryGrid.addEventListener('scroll', updateNavButtons);
-                updateNavButtons(); // Инициализация состояния кнопок
-
-                // Обработка свайпов на мобильных устройствах
-                let startX = 0;
-                let scrollLeftStart = 0;
-
-                galleryGrid.addEventListener('touchstart', function(e) {
-                    startX = e.touches[0].pageX;
-                    scrollLeftStart = galleryGrid.scrollLeft;
-                });
-
-                galleryGrid.addEventListener('touchmove', function(e) {
-                    e.preventDefault();
-                    const x = e.touches[0].pageX;
-                    const walk = (startX - x) * 2;
-                    galleryGrid.scrollLeft = scrollLeftStart + walk;
-                });
+                console.log('Gallery Swiper инициализирован');
             }
         }
 

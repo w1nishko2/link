@@ -334,6 +334,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let isLoading = false;
     const searchQuery = @json($search ?? '');
     
+    // Дебоунс для прокрутки
+    let scrollTimer;
+    
     console.log('Настройки:', {
         currentPage,
         lastPage,
@@ -356,66 +359,48 @@ document.addEventListener('DOMContentLoaded', function() {
         if (loadingIndicator) loadingIndicator.style.display = 'block';
         
         // Формируем URL
-        let url = '/articles?page=' + currentPage;
+        const url = new URL('/articles', window.location.origin);
+        url.searchParams.set('page', currentPage);
         if (searchQuery) {
-            url += '&search=' + encodeURIComponent(searchQuery);
+            url.searchParams.set('search', searchQuery);
         }
         
-        // AJAX запрос с помощью XMLHttpRequest для надежности
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        xhr.setRequestHeader('Accept', 'application/json');
-        
-        // Добавляем CSRF токен если есть
-        const csrfToken = document.querySelector('meta[name="csrf-token"]');
-        if (csrfToken) {
-            xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken.getAttribute('content'));
-        }
-        
-        xhr.onload = function() {
-            console.log('Ответ получен:', xhr.status);
+        // Fetch API для более современного подхода
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Данные получены:', data);
             
-            if (loadingIndicator) loadingIndicator.style.display = 'none';
-            
-            if (xhr.status === 200) {
-                try {
-                    const data = JSON.parse(xhr.responseText);
-                    console.log('JSON данные:', data);
-                    
-                    if (data.html) {
-                        articlesContainer.insertAdjacentHTML('beforeend', data.html);
-                        console.log('HTML добавлен');
-                    }
-                    
-                    if (!data.hasMore || currentPage >= lastPage) {
-                        if (endMessage) endMessage.style.display = 'block';
-                        console.log('Конец списка');
-                    }
-                    
-                    if (data.debug) {
-                        lastPage = Math.ceil(data.debug.total / data.debug.perPage);
-                    }
-                } catch (e) {
-                    console.error('Ошибка парсинга JSON:', e);
-                    console.log('Ответ сервера:', xhr.responseText.substring(0, 500));
-                }
-            } else {
-                console.error('HTTP ошибка:', xhr.status);
-                currentPage--; // откатываем
+            if (data.html) {
+                articlesContainer.insertAdjacentHTML('beforeend', data.html);
+                console.log('HTML добавлен');
             }
             
-            isLoading = false;
-        };
-        
-        xhr.onerror = function() {
-            console.error('Ошибка сети');
+            if (!data.hasMore || currentPage >= lastPage) {
+                if (endMessage) endMessage.style.display = 'block';
+                console.log('Конец списка');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки:', error);
+            currentPage--; // откатываем
+        })
+        .finally(() => {
             if (loadingIndicator) loadingIndicator.style.display = 'none';
-            currentPage--;
             isLoading = false;
-        };
-        
-        xhr.send();
+        });
     }
 
     // Обработчик прокрутки

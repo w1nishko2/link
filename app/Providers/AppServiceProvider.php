@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\URL;
 use App\Models\User;
 use App\Models\Article;
 use App\Models\UserSectionSettings;
@@ -25,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Принудительно используем HTTPS в продакшене
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         // Делаем $currentUserId доступным во всех blade шаблонах
         View::composer('*', function ($view) {
             if (auth()->check()) {

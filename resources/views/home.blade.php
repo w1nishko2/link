@@ -114,10 +114,12 @@
     ]
 }
 </script>
-@endif
+@endif  
 @endpush
 
 @section('content')
+   
+
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -152,8 +154,8 @@
             @include('sections.hero')
             @include('sections.services')
             @include('sections.gallery')
-            @include('sections.articles')
             @include('sections.banners')
+            @include('sections.articles')
         @endif
 
         <!-- Фиксированная кнопка социальных сетей -->

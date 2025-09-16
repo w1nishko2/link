@@ -23,6 +23,16 @@ class AdminController extends Controller
     public function __construct(ImageProcessingService $imageService)
     {
         $this->middleware('auth');
+        // Добавляем проверку доступа для защищенных методов админки
+        $this->middleware(function ($request, $next) {
+            // Проверяем, что пользователь может управлять только своими данными
+            $userId = $request->route('user');
+            if ($userId && auth()->user()->id != (int)$userId && !auth()->user()->isAdmin()) {
+                abort(403, 'Доступ запрещен');
+            }
+            return $next($request);
+        });
+        
         $this->imageService = $imageService;
     }
 
@@ -232,7 +242,7 @@ class AdminController extends Controller
         }
 
         // Валидируем вкладку
-        $validTabs = ['basic', 'images', 'social', 'security'];
+        $validTabs = ['basic', 'social', 'security'];
         if (!in_array($tab, $validTabs)) {
             $tab = 'basic';
         }
@@ -264,76 +274,6 @@ class AdminController extends Controller
 
         return redirect()->route('admin.profile.tab', [$user->id, 'basic'])
                         ->with('success', 'Основная информация успешно обновлена!');
-    }
-
-    /**
-     * Обновление изображений
-     */
-    public function updateImages(Request $request, User $user = null)
-    {
-        $request->validate([
-            'background_image' => 'nullable|file|max:10240',
-            'avatar' => 'nullable|file|max:10240',
-        ]);
-
-        // Если параметр user не передан, используем текущего авторизованного пользователя
-        if (!$user) {
-            $user = auth()->user();
-        }
-        
-        // Проверяем права доступа
-        if (auth()->user()->id != $user->id) {
-            abort(403, 'Доступ запрещен');
-        }
-
-        $data = [];
-        
-        if ($request->hasFile('background_image')) {
-            // Валидируем изображение
-            $validationErrors = $this->imageService->validateImage($request->file('background_image'), 'background');
-            if (!empty($validationErrors)) {
-                return redirect()->back()->withErrors(['background_image' => $validationErrors[0]]);
-            }
-            
-            // Обрабатываем и сохраняем изображение
-            $imagePath = $this->imageService->processAndStore(
-                $request->file('background_image'), 
-                'background', 
-                'backgrounds/' . $user->id,
-                $user->background_image
-            );
-            
-            if ($imagePath) {
-                $data['background_image'] = $imagePath;
-            }
-        }
-
-        if ($request->hasFile('avatar')) {
-            // Валидируем изображение
-            $validationErrors = $this->imageService->validateImage($request->file('avatar'), 'avatar');
-            if (!empty($validationErrors)) {
-                return redirect()->back()->withErrors(['avatar' => $validationErrors[0]]);
-            }
-            
-            // Обрабатываем и сохраняем изображение
-            $imagePath = $this->imageService->processAndStore(
-                $request->file('avatar'), 
-                'avatar', 
-                'avatars/' . $user->id,
-                $user->avatar
-            );
-            
-            if ($imagePath) {
-                $data['avatar'] = $imagePath;
-            }
-        }
-
-        if (!empty($data)) {
-            $user->update($data);
-        }
-
-        return redirect()->route('admin.profile.tab', [$user->id, 'images'])
-                        ->with('success', 'Изображения успешно обновлены!');
     }
 
     /**
@@ -1305,6 +1245,174 @@ class AdminController extends Controller
                 'exception' => $e->getTraceAsString()
             ]);
             return response()->json(['success' => false, 'message' => 'Произошла ошибка при сохранении: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Обновление аватара пользователя с обрезанным изображением
+     */
+    public function updateAvatar(Request $request, User $user)
+    {
+        try {
+            // Проверяем, что пользователь может редактировать этот профиль
+            if (auth()->id() !== $user->id) {
+                return response()->json(['success' => false, 'message' => 'Нет прав доступа'], 403);
+            }
+
+            $request->validate([
+                'cropped_image' => 'required|string',
+            ]);
+
+            // Получаем base64 данные изображения
+            $imageData = $request->input('cropped_image');
+            
+            // Убираем префикс data:image/jpeg;base64, если он есть
+            if (strpos($imageData, ',') !== false) {
+                $imageData = substr($imageData, strpos($imageData, ',') + 1);
+            }
+
+            // Декодируем base64
+            $decodedImage = base64_decode($imageData);
+            
+            if ($decodedImage === false) {
+                throw new \Exception('Ошибка декодирования изображения');
+            }
+
+            // Создаем временный файл
+            $tempPath = tempnam(sys_get_temp_dir(), 'avatar_');
+            file_put_contents($tempPath, $decodedImage);
+
+            // Генерируем уникальное имя файла
+            $fileName = 'avatar_' . $user->id . '_' . time() . '.jpg';
+            $storagePath = 'avatars/' . $fileName;
+
+            // Сохраняем в storage
+            $fullPath = storage_path('app/public/' . $storagePath);
+            
+            // Создаем директорию если её нет
+            $directory = dirname($fullPath);
+            if (!file_exists($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            // Копируем файл
+            copy($tempPath, $fullPath);
+
+            // Удаляем временный файл
+            unlink($tempPath);
+
+            // Удаляем старый аватар
+            if ($user->avatar) {
+                $oldAvatarPath = storage_path('app/public/' . $user->avatar);
+                if (file_exists($oldAvatarPath)) {
+                    unlink($oldAvatarPath);
+                }
+            }
+
+            // Обновляем путь к аватару в базе данных
+            $user->update(['avatar' => $storagePath]);
+
+            Log::info('Аватар успешно обновлен', [
+                'user_id' => $user->id,
+                'new_avatar' => $storagePath
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Аватар успешно обновлен!',
+                'image_url' => asset('storage/' . $storagePath)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка обновления аватара: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'exception' => $e->getTraceAsString()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Ошибка при сохранении аватара: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Обновление фонового изображения пользователя с обрезанным изображением
+     */
+    public function updateBackground(Request $request, User $user)
+    {
+        try {
+            // Проверяем, что пользователь может редактировать этот профиль
+            if (auth()->id() !== $user->id) {
+                return response()->json(['success' => false, 'message' => 'Нет прав доступа'], 403);
+            }
+
+            $request->validate([
+                'cropped_image' => 'required|string',
+            ]);
+
+            // Получаем base64 данные изображения
+            $imageData = $request->input('cropped_image');
+            
+            // Убираем префикс data:image/jpeg;base64, если он есть
+            if (strpos($imageData, ',') !== false) {
+                $imageData = substr($imageData, strpos($imageData, ',') + 1);
+            }
+
+            // Декодируем base64
+            $decodedImage = base64_decode($imageData);
+            
+            if ($decodedImage === false) {
+                throw new \Exception('Ошибка декодирования изображения');
+            }
+
+            // Создаем временный файл
+            $tempPath = tempnam(sys_get_temp_dir(), 'background_');
+            file_put_contents($tempPath, $decodedImage);
+
+            // Генерируем уникальное имя файла
+            $fileName = 'background_' . $user->id . '_' . time() . '.jpg';
+            $storagePath = 'backgrounds/' . $fileName;
+
+            // Сохраняем в storage
+            $fullPath = storage_path('app/public/' . $storagePath);
+            
+            // Создаем директорию если её нет
+            $directory = dirname($fullPath);
+            if (!file_exists($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            // Копируем файл
+            copy($tempPath, $fullPath);
+
+            // Удаляем временный файл
+            unlink($tempPath);
+
+            // Удаляем старое фоновое изображение
+            if ($user->background_image) {
+                $oldBackgroundPath = storage_path('app/public/' . $user->background_image);
+                if (file_exists($oldBackgroundPath)) {
+                    unlink($oldBackgroundPath);
+                }
+            }
+
+            // Обновляем путь к фоновому изображению в базе данных
+            $user->update(['background_image' => $storagePath]);
+
+            Log::info('Фоновое изображение успешно обновлено', [
+                'user_id' => $user->id,
+                'new_background' => $storagePath
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Фоновое изображение успешно обновлено!',
+                'image_url' => asset('storage/' . $storagePath)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка обновления фонового изображения: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'exception' => $e->getTraceAsString()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Ошибка при сохранении фонового изображения: ' . $e->getMessage()], 500);
         }
     }
 }

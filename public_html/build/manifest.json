@@ -1,0 +1,56 @@
+{
+  "resources/css/admin.css": {
+    "file": "assets/admin-CDWHTQ6V.css",
+    "src": "resources/css/admin.css",
+    "isEntry": true
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-CJen_xZ9.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/image-editor.css": {
+    "file": "assets/image-editor-DoYr41F8.css",
+    "src": "resources/css/image-editor.css",
+    "isEntry": true
+  },
+  "resources/css/mobile-navigation.css": {
+    "file": "assets/mobile-navigation-rekka73z.css",
+    "src": "resources/css/mobile-navigation.css",
+    "isEntry": true
+  },
+  "resources/css/owner-defaults.css": {
+    "file": "assets/owner-defaults-C6Yr0ex5.css",
+    "src": "resources/css/owner-defaults.css",
+    "isEntry": true
+  },
+  "resources/css/services-reels.css": {
+    "file": "assets/services-reels-BU0KghO6.css",
+    "src": "resources/css/services-reels.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-l0sNRNKZ.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/image-editor.js": {
+    "file": "assets/image-editor-C7AqgYGO.js",
+    "name": "image-editor",
+    "src": "resources/js/image-editor.js",
+    "isEntry": true
+  },
+  "resources/js/long-press-editor.js": {
+    "file": "assets/long-press-editor-hPrGwlVB.js",
+    "name": "long-press-editor",
+    "src": "resources/js/long-press-editor.js",
+    "isEntry": true
+  },
+  "resources/js/mobile-navigation.js": {
+    "file": "assets/mobile-navigation-BRdGpZ7U.js",
+    "name": "mobile-navigation",
+    "src": "resources/js/mobile-navigation.js",
+    "isEntry": true
+  }
+}

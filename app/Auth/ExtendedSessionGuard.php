@@ -13,7 +13,7 @@ class ExtendedSessionGuard extends SessionGuard
      */
     protected function getRememberDuration()
     {
-        return 525600; // 365 дней в минутах
+        return 43200; // 30 дней в минутах (рекомендуемое значение для продакшена)
     }
 
     /**

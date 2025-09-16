@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,58 +15,7 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Route::get('/', function () {
-    return redirect()->route('home');
-});
-
-// Тестовый маршрут для проверки AJAX
-Route::get('/test-ajax', function() {
-    return response()->json(['message' => 'AJAX работает', 'time' => now()]);
-});
-
-// Тестовый маршрут для отладки секций
-Route::get('/test-sections/{user}', function($userId) {
-    $user = \App\Models\User::find($userId);
-    if (!$user) {
-        return response()->json(['success' => false, 'message' => 'Пользователь не найден']);
-    }
-    
-    return response()->json([
-        'success' => true,
-        'message' => 'Тестовый запрос секций работает',
-        'user_id' => $user->id,
-        'user_name' => $user->name,
-        'sections' => [
-            [
-                'section_key' => 'hero',
-                'title' => 'Тестовая секция',
-                'subtitle' => 'Тестовый подзаголовок',
-                'is_visible' => true,
-                'order' => 0
-            ]
-        ]
-    ]);
-})->middleware('auth');
-
-// Тестовая страница для отладки пагинации
-Route::get('/test-pagination', function() {
-    return view('test-ajax');
-});
-
-// Тестовая страница для отладки бесконечной прокрутки
-Route::get('/test-infinite-scroll', function() {
-    return view('test-infinite-scroll');
-});
-
-// Отладочный маршрут для проверки аутентификации
-Route::get('/debug/auth', function () {
-    return [
-        'auth_check' => auth()->check(),
-        'auth_id' => auth()->id(),
-        'auth_user' => auth()->user(),
-        'session_id' => session()->getId(),
-    ];
-});
+Route::get('/', [App\Http\Controllers\HomeController::class, 'redirectToHome'])->name('welcome');
 
 Auth::routes(['reset' => false, 'verify' => false]);
 
@@ -96,10 +46,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/user/{user}/profile', [App\Http\Controllers\AdminController::class, 'profile'])->name('profile');
     Route::get('/user/{user}/profile/{tab?}', [App\Http\Controllers\AdminController::class, 'profileTab'])->name('profile.tab');
     Route::put('/user/{user}/profile/basic', [App\Http\Controllers\AdminController::class, 'updateBasicInfo'])->name('profile.update.basic');
-    Route::put('/user/{user}/profile/images', [App\Http\Controllers\AdminController::class, 'updateImages'])->name('profile.update.images');
     Route::put('/user/{user}/profile/social', [App\Http\Controllers\AdminController::class, 'updateSocialMedia'])->name('profile.update.social');
     Route::put('/user/{user}/profile/security', [App\Http\Controllers\AdminController::class, 'updateSecurity'])->name('profile.update.security');
     Route::put('/user/{user}/profile', [App\Http\Controllers\AdminController::class, 'updateProfile'])->name('profile.update');
+    
+    // Обновление изображений профиля
+    Route::post('/profile/{user}/update-avatar', [App\Http\Controllers\AdminController::class, 'updateAvatar'])->name('profile.update.avatar');
+    Route::post('/profile/{user}/update-background', [App\Http\Controllers\AdminController::class, 'updateBackground'])->name('profile.update.background');
     
     // Управление галереей
     Route::get('/user/{user}/gallery', [App\Http\Controllers\AdminController::class, 'gallery'])->name('gallery');
@@ -154,89 +107,29 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 });
 
 // Маршрут для персональных страниц пользователей (публичный) - используем префикс "user"
-Route::get('/user/{username}', [App\Http\Controllers\HomeController::class, 'userPage'])->name('user.page');
-
-// Маршрут для просмотра всех статей всех пользователей с поиском
-Route::get('/articles', [App\Http\Controllers\AllArticlesController::class, 'index'])->name('articles.all');
-
-// Тестовый маршрут для простой версии
-Route::get('/articles-simple', function(Illuminate\Http\Request $request) {
-    $search = $request->get('search');
+Route::middleware(['throttle:60,1'])->group(function () {
+    Route::get('/user/{username}', [App\Http\Controllers\HomeController::class, 'userPage'])->name('user.page');
     
-    // Очищаем пустые поисковые запросы
-    if (empty(trim($search))) {
-        $search = null;
-    }
+    // Маршрут для просмотра всех статей всех пользователей с поиском
+    Route::get('/articles', [App\Http\Controllers\AllArticlesController::class, 'index'])->name('articles.all');
     
-    $query = App\Models\Article::query()
-        ->with('user')
-        ->where('is_published', true);
-
-    // Если есть поисковый запрос, применяем поиск
-    if (!empty($search)) {
-        $query->where(function (Illuminate\Database\Eloquent\Builder $q) use ($search) {
-            $q->where('title', 'LIKE', '%' . $search . '%')
-              ->orWhere('excerpt', 'LIKE', '%' . $search . '%')
-              ->orWhere('content', 'LIKE', '%' . $search . '%')
-              ->orWhereHas('user', function (Illuminate\Database\Eloquent\Builder $userQuery) use ($search) {
-                  $userQuery->where('name', 'LIKE', '%' . $search . '%')
-                            ->orWhere('username', 'LIKE', '%' . $search . '%')
-                            ->orWhere('bio', 'LIKE', '%' . $search . '%');
-              });
-        });
-    }
-
-    $articles = $query->latest()->paginate(8);
+    // API для автодополнения поиска статей
+    Route::get('/api/articles/suggestions', [App\Http\Controllers\AllArticlesController::class, 'searchSuggestions'])->name('articles.suggestions');
     
-    if ($search) {
-        $articles->appends(['search' => $search]);
-    }
-
-    // Логируем запрос
-    \Illuminate\Support\Facades\Log::info('Запрос к articles-simple', [
-        'isAjax' => $request->ajax(),
-        'wantsJson' => $request->wantsJson(),
-        'page' => $request->get('page', 1),
-        'search' => $search,
-        'headers' => [
-            'X-Requested-With' => $request->header('X-Requested-With'),
-            'Accept' => $request->header('Accept'),
-        ]
-    ]);
-
-    // Проверяем, является ли это AJAX-запросом
-    if ($request->ajax()) {
-        return response()->json([
-            'html' => view('articles.partials.articles-grid', compact('articles', 'search'))->render(),
-            'hasMore' => $articles->hasMorePages(),
-            'nextPage' => $articles->currentPage() + 1,
-            'debug' => [
-                'currentPage' => $articles->currentPage(),
-                'total' => $articles->total(),
-                'perPage' => $articles->perPage()
-            ]
-        ]);
-    }
-
-    // Получаем статистику для отображения
-    $totalArticles = App\Models\Article::where('is_published', true)->count();
-    $totalAuthors = App\Models\User::whereHas('articles', function (Illuminate\Database\Eloquent\Builder $q) {
-        $q->where('is_published', true);
-    })->count();
-
-    return view('articles.all-simple', compact('articles', 'search', 'totalArticles', 'totalAuthors'));
+    // Маршрут для просмотра всех статей пользователя
+    Route::get('/user/{username}/articles', [App\Http\Controllers\ArticleController::class, 'index'])->name('articles.index');
+    
+    // Маршрут для просмотра статьи пользователя
+    Route::get('/user/{username}/article/{slug}', [App\Http\Controllers\ArticleController::class, 'show'])->name('articles.show');
 });
-
-// API для автодополнения поиска статей
-Route::get('/api/articles/suggestions', [App\Http\Controllers\AllArticlesController::class, 'searchSuggestions'])->name('articles.suggestions');
-
-// Маршрут для просмотра всех статей пользователя
-Route::get('/user/{username}/articles', [App\Http\Controllers\ArticleController::class, 'index'])->name('articles.index');
-
-// Маршрут для просмотра статьи пользователя
-Route::get('/user/{username}/article/{slug}', [App\Http\Controllers\ArticleController::class, 'show'])->name('articles.show');
 
 // Маршрут для обновления профиля пользователя (требует авторизации)
 Route::put('/user/{username}/update', [App\Http\Controllers\HomeController::class, 'updateProfile'])->name('user.update')->middleware('auth');
 
+// Маршруты для обновления изображений на пользовательской странице (требует авторизации)
+Route::post('/user/{username}/update-background', [App\Http\Controllers\HomeController::class, 'updateBackground'])->name('user.update.background')->middleware('auth');
+Route::post('/user/{username}/update-avatar', [App\Http\Controllers\HomeController::class, 'updateAvatar'])->name('user.update.avatar')->middleware('auth');
+if (app()->environment('production')) {
+    URL::forceScheme('https');
+}
 

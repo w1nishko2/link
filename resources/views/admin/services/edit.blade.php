@@ -3,9 +3,83 @@
 @section('title', 'Редактирование услуги - ' . config('app.name'))
 @section('description', 'Редактирование описания и настроек услуги')
 
+@push('head')
+<style>
+/* Компактная форма */
+@media (max-width: 768px) {
+    .form-text {
+        font-size: 0.7rem;
+        margin-top: 0.2rem;
+    }
+    
+    .mb-3 {
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .card-body {
+        padding: 0.75rem;
+    }
+}
+
+/* Оптимизация пространства для мелких полей */
+.form-label {
+    margin-bottom: 0.2rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Упрощенный текст подсказок */
+.form-text {
+    margin-top: 0.2rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Компактные кнопки */
+.btn-group .btn,
+.d-flex .btn {
+    padding: 0.5rem 1rem;
+}
+
+@media (max-width: 456px) {
+    .card-header h5 {
+        font-size: 0.95rem;
+    }
+    
+    .col-lg-8 {
+        margin-bottom: 0.75rem;
+    }
+    
+    .form-label {
+        font-size: 0.85rem;
+        margin-bottom: 0.15rem;
+    }
+    
+    .form-text {
+        font-size: 0.7rem;
+        margin-top: 0.15rem;
+    }
+    
+    .mb-3 {
+        margin-bottom: 0.6rem !important;
+    }
+    
+    .card-body {
+        padding: 0.5rem;
+    }
+    
+    .form-control,
+    .form-select {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.75rem;
+    }
+}
+</style>
+@endpush
+
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Редактировать услугу</h1>
+    
     <a href="{{ route('admin.services', $currentUserId) }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-2"></i>
         Назад к услугам
@@ -23,6 +97,7 @@
                     @csrf
                     @method('PUT')
                     
+                    <!-- Первый ряд: Название и Порядок -->
                     <div class="row">
                         <div class="col-md-8">
                             <div class="mb-3">
@@ -38,44 +113,47 @@
                         
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="order_index" class="form-label">Порядок отображения</label>
+                                <label for="order_index" class="form-label">Порядок</label>
                                 <input type="number" class="form-control @error('order_index') is-invalid @enderror" 
-                                       id="order_index" name="order_index" value="{{ old('order_index', $service->order_index) }}">
+                                       id="order_index" name="order_index" value="{{ old('order_index', $service->order_index) }}" placeholder="Авто">
                                 @error('order_index')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="form-text">Порядок показа</div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Описание - полная ширина -->
                     <div class="mb-3">
                         <label for="description" class="form-label">Описание услуги *</label>
                         <textarea class="form-control @error('description') is-invalid @enderror" 
-                                  id="description" name="description" rows="4" required maxlength="500">{{ old('description', $service->description) }}</textarea>
+                                  id="description" name="description" rows="3" required maxlength="500">{{ old('description', $service->description) }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                         <div class="form-text">Максимум 500 символов. Осталось: <span id="description-counter">500</span></div>
                     </div>
 
+                    <!-- Второй ряд: Цена и Тип цены -->
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <div class="mb-3">
                                 <label for="price" class="form-label">Цена (₽)</label>
                                 <input type="number" class="form-control @error('price') is-invalid @enderror" 
-                                       id="price" name="price" value="{{ old('price', $service->price) }}" min="0" step="0.01">
+                                       id="price" name="price" value="{{ old('price', $service->price) }}" min="0" step="0.01" placeholder="0">
                                 @error('price')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <div class="mb-3">
                                 <label for="price_type" class="form-label">Тип цены *</label>
                                 <select class="form-select @error('price_type') is-invalid @enderror" 
                                         id="price_type" name="price_type" required>
-                                    <option value="fixed" {{ old('price_type', $service->price_type) == 'fixed' ? 'selected' : '' }}>Фиксированная цена</option>
+                                    <option value="fixed" {{ old('price_type', $service->price_type) == 'fixed' ? 'selected' : '' }}>Фиксированная</option>
                                     <option value="hourly" {{ old('price_type', $service->price_type) == 'hourly' ? 'selected' : '' }}>За час</option>
                                     <option value="project" {{ old('price_type', $service->price_type) == 'project' ? 'selected' : '' }}>За проект</option>
                                 </select>
@@ -86,36 +164,44 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="image" class="form-label">Изображение услуги</label>
-                        <input type="file" class="form-control @error('image') is-invalid @enderror" 
-                               id="image" name="image" accept="image/*">
-                        @error('image')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        @if($service->image_path)
-                            <div class="mt-2">
-                                <small class="text-muted">Текущее изображение:</small><br>
-                                <img src="{{ asset('storage/' . $service->image_path) }}" 
-                                     alt="{{ $service->title }}" class="img-thumbnail mt-1" style="max-height: 100px;">
+                    <!-- Третий ряд: Изображение и Статус -->
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Изображение услуги</label>
+                                <input type="file" class="form-control @error('image') is-invalid @enderror" 
+                                       id="image" name="image" accept="image/*">
+                                @error('image')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                @if($service->image_path)
+                                    <div class="mt-2">
+                                        <small class="text-muted">Текущее:</small>
+                                        <img src="{{ asset('storage/' . $service->image_path) }}" 
+                                             alt="{{ $service->title }}" class="img-thumbnail mt-1" style="max-height: 60px;">
+                                    </div>
+                                @endif
+                                <div class="form-text">WebP оптимизация</div>
                             </div>
-                        @endif
-                        <div class="form-text">Поддерживаются изображения в любых форматах. Автоматически конвертируется в WebP с оптимизацией размера. Оставьте пустым, чтобы сохранить текущее изображение.</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" 
-                                   {{ old('is_active', $service->is_active) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="is_active">
-                                Активная услуга (отображается на сайте)
-                            </label>
+                        </div>
+                        <div class="col-4">
+                            <div class="mb-3">
+                                <label class="form-label">Статус</label>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" 
+                                           {{ old('is_active', $service->is_active) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_active">
+                                        Активна
+                                    </label>
+                                </div>
+                                <div class="form-text">Показывать на сайте</div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Настройки кнопки действия -->
+                    <!-- Четвертый ряд: Настройки кнопки действия -->
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <div class="mb-3">
                                 <label for="button_text" class="form-label">Текст кнопки</label>
                                 <select class="form-select @error('button_text') is-invalid @enderror" 
@@ -134,7 +220,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <div class="mb-3">
                                 <label for="button_link" class="form-label">Ссылка для кнопки</label>
                                 <select class="form-select @error('button_link') is-invalid @enderror" 
@@ -184,7 +270,7 @@
                                 @error('button_link')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <div class="form-text">Выберите куда будет вести кнопка</div>
+                                <div class="form-text">Куда ведёт кнопка</div>
                             </div>
                         </div>
                     </div>
@@ -192,7 +278,7 @@
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-2"></i>
-                            Обновить услугу
+                            Обновить 
                         </button>
                         <a href="{{ route('admin.services', $currentUserId) }}" class="btn btn-outline-secondary">Отмена</a>
                     </div>
@@ -230,14 +316,14 @@
                 <h5 class="card-title mb-0">Действия</h5>
             </div>
             <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('user.page', auth()->user()->username) }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                <div class="d-flex gap-2">
+                    <a href="{{ route('user.page', auth()->user()->username) }}" class="btn  btn-sm" target="_blank">
                         <i class="bi bi-eye me-2"></i>
-                        Посмотреть на сайте
+                        Посмотреть 
                     </a>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteService({{ $service->id }})">
+                    <button type="button" class="btn  btn-sm" onclick="deleteService({{ $service->id }})">
                         <i class="bi bi-trash me-2"></i>
-                        Удалить услугу
+                        Удалить 
                     </button>
                 </div>
             </div>

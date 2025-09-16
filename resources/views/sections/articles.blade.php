@@ -19,16 +19,38 @@
         @endif
 
         <div class="articles-list">
-            @forelse($articles as $article)
-                <article class="article-preview" itemscope itemtype="https://schema.org/Article">
+            {{-- Дефолтный блок для создания статьи (только для владельца) --}}
+            @if ($currentUser && $currentUser->id === $pageUser->id)
+                <a href="{{ route('admin.articles.create', $currentUser->id) }}" class="owner-default-block article-add">
+                    <div class="owner-default-icon"></div>
+                    <div class="owner-default-text">
+                        <div class="owner-default-title">Создать статью</div>
+                        <div class="owner-default-subtitle">Поделитесь своими знаниями</div>
+                    </div>
+                </a>
+            @endif
+
+            @foreach($articles as $article)
+                <article class="article-preview" itemscope itemtype="https://schema.org/Article" data-article-id="{{ $article->id }}">
                     <a href="{{ route('articles.show', ['username' => $pageUser->username, 'slug' => $article->slug]) }}"
                         class="article-item">
                         <div class="article-image">
                             @if ($article->image_path)
-                                <img src="{{ asset('storage/' . $article->image_path) }}" alt="{{ $article->title }}"
-                                    loading="lazy" itemprop="image">
+                                <img src="{{ asset('storage/' . $article->image_path) }}" 
+                                     alt="{{ $article->title }}"
+                                     loading="lazy" 
+                                     width="300"
+                                     height="200"
+                                     decoding="async"
+                                     itemprop="image">
                             @else
-                                <img src="/hero.png" alt="{{ $article->title }}" loading="lazy" itemprop="image">
+                                <img src="/hero.png" 
+                                     alt="{{ $article->title }}" 
+                                     loading="lazy" 
+                                     width="300"
+                                     height="200"
+                                     decoding="async"
+                                     itemprop="image">
                             @endif
                            
                         </div>
@@ -53,15 +75,15 @@
                         </div>
                     </a>
                 </article>
-            @empty
+            @endforeach
+
+            {{-- Показываем сообщение только если нет статей и нет дефолтного блока --}}
+            @if($articles->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id))
                 <div class="text-center py-5">
                     <h4>Статьи не найдены</h4>
-                    <p class="text-muted">Здесь будут отображаться ваши статьи</p>
-                    @if ($currentUser && $currentUser->id === $pageUser->id)
-                        <a href="{{ route('admin.articles.create', $currentUser->id) }}" class="btn btn-primary">Создать статью</a>
-                    @endif
+                    <p class="text-muted">Здесь будут отображаться статьи</p>
                 </div>
-            @endforelse
+            @endif
         </div>
 
         @if($articles->count() > 0)

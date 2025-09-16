@@ -25,41 +25,33 @@ class AllArticlesController extends Controller
             $search = null;
         }
         
-        // Отладочный вывод
-        Log::info('Запрос к AllArticlesController', [
-            'isAjax' => $request->ajax(),
-            'wantsJson' => $request->wantsJson(),
-            'expectsJson' => $request->expectsJson(),
-            'page' => $request->get('page', 1),
-            'search' => $search,
-            'method' => $request->method(),
-            'userAgent' => $request->userAgent(),
-            'headers' => [
-                'X-Requested-With' => $request->header('X-Requested-With'),
-                'Accept' => $request->header('Accept'),
-                'Content-Type' => $request->header('Content-Type'),
-                'X-CSRF-TOKEN' => $request->header('X-CSRF-TOKEN') ? 'присутствует' : 'отсутствует'
-            ]
-        ]);
+        // Убираем отладочные логи для продакшена
+        if (app()->environment('local')) {
+            Log::info('Запрос к AllArticlesController', [
+                'isAjax' => $request->ajax(),
+                'page' => $request->get('page', 1),
+                'search' => $search,
+            ]);
+        }
         
         $query = Article::query()
-            ->with('user')
-            ->where('is_published', true);
+            ->with(['user:id,name,username,avatar']) // Загружаем только нужные поля пользователя
+            ->where('is_published', true)
+            ->select(['id', 'user_id', 'title', 'excerpt', 'image_path', 'slug', 'read_time', 'created_at']); // Выбираем только нужные поля
 
-        // Если есть поисковый запрос, применяем поиск
+        // Если есть поисковый запрос, применяем оптимизированный поиск
         if (!empty($search)) {
-            $query->where(function (Builder $q) use ($search) {
-                // Поиск по заголовку статьи (70% релевантности)
-                $q->where('title', 'LIKE', '%' . $search . '%')
+            $searchTerm = '%' . $search . '%';
+            $query->where(function (Builder $q) use ($searchTerm) {
+                // Поиск по заголовку статьи (высокий приоритет)
+                $q->where('title', 'LIKE', $searchTerm)
                   // Поиск по краткому описанию
-                  ->orWhere('excerpt', 'LIKE', '%' . $search . '%')
-                  // Поиск по содержимому статьи
-                  ->orWhere('content', 'LIKE', '%' . $search . '%')
-                  // Поиск по имени автора
-                  ->orWhereHas('user', function (Builder $userQuery) use ($search) {
-                      $userQuery->where('name', 'LIKE', '%' . $search . '%')
-                                ->orWhere('username', 'LIKE', '%' . $search . '%')
-                                ->orWhere('bio', 'LIKE', '%' . $search . '%');
+                  ->orWhere('excerpt', 'LIKE', $searchTerm)
+                  // Поиск по имени автора (оптимизированный)
+                  ->orWhereHas('user', function (Builder $userQuery) use ($searchTerm) {
+                      $userQuery->select(['id', 'name', 'username'])
+                                ->where('name', 'LIKE', $searchTerm)
+                                ->orWhere('username', 'LIKE', $searchTerm);
                   });
             });
         }
@@ -78,31 +70,31 @@ class AllArticlesController extends Controller
 
         // Проверяем, является ли это AJAX-запросом для бесконечной прокрутки
         if ($request->ajax()) {
-            Log::info('AJAX запрос получен', [
-                'page' => $articles->currentPage(),
-                'total' => $articles->total(),
-                'perPage' => $articles->perPage(),
-                'hasMore' => $articles->hasMorePages(),
-                'search' => $search
-            ]);
+            if (app()->environment('local')) {
+                Log::info('AJAX запрос получен', [
+                    'page' => $articles->currentPage(),
+                    'total' => $articles->total(),
+                    'hasMore' => $articles->hasMorePages(),
+                ]);
+            }
             
             return response()->json([
                 'html' => view('articles.partials.articles-grid', compact('articles', 'search'))->render(),
                 'hasMore' => $articles->hasMorePages(),
                 'nextPage' => $articles->currentPage() + 1,
-                'debug' => [
-                    'currentPage' => $articles->currentPage(),
-                    'total' => $articles->total(),
-                    'perPage' => $articles->perPage()
-                ]
             ]);
         }
 
-        // Получаем статистику для отображения
-        $totalArticles = Article::where('is_published', true)->count();
-        $totalAuthors = User::whereHas('articles', function (Builder $q) {
-            $q->where('is_published', true);
-        })->count();
+        // Получаем статистику для отображения с кешированием
+        $totalArticles = cache()->remember('total_published_articles', 1800, function () {
+            return Article::where('is_published', true)->count();
+        });
+        
+        $totalAuthors = cache()->remember('total_authors_with_articles', 1800, function () {
+            return User::whereHas('articles', function (Builder $q) {
+                $q->where('is_published', true);
+            })->count();
+        });
 
         return view('articles.all', compact('articles', 'search', 'totalArticles', 'totalAuthors'));
     }

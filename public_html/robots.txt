@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+
+# Разрешаем индексацию основных страниц
+Allow: /user/*
+Allow: /articles/*
+
+# Запрещаем индексацию административных страниц
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+Disallow: /debug/
+
+# Запрещаем индексацию служебных файлов
+Disallow: /storage/
+Disallow: /*.log$
+Disallow: /*.txt$
+Disallow: /vendor/
+
+# Ограничиваем доступ к API
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://link/sitemap.xml
+
+# Время задержки между запросами (в секундах)
+Crawl-delay: 1

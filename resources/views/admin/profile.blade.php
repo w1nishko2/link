@@ -4,9 +4,7 @@
 @section('description', 'Редактирование персональной информации и настроек профиля')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">Управление профилем</h1>
-</div>
+
 
 @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -18,9 +16,7 @@
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Редактировать профиль</h5>
-            </div>
+          
             <div class="card-body">
                 <!-- Bootstrap Nav Tabs -->
                 <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
@@ -33,15 +29,7 @@
                             <span class="d-md-none">Инфо</span>
                         </button>
                     </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ (isset($tab) && $tab === 'images') ? 'active' : '' }}" 
-                                id="images-tab" data-bs-toggle="tab" data-bs-target="#images" 
-                                type="button" role="tab" aria-controls="images" aria-selected="{{ (isset($tab) && $tab === 'images') ? 'true' : 'false' }}">
-                            <i class="bi bi-image"></i>
-                            <span class="d-none d-md-inline ms-2">Изображения</span>
-                            <span class="d-md-none">Фото</span>
-                        </button>
-                    </li>
+
                     <li class="nav-item" role="presentation">
                         <button class="nav-link {{ (isset($tab) && $tab === 'social') ? 'active' : '' }}" 
                                 id="social-tab" data-bs-toggle="tab" data-bs-target="#social" 
@@ -79,11 +67,7 @@
                         @include('admin.profile.basic')
                     </div>
 
-                    <!-- Изображения -->
-                    <div class="tab-pane fade {{ (isset($tab) && $tab === 'images') ? 'show active' : '' }}" 
-                         id="images" role="tabpanel" aria-labelledby="images-tab">
-                        @include('admin.profile.images')
-                    </div>
+
 
                     <!-- Социальные сети -->
                     <div class="tab-pane fade {{ (isset($tab) && $tab === 'social') ? 'show active' : '' }}" 

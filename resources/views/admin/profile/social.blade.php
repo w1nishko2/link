@@ -100,7 +100,7 @@
             <span class="d-sm-none">Дополнительные ссылки</span>
         </label>
         @if($user->socialLinks->count() < 5)
-            <button type="button" class="btn btn-success btn-sm" 
+            <button type="button" class="btn  " 
                     data-bs-toggle="modal" data-bs-target="#addSocialLinkModal" 
                     id="addSocialLinkBtn"
                     title="Добавить дополнительную социальную ссылку">
@@ -131,7 +131,7 @@
                                     <button type="button" class="btn btn-outline-secondary btn-sm" 
                                             onclick="editSocialLink({{ $link->id }}, '{{ addslashes($link->service_name) }}', '{{ addslashes($link->url) }}', '{{ $link->icon_class }}')"
                                             title="Редактировать">
-                                        <i class="bi bi-pencil"></i>
+                                       
                                         <span class="d-none d-md-inline ms-1">Изменить</span>
                                     </button>
                                     <button type="button" class="btn btn-outline-danger btn-sm" 

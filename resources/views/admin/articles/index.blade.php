@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
-    <h1 class="h3 mb-0">Управление статьями</h1>
+   
     <a href="{{ route('admin.articles.create', $currentUserId) }}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-2"></i>
         <span class="d-none d-sm-inline">Добавить статью</span>
@@ -44,12 +44,12 @@
                     </div>
                     
                     <div class="card-footer bg-transparent">
-                        <div class="d-grid gap-2">
-                            <a href="{{ route('admin.articles.edit', [$currentUserId, $article]) }}" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-pencil me-2"></i>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('admin.articles.edit', [$currentUserId, $article]) }}" class="btn  btn-sm">
+                               
                                 Редактировать
                             </a>
-                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteArticle({{ $article->id }})">
+                            <button type="button" class="btn  btn-sm" onclick="deleteArticle({{ $article->id }})">
                                 <i class="bi bi-trash me-2"></i>
                                 Удалить
                             </button>
@@ -63,7 +63,7 @@
     <!-- Пагинация -->
     @if($articles->hasPages())
         <div class="d-flex justify-content-center mt-4">
-            {{ $articles->links() }}
+            {{ $articles->links('pagination.custom') }}
         </div>
     @endif
 @else

@@ -131,20 +131,20 @@
                 <h6 class="m-0 font-weight-bold text-info">Системные действия</h6>
             </div>
             <div class="card-body">
-                <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-outline-primary" disabled>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn " disabled>
                         <i class="bi bi-arrow-clockwise"></i> Очистить кэш
                     </button>
                     
-                    <button type="button" class="btn btn-outline-info" disabled>
+                    <button type="button" class="btn " disabled>
                         <i class="bi bi-gear"></i> Перезапустить конфигурацию
                     </button>
                     
-                    <button type="button" class="btn btn-outline-success" disabled>
+                    <button type="button" class="btn " disabled>
                         <i class="bi bi-download"></i> Создать резервную копию
                     </button>
                     
-                    <button type="button" class="btn btn-outline-warning" disabled>
+                    <button type="button" class="btn " disabled>
                         <i class="bi bi-exclamation-triangle"></i> Режим обслуживания
                     </button>
                 </div>

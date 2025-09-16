@@ -109,7 +109,7 @@
         <!-- Пагинация -->
         @if($articles->hasPages())
         <div class="d-flex justify-content-center mt-4">
-            {{ $articles->links() }}
+            {{ $articles->links('pagination.custom') }}
         </div>
         @endif
     </div>

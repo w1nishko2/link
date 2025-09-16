@@ -26,10 +26,67 @@
     gap: 0.5rem;
     display: flex;
 }
+
+/* Стили для баннеров в админке */
+.banner-admin-container {
+    width: 100%;
+}
+
+.banner-admin-container .banners-banner {
+    height: 280px; /* Немного меньше чем на главной */
+    margin-bottom: 0;
+    cursor: default; /* Убираем курсор pointer в админке */
+}
+
+.banner-admin-container .banners-banner-block {
+    padding: 15px 10px;
+}
+
+.banner-admin-container .banners-banner-block h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
+}
+
+.banner-admin-container .banners-banner-block p {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.banner-admin-container .banner-link-info {
+    margin-bottom: 10px;
+}
+
+.banner-admin-container .banner-status-info {
+    margin-top: auto;
+}
+
+.banner-admin-container .banner-no-image {
+    width: 100%;
+    height: 100%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    border: 2px dashed #dee2e6;
+}
+
+.banner-admin-controls {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Управление баннерами</h1>
+  
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBannerModal">
         <i class="bi bi-plus-lg"></i> Добавить баннер
     </button>
@@ -46,48 +103,37 @@
     <div class="row">
         @foreach($banners as $banner)
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100">
-                    @if($banner->image_path)
-                        <img src="{{ asset('storage/' . $banner->image_path) }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ $banner->title }}">
-                    @else
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
-                        </div>
-                    @endif
-                    
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">{{ $banner->title }}</h5>
-                        @if($banner->description)
-                            <p class="card-text">{{ $banner->description }}</p>
-                        @endif
+                <div class="banner-admin-container">
+                    <div class="banners-banner">
+                        <div class="banners-banner-block">
+                            <h3>{{ $banner->title }}</h3>
+                            @if($banner->description)
+                                <p>{{ $banner->description }}</p>
+                            @endif
+                        </div>  
                         
-                        @if($banner->link_url)
-                            <div class="mb-2">
-                                <small class="text-muted">Ссылка:</small><br>
-                                <a href="{{ $banner->link_url }}" target="_blank" class="text-primary small">
-                                    {{ $banner->link_text ?: $banner->link_url }}
-                                </a>
-                            </div>
-                        @endif
-                        
-                        <div class="mt-auto">
-                            <small class="text-muted">
-                                Порядок: {{ $banner->order_index ?? 0 }} | 
-                                @if($banner->is_active)
-                                    <span class="text-success">Активен</span>
-                                @else
-                                    <span class="text-danger">Неактивен</span>
-                                @endif
-                            </small>
+                        <div class="banners-banner-block-img">
+                            @if($banner->image_path)
+                                <img src="{{ asset('storage/' . $banner->image_path) }}" 
+                                     alt="{{ $banner->title }}"
+                                     loading="lazy"
+                                     width="300"
+                                     height="200"
+                                     decoding="async">
+                            @else
+                                <div class="banner-no-image">
+                                    <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                </div>
+                            @endif
                         </div>
                     </div>
                     
-                    <div class="card-footer bg-transparent">
+                    <div class="banner-admin-controls mt-2">
                         <div class="btn-group w-100" role="group">
-                            <a href="{{ route('admin.banners.edit', [$currentUserId, $banner]) }}" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-pencil-square"></i> Редактировать
+                            <a href="{{ route('admin.banners.edit', [$currentUserId, $banner]) }}" class="btn  btn-sm">
+                                <i class="bi bi-pencil"></i> Редактировать
                             </a>
-                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteBanner({{ $banner->id }})">
+                            <button type="button" class="btn  btn-sm" onclick="deleteBanner({{ $banner->id }})">
                                 <i class="bi bi-trash"></i> Удалить
                             </button>
                         </div>
@@ -100,7 +146,7 @@
     <!-- Пагинация -->
     @if($banners->hasPages())
         <div class="d-flex justify-content-center mt-4">
-            {{ $banners->links() }}
+            {{ $banners->links('pagination.custom') }}
         </div>
     @endif
 @else

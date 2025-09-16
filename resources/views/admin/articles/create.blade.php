@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Создание статьи</h1>
+   
     <a href="{{ route('admin.articles', $currentUserId) }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left"></i> Назад к статьям
     </a>
@@ -18,7 +18,6 @@
             <div class="card-body">
                 <form action="{{ route('admin.articles.store', $currentUserId) }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    
                     <!-- Блок основной информации -->
                     <div class="card mb-4">
                         <div class="card-header">

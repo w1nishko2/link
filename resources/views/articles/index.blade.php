@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Статьи ' . $user->name . ' | ' . $user->username)
-@section('description', 'Все статьи и публикации от ' . $user->name . '. Полезные материалы, советы и экспертные мнения.')
-@section('keywords', 'статьи, блог, ' . strtolower($user->name) . ', публикации, материалы, ' . strtolower($user->username))
+@section('title', 'Статьи ' . $user->name . ' | ' . config('app.name'))
+@section('description', 'Все статьи и публикации от ' . $user->name . '. Полезные материалы, советы и экспертные мнения от ' . $user->username . '.')
+@section('keywords', 'статьи, блог, ' . strtolower($user->name) . ', публикации, материалы, ' . strtolower($user->username) . ', авторские статьи')
 @section('author', $user->name)
 
 @section('og_type', 'website')
@@ -148,7 +148,7 @@
 
         <!-- Пагинация -->
         <div class="d-flex justify-content-center mt-5">
-            {{ $articles->links() }}
+            {{ $articles->links('pagination.custom') }}
         </div>
 
     @else

@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <!-- SEO Meta Tags -->
-    <title>@yield('title', 'Админка - ' . config('app.name', 'Laravel'))</title>
+    <title>@yield('title', 'Настройки - ' . config('app.name', 'Laravel'))</title>
     <meta name="description" content="@yield('description', 'Панель управления контентом персонального сайта')">
     <meta name="robots" content="noindex, nofollow">
     
@@ -29,7 +29,43 @@
         <button class="mobile-menu-btn" type="button" onclick="toggleSidebar()">
             <i class="bi bi-list"></i>
         </button>
-        <h5 class="mb-0">Админка</h5>
+        <h5 class="mb-0">
+            @if(request()->routeIs('admin.dashboard'))
+                Главная
+            @elseif(request()->routeIs('admin.profile.edit'))
+                Редактирование профиля
+            @elseif(request()->routeIs('admin.profile*'))
+                Управление профилем
+            @elseif(request()->routeIs('admin.gallery.create'))
+                Добавление изображения
+            @elseif(request()->routeIs('admin.gallery.edit'))
+                Редактирование изображения
+            @elseif(request()->routeIs('admin.gallery*'))
+                Галерея
+            @elseif(request()->routeIs('admin.services.create'))
+                Создание услуги
+            @elseif(request()->routeIs('admin.services.edit'))
+                Редактирование услуги
+            @elseif(request()->routeIs('admin.services*'))
+                Услуги
+            @elseif(request()->routeIs('admin.articles.create'))
+                Создание статьи
+            @elseif(request()->routeIs('admin.articles.edit'))
+                Редактирование статьи
+            @elseif(request()->routeIs('admin.articles*'))
+                Статьи
+            @elseif(request()->routeIs('admin.banners.create'))
+                Создание баннера
+            @elseif(request()->routeIs('admin.banners.edit'))
+                Редактирование баннера
+            @elseif(request()->routeIs('admin.banners*'))
+                Баннеры
+            @elseif(request()->routeIs('super-admin*'))
+                Супер Настройки
+            @else
+                Настройки
+            @endif
+        </h5>
         <button class="mobile-menu-btn" type="button" onclick="window.open('{{ route('user.page', ['username' => auth()->user()->username]) }}', '_blank')">
             <i class="bi bi-eye"></i>
         </button>
@@ -45,7 +81,7 @@
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-gear-fill me-2 fs-4"></i>
-                        <h5 class="mb-0">Админка</h5>
+                        <h5 class="mb-0">Настройки</h5>
                     </div>
                     <button class="mobile-menu-btn d-md-none" type="button" onclick="closeSidebar()">
                         <i class="bi bi-x-lg"></i>
@@ -90,7 +126,7 @@
                     <hr class="my-3">
                     <a class="nav-link text-warning" href="{{ route('super-admin.index') }}">
                         <i class="bi bi-shield-check me-2"></i>
-                        Супер Админка
+                        Супер Настройки
                     </a>
                     @endif
                 </nav>

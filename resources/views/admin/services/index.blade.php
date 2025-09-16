@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
-    <h1 class="h3 mb-0">Управление услугами</h1>
+ 
     <a href="{{ route('admin.services.create', $currentUserId) }}" class="btn btn-primary">
         <i class="bi bi-plus-circle me-2"></i>
         <span class="d-none d-sm-inline">Добавить услугу</span>
@@ -32,38 +32,17 @@
                                 <strong>{{ $service->formatted_price }}</strong>
                             </p>
                         @endif
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <small class="text-muted">
-                                Порядок: {{ $service->order_index }}
-                            </small>
-                            <div>
-                                @if($service->is_active)
-                                    <span class="badge bg-success">Активно</span>
-                                @else
-                                    <span class="badge bg-secondary">Скрыто</span>
-                                @endif
-                            </div>
-                        </div>
+                       
                     </div>
-                    <div class="card-footer">
-                        <div class="d-grid gap-2">
-                            <a href="{{ route('admin.services.edit', [$currentUserId, $service]) }}" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-pencil me-2"></i>
-                                Редактировать
-                            </a>
-                            <button type="button" class="btn btn-outline-danger btn-sm" 
-                                    onclick="deleteService({{ $service->id }})">
-                                <i class="bi bi-trash me-2"></i>
-                                Удалить
-                            </button>
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
         @endforeach
     </div>
     
-    {{ $services->links() }}
+    <div class="d-flex justify-content-center mt-4">
+        {{ $services->links('pagination.custom') }}
+    </div>
 @else
     <div class="text-center py-5">
         <i class="bi bi-briefcase display-1 text-muted"></i>

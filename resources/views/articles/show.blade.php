@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', $article->title . ' | ' . $article->user->name)
-@section('description', $article->excerpt ? Str::limit(strip_tags($article->excerpt), 160) : Str::limit(strip_tags($article->content), 160))
-@section('keywords', 'статья, ' . strtolower($article->user->name) . ', блог, ' . strtolower(str_replace(' ', ', ', $article->title)))
+@section('title', $article->title . ' - ' . $article->user->name . ' | ' . config('app.name'))
+@section('description', $article->excerpt ? Str::limit(strip_tags($article->excerpt), 155) : Str::limit(strip_tags($article->content), 155))
+@section('keywords', 'статья, ' . strtolower($article->user->name) . ', блог, ' . strtolower(str_replace([' ', ','], [', ', ' '], $article->title)) . ', ' . strtolower($article->user->username))
 @section('author', $article->user->name)
 
 @section('og_type', 'article')
@@ -33,12 +33,17 @@
         "url": "{{ route('user.page', $article->user->username) }}"
     },
     "publisher": {
-        "@type": "Person",
-        "name": "{{ $article->user->name }}",
-        "url": "{{ route('user.page', $article->user->username) }}"
+        "@type": "Organization",
+        "name": "{{ config('app.name') }}",
+        "url": "{{ url('/') }}"
     },
     @if($article->image_path)
-    "image": "{{ asset('storage/' . $article->image_path) }}",
+    "image": {
+        "@type": "ImageObject",
+        "url": "{{ asset('storage/' . $article->image_path) }}",
+        "width": "1200",
+        "height": "630"
+    },
     @endif
     "url": "{{ route('articles.show', ['username' => $article->user->username, 'slug' => $article->slug]) }}",
     "mainEntityOfPage": {
@@ -48,6 +53,8 @@
     "wordCount": "{{ str_word_count(strip_tags($article->content)) }}",
     "timeRequired": "PT{{ $article->read_time }}M",
     "inLanguage": "ru-RU",
+    "isAccessibleForFree": true,
+    "articleSection": "Blog",
     "copyrightHolder": {
         "@type": "Person",
         "name": "{{ $article->user->name }}"

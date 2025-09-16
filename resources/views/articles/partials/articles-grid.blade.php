@@ -10,12 +10,18 @@
                          alt="{{ $article->title }}"
                          class="w-100 h-100 object-fit-cover"
                          loading="lazy" 
+                         decoding="async"
+                         width="300"
+                         height="200"
                          itemprop="image">
                 @else
                     <img src="/hero.png" 
                          alt="{{ $article->title }}" 
                          class="w-100 h-100 object-fit-cover"
                          loading="lazy" 
+                         decoding="async"
+                         width="300"
+                         height="200"
                          itemprop="image">
                 @endif
                 
@@ -33,7 +39,7 @@
             <div class="card-body d-flex flex-column">
                 <h3 class="card-title h5 fw-bold text-dark mb-3" itemprop="headline">
                     @if(!empty($search))
-                        {!! str_ireplace($search, '<mark>' . $search . '</mark>', e($article->title)) !!}
+                        {!! \App\Helpers\SearchHelper::highlightSearch($article->title, $search) !!}
                     @else
                         {{ $article->title }}
                     @endif
@@ -42,7 +48,7 @@
                 @if($article->excerpt)
                     <p class="card-text text-muted flex-grow-1" itemprop="description">
                         @if(!empty($search))
-                            {!! str_ireplace($search, '<mark>' . $search . '</mark>', e(Str::limit($article->excerpt, 120))) !!}
+                            {!! \App\Helpers\SearchHelper::highlightSearch(Str::limit($article->excerpt, 120), $search) !!}
                         @else
                             {{ Str::limit($article->excerpt, 120) }}
                         @endif
@@ -70,7 +76,7 @@
                             <div class="fw-medium small text-dark">
                                 <span itemprop="name">
                                     @if(!empty($search))
-                                        {!! str_ireplace($search, '<mark>' . $search . '</mark>', e($article->user->name)) !!}
+                                        {!! \App\Helpers\SearchHelper::highlightSearch($article->user->name, $search) !!}
                                     @else
                                         {{ $article->user->name }}
                                     @endif

@@ -12,26 +12,10 @@
             </header>
         @endif
         
-        <div class="swiper services-swiper" dir="rtl">
+        <div class="swiper services-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <div class="service-card">
-                        <div class="service-image">
-                            <img src="{{ $pageUser->background_image ? asset('storage/' . $pageUser->background_image) : '/hero.png' }}" alt="Услуги {{ $pageUser->name }}" loading="lazy">
-                        </div>
-                        <div class="service-content">
-                            <h3>
-                                @if(isset($section) && $section->title)
-                                    {{ $section->title }}
-                                @else
-                                    Мои услуги
-                                @endif
-                            </h3>
-                            <p>Листай в право чтобы увидеть все мои услуги!</p>
-                        </div>
-                    </div>
-                </div>
-                @forelse($services as $service)
+               
+                @foreach($services as $service)
                     <div class="swiper-slide">
                         <div class="service-card" data-analytics="service" data-analytics-id="{{ $service->id }}"
                             data-analytics-text="{{ $service->title }}" data-service-title="{{ $service->title }}"
@@ -43,36 +27,65 @@
                             <div class="service-image">
                                 @if ($service->image_path)
                                     <img src="{{ asset('storage/' . $service->image_path) }}"
-                                        alt="{{ $service->title }}" loading="lazy">
+                                         alt="{{ $service->title }}" 
+                                         loading="lazy"
+                                         width="300"
+                                         height="600"
+                                         decoding="async">
                                 @else
-                                    <img src="/hero.png" alt="{{ $service->title }}" loading="lazy">
+                                    <img src="/hero.png" 
+                                         alt="{{ $service->title }}" 
+                                         loading="lazy"
+                                         width="300"
+                                         height="600"
+                                         decoding="async">
                                 @endif
                             </div>
                             <div class="service-content">
                                 <h3>{{ $service->title }}</h3>
                                 <p>{{ $service->description }}</p>
-                                @if ($service->price)
-                                    <div class="service-price">{{ $service->formatted_price }}</div>
-                                @endif
+                                <div class="service-bottom">
+                                    @if ($service->price)
+                                        <div class="service-price">{{ $service->formatted_price }}</div>
+                                    @endif
+                                    @if ($service->button_text && $service->button_link)
+                                        <a href="{{ $service->button_link }}" 
+                                           class="service-button btn btn-primary btn-sm"
+                                           target="{{ str_starts_with($service->button_link, 'http') ? '_blank' : '_self' }}"
+                                           rel="{{ str_starts_with($service->button_link, 'http') ? 'noopener noreferrer' : '' }}">
+                                            {{ $service->button_text }}
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
-                @empty
+                @endforeach
+
+                {{-- Дефолтный блок для создания услуги (только для владельца) --}}
+                @if ($currentUser && $currentUser->id === $pageUser->id)
+                    <div class="swiper-slide">
+                        <a href="{{ route('admin.services.create', $currentUser->id) }}" class="owner-default-block service-add">
+                            <div class="owner-default-icon"></div>
+                            <div class="owner-default-text">
+                                <div class="owner-default-title">Добавить услугу</div>
+                                <div class="owner-default-subtitle">Расскажите о своих услугах</div>
+                            </div>
+                        </a>
+                    </div>
+                @endif
+
+                {{-- Показываем сообщение только если нет услуг и пользователь не владелец --}}
+                @if($services->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id))
                     <div class="swiper-slide">
                         <div class="service-card text-center">
                             <h3>Услуги не найдены</h3>
-                            <p>Здесь будут отображены ваши услуги</p>
-                            @if ($currentUser && $currentUser->id === $pageUser->id)
-                                <a href="{{ route('admin.services.create', $currentUser->id) }}" class="btn btn-primary">Добавить услугу</a>
-                            @endif
+                            <p>Здесь будут отображены услуги</p>
                         </div>
                     </div>
-                @endforelse
+                @endif
             </div>
 
-            <!-- Навигационные кнопки для слайдера услуг -->
-            <div class="swiper-button-next services-button-next"></div>
-            <div class="swiper-button-prev services-button-prev"></div>
         </div>
     </div>
 </section>

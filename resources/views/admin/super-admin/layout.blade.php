@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <!-- SEO Meta Tags -->
-    <title>@yield('title', 'Супер Админка - ' . config('app.name', 'Laravel'))</title>
+    <title>@yield('title', 'Супер Настройки - ' . config('app.name', 'Laravel'))</title>
     <meta name="description" content="@yield('description', 'Панель управления системой')">
     <meta name="robots" content="noindex, nofollow">
     
@@ -111,7 +111,7 @@
         </button>
         <h5 class="mb-0">
             <i class="bi bi-shield-check me-1"></i>
-            Супер Админка
+            Супер Настройки
         </h5>
         <button class="mobile-menu-btn" type="button" onclick="window.open('{{ route('user.page', ['username' => auth()->user()->username]) }}', '_blank')">
             <i class="bi bi-eye"></i>
@@ -129,7 +129,7 @@
                     <div class="d-flex align-items-center">
                         <i class="bi bi-shield-check me-2 fs-4"></i>
                         <div>
-                            <h5 class="mb-0">Супер Админка</h5>
+                            <h5 class="mb-0">Супер Настройки</h5>
                             <small class="super-admin-badge">ADMIN</small>
                         </div>
                     </div>
@@ -162,7 +162,7 @@
                 <div class="nav flex-column">
                     <a class="nav-link" href="{{ route('admin.dashboard', auth()->id()) }}">
                         <i class="bi bi-person-gear me-2"></i>
-                        Моя админка
+                        Мои Настройки
                     </a>
                     
                     <a class="nav-link" href="{{ route('user.page', ['username' => auth()->user()->username]) }}" target="_blank">

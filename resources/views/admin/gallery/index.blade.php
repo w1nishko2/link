@@ -4,8 +4,31 @@
 @section('description', 'Управление изображениями галереи: загрузка, редактирование, организация')
 
 @section('content')
+<style>
+.gallery-image {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.gallery-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.card-img-top {
+    transition: opacity 0.2s ease-in-out;
+}
+
+.card-img-top:hover {
+    opacity: 0.9;
+}
+
+.modal-footer .btn-danger {
+    margin-right: auto;
+}
+</style>
+
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
-    <h1 class="h3 mb-0">Управление галереей</h1>
+   
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addImageModal">
         <i class="bi bi-plus-circle me-2"></i>
         <span class="d-none d-sm-inline">Добавить изображение</span>
@@ -16,43 +39,16 @@
 @if($images->count() > 0)
     <div class="row">
         @foreach($images as $image)
-            <div class="col-6 col-md-4 col-lg-3 mb-4">
-                <div class="card h-100">
+            <div class="col-12 col-md-4 col-lg-3 mb-4">
+                <div class="card h-100 gallery-image" style="margin: 0 !important;">
                     <img src="{{ asset('storage/' . $image->image_path) }}" 
                          class="card-img-top" 
                          alt="{{ $image->alt_text ?: $image->title }}"
-                         style="height: 150px; object-fit: cover;">
-                    <div class="card-body d-flex flex-column">
-                        <h6 class="card-title">{{ Str::limit($image->title ?: 'Без названия', 20) }}</h6>
-                        <p class="card-text small text-muted flex-grow-1">{{ Str::limit($image->alt_text, 40) }}</p>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <small class="text-muted">
-                                {{ $image->order_index }}
-                            </small>
-                            <div>
-                                @if($image->is_active)
-                                    <span class="badge bg-success">Активно</span>
-                                @else
-                                    <span class="badge bg-secondary">Скрыто</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="d-grid gap-1">
-                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#editImageModal{{ $image->id }}">
-                                <i class="bi bi-pencil me-1"></i>
-                                <span class="d-none d-sm-inline">Редактировать</span>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                    onclick="deleteImage({{ $image->id }})">
-                                <i class="bi bi-trash me-1"></i>
-                                <span class="d-none d-sm-inline">Удалить</span>
-                            </button>
-                        </div>
-                    </div>
+                         style=" object-fit: cover; width: ; cursor: pointer;"
+                         data-bs-toggle="modal" 
+                         data-bs-target="#editImageModal{{ $image->id }}"
+                         title="Нажмите для редактирования">
+                  
                 </div>
                 
                 <!-- Modal для редактирования -->
@@ -100,9 +96,14 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                                <div class="modal-footer d-flex justify-content-between">
+                                    <button type="button" class="btn btn-danger" onclick="deleteImage({{ $image->id }})">
+                                        <i class="bi bi-trash"></i> Удалить
+                                    </button>
+                                    <div class="d-flex" style="width: 100% ;gap: 10px;">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -112,7 +113,9 @@
         @endforeach
     </div>
     
-    {{ $images->links() }}
+    <div class="d-flex justify-content-center mt-4">
+        {{ $images->links('pagination.custom') }}
+    </div>
 @else
     <div class="text-center py-5">
         <i class="bi bi-images display-1 text-muted"></i>
@@ -223,11 +226,21 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function deleteImage(imageId) {
-    if (confirm('Вы уверены, что хотите удалить это изображение?')) {
+    if (confirm('Вы уверены, что хотите удалить это изображение? Это действие нельзя отменить.')) {
         const form = document.getElementById('deleteImageForm');
         const url = "{{ route('admin.gallery.destroy', [$currentUserId, ':id']) }}".replace(':id', imageId);
         console.log('Отправка формы удаления на URL:', url);
         form.action = url;
+        
+        // Закрываем модальное окно перед удалением
+        const modals = document.querySelectorAll('.modal.show');
+        modals.forEach(modal => {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        });
+        
         form.submit();
     }
 }

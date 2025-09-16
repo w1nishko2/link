@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Независимая мобильная навигация - Демо</title>
+    
+    <!-- Подключаем наши независимые стили -->
+    <link rel="stylesheet" href="mobile-navigation.css">
+    
+    <style>
+        /* Базовые стили для демонстрации */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .demo-content {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .demo-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-title {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .demo-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .demo-button {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .demo-button:hover {
+            background: #0b5ed7;
+        }
+        
+        @media (min-width: 768px) {
+            .demo-content {
+                padding-top: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Независимая мобильная навигация -->
+    <div class="mobile-header d-md-none">
+        <button class="mobile-menu-btn" type="button" onclick="toggleMobileSidebar()">
+            <i class="bi bi-list"></i>
+        </button>
+        <h5 class="mb-0">Демо страница</h5>
+        <button class="mobile-menu-btn" type="button" onclick="alert('Переход на основную страницу')">
+            <i class="bi bi-eye"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="mobile-sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+    <!-- Mobile Sidebar -->
+    <div class="mobile-admin-sidebar" id="mobileAdminSidebar">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-gear-fill me-2 fs-4"></i>
+                <h5 class="mb-0">Настройки</h5>
+            </div>
+            <button class="mobile-menu-btn" type="button" onclick="closeMobileSidebar()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="#" onclick="showDemo('dashboard')">
+                <i class="bi bi-speedometer2 me-2"></i>
+                Главная
+            </a>
+            <a class="nav-link" href="#" onclick="showDemo('profile')">
+                <i class="bi bi-person-circle me-2"></i>
+                Профиль
+            </a>
+            <a class="nav-link" href="#" onclick="showDemo('gallery')">
+                <i class="bi bi-images me-2"></i>
+                Галерея
+            </a>
+            <a class="nav-link" href="#" onclick="showDemo('services')">
+                <i class="bi bi-briefcase me-2"></i>
+                Услуги
+            </a>
+            <a class="nav-link" href="#" onclick="showDemo('articles')">
+                <i class="bi bi-journal-text me-2"></i>
+                Статьи
+            </a>
+            <a class="nav-link" href="#" onclick="showDemo('banners')">
+                <i class="bi bi-flag me-2"></i>
+                Баннеры
+            </a>
+            
+            <hr class="my-3">
+            <a class="nav-link text-warning" href="#" onclick="showDemo('admin')">
+                <i class="bi bi-shield-check me-2"></i>
+                Супер Настройки
+            </a>
+        </nav>
+
+        <hr class="my-4">
+        
+        <div class="nav flex-column">
+            <a class="nav-link" href="#" onclick="alert('Переход на публичную страницу')">
+                <i class="bi bi-eye me-2"></i>
+                Посмотреть страницу
+            </a>
+            
+            <a class="nav-link" href="#" onclick="alert('Выход из системы')">
+                <i class="bi bi-box-arrow-right me-2"></i>
+                Выйти
+            </a>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="demo-content">
+        <div class="demo-card">
+            <h2 class="demo-title">🎯 Независимая мобильная навигация</h2>
+            <p class="demo-description">
+                Это полностью независимый компонент мобильной навигации, который работает без зависимостей от админки Laravel.
+            </p>
+            <p class="demo-description">
+                <strong>Включает:</strong>
+            </p>
+            <ul class="demo-description">
+                <li>✅ Полный HTML компонент</li>
+                <li>✅ Независимые CSS стили</li>
+                <li>✅ Автономный JavaScript</li>
+                <li>✅ Поддержка touch устройств</li>
+                <li>✅ Accessibility улучшения</li>
+                <li>✅ Плавные анимации</li>
+            </ul>
+        </div>
+        
+        <div class="demo-card">
+            <h3 class="demo-title">📱 Тестирование</h3>
+            <p class="demo-description">
+                Уменьшите размер окна браузера до мобильного размера (меньше 768px) чтобы увидеть мобильную навигацию.
+            </p>
+            <button class="demo-button" onclick="toggleMobileSidebar()">
+                Открыть мобильное меню
+            </button>
+        </div>
+        
+        <div class="demo-card">
+            <h3 class="demo-title">🔧 Управление</h3>
+            <p class="demo-description">
+                API для программного управления:
+            </p>
+            <button class="demo-button" onclick="window.MobileNavigation.open()" style="margin-right: 10px;">
+                Открыть меню
+            </button>
+            <button class="demo-button" onclick="window.MobileNavigation.close()" style="margin-right: 10px;">
+                Закрыть меню
+            </button>
+            <button class="demo-button" onclick="alert('Меню открыто: ' + window.MobileNavigation.isOpen())">
+                Проверить состояние
+            </button>
+        </div>
+
+        <div class="demo-card" id="demo-output">
+            <h3 class="demo-title">📋 Текущий раздел</h3>
+            <p class="demo-description" id="current-section">
+                Выберите раздел в мобильном меню
+            </p>
+        </div>
+    </div>
+
+    <!-- Подключаем наш независимый JavaScript -->
+    <script src="mobile-navigation.js"></script>
+    
+    <script>
+        // Демо функции
+        function showDemo(section) {
+            const sectionNames = {
+                dashboard: 'Главная панель',
+                profile: 'Редактирование профиля',
+                gallery: 'Управление галереей',
+                services: 'Управление услугами',
+                articles: 'Управление статьями',
+                banners: 'Управление баннерами',
+                admin: 'Супер настройки'
+            };
+            
+            document.getElementById('current-section').textContent = 
+                `Выбран раздел: ${sectionNames[section] || section}`;
+                
+            // Обновляем активную ссылку
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.closest('.nav-link').classList.add('active');
+        }
+        
+        // Лог для отладки
+        console.log('Mobile Navigation Demo loaded');
+        console.log('Available API:', window.MobileNavigation);
+    </script>
+</body>
+</html>

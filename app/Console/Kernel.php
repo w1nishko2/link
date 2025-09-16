@@ -12,6 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Создаем бекап базы данных ежедневно в 2:00
+        $schedule->command('db:backup')->dailyAt('02:00');
+        
         // Очищаем старые сессии раз в неделю (сессии старше 30 дней)
         $schedule->command('sessions:clean --days=30')->weekly();
         

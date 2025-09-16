@@ -19,41 +19,63 @@
         @endif
      
         <div class="gallery-wrapper">
-            <div class="gallery-grid" id="galleryGrid" role="region" aria-label="Галерея изображений">
-                @forelse($galleryBlocks as $index => $block)
-                    <div class="gallery-block type-{{ $block['type'] }}">
-                        @foreach ($block['images'] as $image)
-                            <figure class="gallery-item" data-bs-toggle="modal" data-bs-target="#galleryModal"
-                                data-image="{{ $image['src'] }}" data-alt="{{ $image['alt'] }}">
-                                <img src="{{ $image['src'] }}" alt="{{ $image['alt'] ?: 'Работа из портфолио ' . $pageUser->name }}" loading="lazy" itemscope itemtype="https://schema.org/ImageObject">
-                                <div class="gallery-item-overlay">
-                                    <figcaption class="gallery-item-text">{{ $image['alt'] ?: 'Портфолио' }}</figcaption>
+            @if(!empty($galleryBlocks))
+                <!-- Swiper галерея -->
+                <div class="gallery-swiper swiper">
+                    <div class="swiper-wrapper">
+                        @foreach($galleryBlocks as $index => $block)
+                            @foreach ($block['images'] as $image)
+                                <div class="swiper-slide">
+                                    <figure class="gallery-item editable-item" data-bs-toggle="modal" data-bs-target="#galleryModal"
+                                        data-image="{{ $image['src'] }}" data-alt="{{ $image['alt'] }}">
+                                        <img src="{{ $image['src'] }}" 
+                                             alt="{{ $image['alt'] ?: 'Работа из портфолио ' . $pageUser->name }}" 
+                                             loading="lazy" 
+                                             width="300"
+                                             height="200"
+                                             decoding="async"
+                                             itemscope 
+                                             itemtype="https://schema.org/ImageObject">
+                                        <div class="gallery-item-overlay">
+                                            <figcaption class="gallery-item-text">{{ $image['alt'] ?: 'Портфолио' }}</figcaption>
+                                        </div>
+                                    </figure>
                                 </div>
-                            </figure>
+                            @endforeach
                         @endforeach
+
+                        {{-- Дефолтный блок для добавления изображения (только для владельца) --}}
+                        @if ($currentUser && $currentUser->id === $pageUser->id)
+                            <div class="swiper-slide">
+                                <a href="{{ route('admin.gallery', $currentUser->id) }}" class="owner-default-block gallery-add">
+                                    <div class="owner-default-icon"></div>
+                                    <div class="owner-default-text">
+                                        <div class="owner-default-title">Добавить фото</div>
+                                        <div class="owner-default-subtitle">Покажите свои работы</div>
+                                    </div>
+                                </a>
+                            </div>
+                        @endif
                     </div>
-                @empty
+                </div>
+            @else
+                {{-- Показываем дефолтный блок или сообщение в зависимости от владельца --}}
+                @if ($currentUser && $currentUser->id === $pageUser->id)
+                    <div class=" justify-content-center">
+                        <a href="{{ route('admin.gallery', $currentUser->id) }}" class="owner-default-block gallery-add" style="max-width: 400px;">
+                            <div class="owner-default-icon"></div>
+                            <div class="owner-default-text">
+                                <div class="owner-default-title">Добавить фото</div>
+                                <div class="owner-default-subtitle">Покажите свои работы</div>
+                            </div>
+                        </a>
+                    </div>
+                @else
                     <div class="text-center">
                         <p class="text-muted">Галерея пуста</p>
                     </div>
-                @endforelse
-            </div>
-
-            <!-- Навигационные кнопки -->
-            <button class="gallery-nav gallery-nav-left" id="galleryPrev" type="button">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                </svg>
-            </button>
-            <button class="gallery-nav gallery-nav-right" id="galleryNext" type="button">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                </svg>
-            </button>
+                @endif
+            @endif
         </div>
     </div>
 

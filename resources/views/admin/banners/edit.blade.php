@@ -2,7 +2,6 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Редактировать баннер</h1>
     <a href="{{ route('admin.banners', $currentUserId) }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-2"></i>
         Назад к баннерам

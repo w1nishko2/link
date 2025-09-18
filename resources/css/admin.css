@@ -1793,6 +1793,535 @@
         font-size: 0.7rem;
         padding: 3px 6px;
     }
-}#sectionsList .col-md-6 {
+}
+
+#sectionsList .col-md-6 {
     margin: 0 !important;
+}
+
+/* =======================================
+   СТИЛИ ДЛЯ РЕДАКТИРУЕМЫХ ЭЛЕМЕНТОВ
+   ======================================= */
+
+/* Общие стили для редактируемых элементов */
+.editable-title, .editable-excerpt, .editable-content, 
+.editable-description, .editable-price, .editable-alt-text,
+.editable-link-text {
+    outline: none;
+    border: none;
+    background: transparent;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+}
+
+.editable-title:focus, .editable-excerpt:focus, .editable-content:focus,
+.editable-description:focus, .editable-price:focus, .editable-alt-text:focus,
+.editable-link-text:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+.editable-title:hover, .editable-excerpt:hover, .editable-content:hover,
+.editable-description:hover, .editable-price:hover, .editable-alt-text:hover,
+.editable-link-text:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Убираем стандартные стили contenteditable */
+.editable-title[contenteditable="true"]:empty:before,
+.editable-excerpt[contenteditable="true"]:empty:before,
+.editable-content[contenteditable="true"]:empty:before,
+.editable-description[contenteditable="true"]:empty:before,
+.editable-price[contenteditable="true"]:empty:before,
+.editable-alt-text[contenteditable="true"]:empty:before,
+.editable-link-text[contenteditable="true"]:empty:before {
+    content: attr(placeholder);
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+/* =======================================
+   СТИЛИ ДЛЯ КНОПОК И ЭЛЕМЕНТОВ УПРАВЛЕНИЯ
+   ======================================= */
+
+/* Кнопки для услуг */
+.service-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.add-price-button {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+/* Кнопки для баннеров */
+.banner-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.add-link-button {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+/* Кнопки для изображений */
+.image-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.add-metadata-button {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+/* =======================================
+   СТИЛИ ДЛЯ НИЖНИХ БЛОКОВ ЭЛЕМЕНТОВ
+   ======================================= */
+
+.service-bottom, .banner-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.image-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.image-metadata {
+    display: none;
+}
+
+.image-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.service-price, .banner-link {
+    order: 1;
+}
+
+.service-buttons, .banner-buttons {
+    order: 2;
+}
+
+/* Плавные переходы для показа/скрытия элементов */
+.service-price, .add-price-button, 
+.banner-link, .add-link-button,
+.image-metadata, .add-metadata-button {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.service-price[style*="display: none"],
+.banner-link[style*="display: none"] {
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+.service-price[style*="display: block"],
+.banner-link[style*="display: block"] {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.image-metadata, .add-metadata-button {
+    transition: all 0.3s ease;
+}
+
+.image-metadata[style*="display: none"] {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.image-metadata[style*="display: block"] {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =======================================
+   LOADING OVERLAY СТИЛИ
+   ======================================= */
+
+/* Универсальные стили для loading overlay */
+#loading-overlay, #loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.loading-spinner, .loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: #333;
+}
+
+.loading-text {
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #555;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* =======================================
+   СТИЛИ ДЛЯ ИЗОБРАЖЕНИЙ
+   ======================================= */
+
+/* Стили для изображения статей */
+.article-image {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.article-image:hover {
+    transform: scale(1.02);
+}
+
+.article-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.article-image:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-overlay i {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    color: #6c757d;
+    font-size: 14px;
+    border: 2px dashed #dee2e6;
+}
+
+/* Стили для пустых изображений */
+.image-no-image {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px dashed #adb5bd;
+    border-radius: 12px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.image-no-image:hover {
+    border-color: #007bff;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+.image-no-image p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Стили для текущих изображений */
+.image-current {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.image-current:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.image-current .change-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.image-current:hover .change-overlay {
+    opacity: 1;
+}
+
+.image-current .change-overlay i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.image-current:hover .remove-image-btn {
+    opacity: 1;
+}
+
+/* =======================================
+   ПАНЕЛЬ ДЕЙСТВИЙ
+   ======================================= */
+
+/* Фиксированная панель действий */
+.action-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 15px;
+    z-index: 1000;
+}
+
+/* =======================================
+   СТАТИСТИКА
+   ======================================= */
+
+.stats-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.stats-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+.stats-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stats-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.stats-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1;
+}
+
+.stats-subtext {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.stats-change {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.stats-change.positive {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.stats-change.negative {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 600;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.progress-bar {
+    border-radius: 4px;
+}
+
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-group .btn-check:checked + .btn {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+/* =======================================
+   АДАПТИВНЫЕ СТИЛИ
+   ======================================= */
+
+/* Мобильные устройства */
+@media (max-width: 576px) {
+    .loading-text {
+        font-size: 14px;
+    }
+    
+    .service-buttons, .banner-buttons, .image-buttons {
+        justify-content: center;
+    }
+    
+    .add-price-button, .add-link-button, .add-metadata-button {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+    
+    .editable-title, .editable-description, .editable-price,
+    .editable-excerpt, .editable-content, .editable-alt-text,
+    .editable-link-text {
+        padding: 4px 6px;
+        margin: -4px -6px;
+    }
+
+    .stats-card .stats-value {
+        font-size: 1.4rem;
+    }
+    
+    .stats-card .stats-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+}
+
+/* Планшеты */
+@media (max-width: 768px) {
+    .service-buttons, .banner-buttons, .image-buttons {
+        justify-content: center;
+    }
+    
+    .add-price-button, .add-link-button, .add-metadata-button {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+    
+    .editable-title, .editable-description, .editable-price,
+    .editable-excerpt, .editable-content, .editable-alt-text,
+    .editable-link-text {
+        padding: 4px 6px;
+        margin: -4px -6px;
+    }
+
+    .action-panel {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        padding: 12px;
+    }
 }

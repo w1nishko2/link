@@ -119,16 +119,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-lg-10 mx-auto">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="{{ route('user.page', $article->user->username) }}" class="text-decoration-none">
-                                    <i class="bi bi-house-door me-1"></i>{{ $article->user->name }}
-                                </a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">{{ $article->title }}</li>
-                        </ol>
-                    </nav>
+                 
                     
                     <article class="article-wrapper" itemscope itemtype="https://schema.org/Article">
                         <!-- Заголовок и мета-информация -->
@@ -159,7 +150,7 @@
                                     </div>
                                 </div>
                                 <div class="article-actions">
-                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="copyArticleUrl()">
+                                    <button type="button" class="btn  btn-sm" onclick="copyArticleUrl()">
                                         <i class="bi bi-share me-1"></i>Поделиться
                                     </button>
                                 </div>
@@ -188,11 +179,14 @@
                         <!-- Мета-информация в конце -->
                         <footer class="article-footer mt-5">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-12 d-flex justify-content-between align-items-center ">
                                     <div class="article-tags">
                                         <small class="text-muted">
                                             Опубликовано: <time datetime="{{ $article->created_at->toISOString() }}">{{ $article->created_at->format('d.m.Y H:i') }}</time>
                                         </small>
+                                        <button type="button" class="btn btn-outline-success btn-sm" onclick="copyArticleUrl()">
+                                        <i class="bi bi-link-45deg me-1"></i>Копировать ссылку
+                                    </button>
                                         @if($article->updated_at != $article->created_at)
                                             <br>
                                             <small class="text-muted">
@@ -201,49 +195,14 @@
                                         @endif
                                     </div>
                                 </div>
-                                <div class="col-md-6 text-end">
-                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="copyArticleUrl()">
-                                        <i class="bi bi-link-45deg me-1"></i>Копировать ссылку
-                                    </button>
-                                </div>
+                              
                             </div>
                         </footer>
                     </article>
                 </div>
             </div>
 
-            <!-- Информация об авторе -->
-            <aside class="row mt-5" aria-label="Информация об авторе">
-                <div class="col-lg-10 mx-auto">
-                    <div class="card" itemscope itemtype="https://schema.org/Person">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-2 text-center">
-                                    @if($article->user->avatar)
-                                        <img src="{{ asset('storage/' . $article->user->avatar) }}" alt="Аватар {{ $article->user->name }}" class="rounded-circle" width="80" height="80" itemprop="image">
-                                    @else
-                                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                                            <i class="bi bi-person-fill fs-2 text-muted"></i>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="col-md-8">
-                                    <h5 class="card-title" itemprop="name">{{ $article->user->name }}</h5>
-                                    @if($article->user->bio)
-                                        <p class="card-text" itemprop="description">{{ $article->user->bio }}</p>
-                                    @endif
-                                    <meta itemprop="url" content="{{ route('user.page', $article->user->username) }}">
-                                </div>
-                                <div class="col-md-2 text-end">
-                                    <a href="{{ route('user.page', $article->user->username) }}" class="btn btn-primary">
-                                        Все статьи автора
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
+          
 
             <!-- Похожие статьи -->
             @if($relatedArticles->count() > 0)

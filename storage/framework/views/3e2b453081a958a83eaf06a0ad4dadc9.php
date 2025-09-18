@@ -1,0 +1,1 @@
+<?php /**PATH C:\OSPanel\domains\link\resources\views\welcome.blade.php ENDPATH**/ ?>

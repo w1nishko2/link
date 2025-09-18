@@ -25,6 +25,9 @@ class LongPressEditor {
 
         this.bindEvents();
         this.addStyles();
+        
+        // Принудительно гарантируем что скролл не блокируется для владельца
+        this.ensureScrollEnabled();
     }
 
     /**
@@ -318,6 +321,29 @@ class LongPressEditor {
         const styleSheet = document.createElement('style');
         styleSheet.textContent = styles;
         document.head.appendChild(styleSheet);
+    }
+
+    /**
+     * Принудительно гарантирует что скролл страницы не блокируется
+     */
+    ensureScrollEnabled() {
+        // Убираем любые стили которые могут блокировать скролл
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.body.style.touchAction = '';
+        
+        // Убираем блокирующие классы
+        document.body.classList.remove('mobile-sidebar-open');
+        
+        // Дополнительная проверка каждые 2 секунды для владельца
+        setInterval(() => {
+            if (this.isPageOwner() && window.innerWidth >= 768) {
+                document.body.style.overflow = '';
+                document.body.classList.remove('mobile-sidebar-open');
+            }
+        }, 2000);
     }
 }
 

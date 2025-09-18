@@ -3,461 +3,316 @@
 <?php $__env->startSection('title', 'Редактирование услуги - ' . config('app.name')); ?>
 <?php $__env->startSection('description', 'Редактирование описания и настроек услуги'); ?>
 
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<?php echo app('Illuminate\Foundation\Vite')(['resources/css/services-reels.css', 'resources/css/admin-services.css', 'resources/js/admin-services.js']); ?>
+
 <?php $__env->startSection('content'); ?>
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
     
     <a href="<?php echo e(route('admin.services', $currentUserId)); ?>" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-2"></i>
-        Назад к услугам
+        <span class="d-none d-sm-inline">Назад к услугам</span>
+        <span class="d-sm-none">Назад</span>
     </a>
 </div>
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
+<!-- Скрытая форма для отправки данных -->
+<form id="service-form" action="<?php echo e(route('admin.services.update', [$currentUserId, $service])); ?>" method="POST" enctype="multipart/form-data" style="display: none;">
+    <?php echo csrf_field(); ?>
+    <?php echo method_field('PUT'); ?>
+    <input type="hidden" name="title" id="hidden-title">
+    <input type="hidden" name="description" id="hidden-description">
+    <input type="hidden" name="price" id="hidden-price">
+    <input type="hidden" name="price_type" id="hidden-price-type" value="fixed">
+    <input type="hidden" name="button_text" id="hidden-button-text">
+    <input type="hidden" name="button_link" id="hidden-button-link">
+    <input type="hidden" name="order_index" id="hidden-order-index">
+    <input type="file" name="image" id="hidden-image" accept="image/*">
+</form>
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-4">
+        
+            <div class="swiper services-swiper" id="edit-services-swiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <div class="service-card editable-card" id="editable-service-card">
+                            <!-- Изображение с возможностью загрузки -->
+                            <div class="service-image editable-image" onclick="selectImage()">
+                                <img id="service-image" 
+                                     src="<?php echo e($service->image_path ? asset('storage/' . $service->image_path) : '/hero.png'); ?>" 
+                                     alt="Изображение услуги" 
+                                     loading="lazy"
+                                     width="300"
+                                     height="600"
+                                     decoding="async">
+                                <div class="image-overlay">
+                                    <i class="bi bi-camera-fill"></i>
+                                    <span>Изменить изображение</span>
+                                </div>
+                            </div>
+                            
+                            <div class="service-content">
+                                <!-- Редактируемое название -->
+                                <h3 class="editable-title" 
+                                    contenteditable="true" 
+                                    placeholder="Введите название услуги..."
+                                    data-max-length="100"
+                                    onclick="selectText(this)"><?php echo e($service->title); ?></h3>
+                                
+                                <!-- Редактируемое описание -->
+                                <p class="editable-description" 
+                                   contenteditable="true" 
+                                   placeholder="Введите описание услуги..."
+                                   data-max-length="500"
+                                   onclick="selectText(this)"><?php echo e($service->description); ?></p>
+                                
+                                <div class="service-bottom">
+                                    <!-- Редактируемая цена -->
+                                    <div class="service-price editable-price" 
+                                         contenteditable="true" 
+                                         placeholder="Цена"
+                                         onclick="selectText(this)"
+                                         style="display: <?php echo e($service->price ? 'block' : 'none'); ?>;margin:0;"><?php echo e($service->formatted_price ?? ''); ?></div>
+                                    
+                                    <div class="service-buttons" style="flex-wrap: nowrap">
+                                        <!-- Кнопка добавления цены -->
+                                        <button type="button" class="btn btn-outline-success btn-sm add-price-button" 
+                                                onclick="addPriceInCard()" id="add-price-card-btn"
+                                                style="display: <?php echo e($service->price ? 'none' : 'inline-block'); ?>;">
+                                            <i class="bi bi-tag me-1"></i> Добавить цену
+                                        </button>
+                                        
+                                        <!-- Редактируемая кнопка -->
+                                        <div class="service-button btn btn-primary btn-sm editable-button" 
+                                             onclick="editButton()">
+                                            <?php echo e($service->button_text ?? 'Кнопка'); ?>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-12">
+                        <!-- Основные действия -->
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="saveService()">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Обновить услугу
+                            </button>
+                            <a href="<?php echo e(route('admin.services', $currentUserId)); ?>" class="btn btn-outline-secondary btn-sm">
+                                Отмена
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+        
+        <!-- Дополнительные настройки (скрыты по умолчанию) -->
+        <div class="card mt-3" id="advanced-settings" style="display: none;">
             <div class="card-header">
-                <h5 class="card-title mb-0">Редактирование услуги</h5>
+                <h6 class="card-title mb-0">Дополнительные настройки</h6>
             </div>
             <div class="card-body">
-                <form action="<?php echo e(route('admin.services.update', [$currentUserId, $service])); ?>" method="POST" enctype="multipart/form-data">
-                    <?php echo csrf_field(); ?>
-                    <?php echo method_field('PUT'); ?>
-                    
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="mb-3">
-                                <label for="title" class="form-label">Название услуги *</label>
-                                <input type="text" class="form-control <?php $__errorArgs = ['title'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-                                       id="title" name="title" value="<?php echo e(old('title', $service->title)); ?>" required maxlength="100">
-                                <?php $__errorArgs = ['title'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                                <div class="form-text">Максимум 100 символов. Осталось: <span id="title-counter">100</span></div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="order_index" class="form-label">Порядок отображения</label>
-                                <input type="number" class="form-control <?php $__errorArgs = ['order_index'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-                                       id="order_index" name="order_index" value="<?php echo e(old('order_index', $service->order_index)); ?>">
-                                <?php $__errorArgs = ['order_index'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <!-- Управление ценой -->
+                        <label class="form-label">Управление ценой</label>
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="togglePrice()" id="price-toggle">
+                                <i class="bi bi-tag me-1"></i> <?php echo e($service->price ? 'Убрать цену' : 'Добавить цену'); ?>
+
+                            </button>
                         </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Описание услуги *</label>
-                        <textarea class="form-control <?php $__errorArgs = ['description'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-                                  id="description" name="description" rows="4" required maxlength="500"><?php echo e(old('description', $service->description)); ?></textarea>
-                        <?php $__errorArgs = ['description'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                            <div class="invalid-feedback"><?php echo e($message); ?></div>
-                        <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                        <div class="form-text">Максимум 500 символов. Осталось: <span id="description-counter">500</span></div>
+                    <div class="col-6">
+                        <label class="form-label">Тип цены</label>
+                        <select class="form-select form-select-sm" id="price-type-select">
+                            <option value="fixed" <?php echo e($service->price_type == 'fixed' ? 'selected' : ''); ?>>Фиксированная</option>
+                            <option value="hourly" <?php echo e($service->price_type == 'hourly' ? 'selected' : ''); ?>>За час</option>
+                            <option value="project" <?php echo e($service->price_type == 'project' ? 'selected' : ''); ?>>За проект</option>
+                        </select>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="price" class="form-label">Цена (₽)</label>
-                                <input type="number" class="form-control <?php $__errorArgs = ['price'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-                                       id="price" name="price" value="<?php echo e(old('price', $service->price)); ?>" min="0" step="0.01">
-                                <?php $__errorArgs = ['price'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="price_type" class="form-label">Тип цены *</label>
-                                <select class="form-select <?php $__errorArgs = ['price_type'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-                                        id="price_type" name="price_type" required>
-                                    <option value="fixed" <?php echo e(old('price_type', $service->price_type) == 'fixed' ? 'selected' : ''); ?>>Фиксированная цена</option>
-                                    <option value="hourly" <?php echo e(old('price_type', $service->price_type) == 'hourly' ? 'selected' : ''); ?>>За час</option>
-                                    <option value="project" <?php echo e(old('price_type', $service->price_type) == 'project' ? 'selected' : ''); ?>>За проект</option>
-                                </select>
-                                <?php $__errorArgs = ['price_type'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
+                    <div class="col-6">
+                        <label class="form-label">Порядок отображения</label>
+                        <input type="number" class="form-control form-control-sm" id="order-input" placeholder="Авто" value="<?php echo e($service->order_index); ?>">
                     </div>
-
-                    <div class="mb-3">
-                        <label for="image" class="form-label">Изображение услуги</label>
-                        <input type="file" class="form-control <?php $__errorArgs = ['image'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-                               id="image" name="image" accept="image/*">
-                        <?php $__errorArgs = ['image'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                            <div class="invalid-feedback"><?php echo e($message); ?></div>
-                        <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                        <?php if($service->image_path): ?>
-                            <div class="mt-2">
-                                <small class="text-muted">Текущее изображение:</small><br>
-                                <img src="<?php echo e(asset('storage/' . $service->image_path)); ?>" 
-                                     alt="<?php echo e($service->title); ?>" class="img-thumbnail mt-1" style="max-height: 100px;">
-                            </div>
-                        <?php endif; ?>
-                        <div class="form-text">Поддерживаются изображения в любых форматах. Автоматически конвертируется в WebP с оптимизацией размера. Оставьте пустым, чтобы сохранить текущее изображение.</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" 
-                                   <?php echo e(old('is_active', $service->is_active) ? 'checked' : ''); ?>>
-                            <label class="form-check-label" for="is_active">
-                                Активная услуга (отображается на сайте)
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Настройки кнопки действия -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="button_text" class="form-label">Текст кнопки</label>
-                                <select class="form-select <?php $__errorArgs = ['button_text'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-                                        id="button_text" name="button_text">
-                                    <option value="">Без кнопки</option>
-                                    <option value="Заказать услугу" <?php echo e(old('button_text', $service->button_text) == 'Заказать услугу' ? 'selected' : ''); ?>>Заказать услугу</option>
-                                    <option value="Связаться с нами" <?php echo e(old('button_text', $service->button_text) == 'Связаться с нами' ? 'selected' : ''); ?>>Связаться с нами</option>
-                                    <option value="Узнать подробнее" <?php echo e(old('button_text', $service->button_text) == 'Узнать подробнее' ? 'selected' : ''); ?>>Узнать подробнее</option>
-                                    <option value="Написать в WhatsApp" <?php echo e(old('button_text', $service->button_text) == 'Написать в WhatsApp' ? 'selected' : ''); ?>>Написать в WhatsApp</option>
-                                    <option value="Написать в Telegram" <?php echo e(old('button_text', $service->button_text) == 'Написать в Telegram' ? 'selected' : ''); ?>>Написать в Telegram</option>
-                                    <option value="Позвонить" <?php echo e(old('button_text', $service->button_text) == 'Позвонить' ? 'selected' : ''); ?>>Позвонить</option>
-                                    <option value="Отправить email" <?php echo e(old('button_text', $service->button_text) == 'Отправить email' ? 'selected' : ''); ?>>Отправить email</option>
-                                </select>
-                                <?php $__errorArgs = ['button_text'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="button_link" class="form-label">Ссылка для кнопки</label>
-                                <select class="form-select <?php $__errorArgs = ['button_link'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-                                        id="button_link" name="button_link">
-                                    <option value="">Выберите ссылку</option>
-                                    <?php if($user->phone): ?>
-                                        <option value="tel:<?php echo e($user->phone); ?>" <?php echo e(old('button_link', $service->button_link) == 'tel:' . $user->phone ? 'selected' : ''); ?>>
-                                            Телефон: <?php echo e($user->phone); ?>
-
-                                        </option>
-                                    <?php endif; ?>
-                                    <?php if($user->email): ?>
-                                        <option value="mailto:<?php echo e($user->email); ?>" <?php echo e(old('button_link', $service->button_link) == 'mailto:' . $user->email ? 'selected' : ''); ?>>
-                                            Email: <?php echo e($user->email); ?>
-
-                                        </option>
-                                    <?php endif; ?>
-                                    <?php if($user->telegram_url): ?>
-                                        <option value="<?php echo e($user->telegram_url); ?>" <?php echo e(old('button_link', $service->button_link) == $user->telegram_url ? 'selected' : ''); ?>>
-                                            Telegram
-                                        </option>
-                                    <?php endif; ?>
-                                    <?php if($user->whatsapp_url): ?>
-                                        <option value="<?php echo e($user->whatsapp_url); ?>" <?php echo e(old('button_link', $service->button_link) == $user->whatsapp_url ? 'selected' : ''); ?>>
-                                            WhatsApp
-                                        </option>
-                                    <?php endif; ?>
-                                    <?php if($user->vk_url): ?>
-                                        <option value="<?php echo e($user->vk_url); ?>" <?php echo e(old('button_link', $service->button_link) == $user->vk_url ? 'selected' : ''); ?>>
-                                            VK
-                                        </option>
-                                    <?php endif; ?>
-                                    <?php if($user->instagram_url): ?>
-                                        <option value="<?php echo e($user->instagram_url); ?>" <?php echo e(old('button_link', $service->button_link) == $user->instagram_url ? 'selected' : ''); ?>>
-                                            Instagram
-                                        </option>
-                                    <?php endif; ?>
-                                    <?php if($user->website_url): ?>
-                                        <option value="<?php echo e($user->website_url); ?>" <?php echo e(old('button_link', $service->button_link) == $user->website_url ? 'selected' : ''); ?>>
-                                            Сайт
-                                        </option>
-                                    <?php endif; ?>
-                                    <?php $__currentLoopData = $user->socialLinks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $socialLink): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <option value="<?php echo e($socialLink->url); ?>" <?php echo e(old('button_link', $service->button_link) == $socialLink->url ? 'selected' : ''); ?>>
-                                            <?php echo e($socialLink->service_name); ?>
-
-                                        </option>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                </select>
-                                <?php $__errorArgs = ['button_link'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                                <div class="form-text">Выберите куда будет вести кнопка</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg me-2"></i>
-                            Обновить 
-                        </button>
-                        <a href="<?php echo e(route('admin.services', $currentUserId)); ?>" class="btn btn-outline-secondary">Отмена</a>
-                    </div>
-                </form>
+                </div>
             </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <button type="button" class="btn btn-link btn-sm" onclick="toggleAdvanced()">
+                <i class="bi bi-gear me-1"></i> Дополнительные настройки
+            </button>
         </div>
     </div>
+</div>
 
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Предварительный просмотр</h5>
+<!-- Модальные окна -->
+<!-- Модальное окно редактирования кнопки -->
+<div class="modal fade" id="buttonModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Настройка кнопки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="card-body">
-                <div class="service-preview">
-                    <div class="service-image mb-3" style="height: 200px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        <?php if($service->image_path): ?>
-                            <img src="<?php echo e(asset('storage/' . $service->image_path)); ?>" 
-                                 alt="<?php echo e($service->title); ?>" class="img-fluid rounded">
-                        <?php else: ?>
-                            <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Текст кнопки</label>
+                    <select class="form-select" id="button-text-select">
+                        <option value="">Выберите текст</option>
+                        <option value="Заказать услугу" <?php echo e($service->button_text == 'Заказать услугу' ? 'selected' : ''); ?>>Заказать услугу</option>
+                        <option value="Связаться с нами" <?php echo e($service->button_text == 'Связаться с нами' ? 'selected' : ''); ?>>Связаться с нами</option>
+                        <option value="Узнать подробнее" <?php echo e($service->button_text == 'Узнать подробнее' ? 'selected' : ''); ?>>Узнать подробнее</option>
+                        <option value="Написать в WhatsApp" <?php echo e($service->button_text == 'Написать в WhatsApp' ? 'selected' : ''); ?>>Написать в WhatsApp</option>
+                        <option value="Написать в Telegram" <?php echo e($service->button_text == 'Написать в Telegram' ? 'selected' : ''); ?>>Написать в Telegram</option>
+                        <option value="Позвонить" <?php echo e($service->button_text == 'Позвонить' ? 'selected' : ''); ?>>Позвонить</option>
+                        <option value="Отправить email" <?php echo e($service->button_text == 'Отправить email' ? 'selected' : ''); ?>>Отправить email</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ссылка</label>
+                    <select class="form-select" id="button-link-select">
+                        <option value="">Выберите ссылку</option>
+                        <?php if($user->phone): ?>
+                            <option value="tel:<?php echo e($user->phone); ?>" <?php echo e($service->button_link == 'tel:' . $user->phone ? 'selected' : ''); ?>>Телефон: <?php echo e($user->phone); ?></option>
                         <?php endif; ?>
-                    </div>
-                    <h5 class="service-title"><?php echo e($service->title); ?></h5>
-                    <p class="service-description text-muted"><?php echo e($service->description); ?></p>
-                    <div class="service-price">
-                        <strong><?php echo e($service->formatted_price); ?></strong>
-                    </div>
+                        <?php if($user->email): ?>
+                            <option value="mailto:<?php echo e($user->email); ?>" <?php echo e($service->button_link == 'mailto:' . $user->email ? 'selected' : ''); ?>>Email: <?php echo e($user->email); ?></option>
+                        <?php endif; ?>
+                        <?php if($user->telegram_url): ?>
+                            <option value="<?php echo e($user->telegram_url); ?>" <?php echo e($service->button_link == $user->telegram_url ? 'selected' : ''); ?>>Telegram</option>
+                        <?php endif; ?>
+                        <?php if($user->whatsapp_url): ?>
+                            <option value="<?php echo e($user->whatsapp_url); ?>" <?php echo e($service->button_link == $user->whatsapp_url ? 'selected' : ''); ?>>WhatsApp</option>
+                        <?php endif; ?>
+                        <?php if($user->vk_url): ?>
+                            <option value="<?php echo e($user->vk_url); ?>" <?php echo e($service->button_link == $user->vk_url ? 'selected' : ''); ?>>VK</option>
+                        <?php endif; ?>
+                        <?php if($user->instagram_url): ?>
+                            <option value="<?php echo e($user->instagram_url); ?>" <?php echo e($service->button_link == $user->instagram_url ? 'selected' : ''); ?>>Instagram</option>
+                        <?php endif; ?>
+                        <?php if($user->website_url): ?>
+                            <option value="<?php echo e($user->website_url); ?>" <?php echo e($service->button_link == $user->website_url ? 'selected' : ''); ?>>Сайт</option>
+                        <?php endif; ?>
+                        <?php $__currentLoopData = $user->socialLinks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $socialLink): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($socialLink->url); ?>" <?php echo e($service->button_link == $socialLink->url ? 'selected' : ''); ?>><?php echo e($socialLink->service_name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
                 </div>
             </div>
-        </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Действия</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-flex gap-2">
-                    <a href="<?php echo e(route('user.page', auth()->user()->username)); ?>" class="btn  btn-sm" target="_blank">
-                        <i class="bi bi-eye me-2"></i>
-                        Посмотреть 
-                    </a>
-                    <button type="button" class="btn  btn-sm" onclick="deleteService(<?php echo e($service->id); ?>)">
-                        <i class="bi bi-trash me-2"></i>
-                        Удалить 
-                    </button>
-                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="applyButtonSettings()">Применить</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Form для удаления -->
-<form id="deleteServiceForm" method="POST" style="display: none;">
-    <?php echo csrf_field(); ?>
-    <?php echo method_field('DELETE'); ?>
-</form>
+<!-- Модальное окно для настройки кнопки -->
+<div class="modal fade" id="buttonModal" tabindex="-1" aria-labelledby="buttonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="buttonModalLabel">Настройка кнопки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="button-text-select" class="form-label">Текст кнопки</label>
+                    <select class="form-select" id="button-text-select">
+                        <option value="">Выберите текст кнопки</option>
+                        <option value="Подробнее">Подробнее</option>
+                        <option value="Заказать">Заказать</option>
+                        <option value="Узнать больше">Узнать больше</option>
+                        <option value="Связаться">Связаться</option>
+                        <option value="Получить консультацию">Получить консультацию</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="button-link-select" class="form-label">Ссылка</label>
+                    <select class="form-select" id="button-link-select">
+                        <option value="">Выберите действие</option>
+                        <option value="#contact">Контакты</option>
+                        <option value="#order">Форма заказа</option>
+                        <option value="tel:+7">Позвонить</option>
+                        <option value="mailto:info@example.com">Написать email</option>
+                        <option value="https://wa.me/">WhatsApp</option>
+                        <option value="https://t.me/">Telegram</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="applyButtonSettings()">Применить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+</div>
+
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('scripts'); ?>
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
 <script>
-// Счетчики символов
-function setupCharCounter(inputId, counterId, maxLength) {
-    const input = document.getElementById(inputId);
-    const counter = document.getElementById(counterId);
-    
-    function updateCounter() {
-        const currentLength = input.value.length;
-        const remaining = maxLength - currentLength;
-        counter.textContent = remaining;
-        
-        if (remaining < 0) {
-            counter.style.color = '#dc3545';
-        } else if (remaining < 20) {
-            counter.style.color = '#fd7e14';
-        } else {
-            counter.style.color = '#6c757d';
-        }
-    }
-    
-    updateCounter();
-    input.addEventListener('input', updateCounter);
-    input.addEventListener('keydown', updateCounter);
-    input.addEventListener('paste', function() {
-        setTimeout(updateCounter, 10);
-    });
-}
-
+// Инициализация страницы редактирования услуг с данными из сервера
 document.addEventListener('DOMContentLoaded', function() {
-    setupCharCounter('title', 'title-counter', 100);
-    setupCharCounter('description', 'description-counter', 500);
-});
-
-// Предварительный просмотр
-document.getElementById('title').addEventListener('input', function() {
-    document.querySelector('.service-title').textContent = this.value || 'Название услуги';
-});
-
-document.getElementById('description').addEventListener('input', function() {
-    document.querySelector('.service-description').textContent = this.value || 'Описание услуги будет отображаться здесь...';
-});
-
-document.getElementById('price').addEventListener('input', updatePrice);
-document.getElementById('price_type').addEventListener('change', updatePrice);
-
-function updatePrice() {
-    const price = document.getElementById('price').value;
-    const priceType = document.getElementById('price_type').value;
-    const priceElement = document.querySelector('.service-price strong');
+    const initialState = {
+        title: '<?php echo e($service->title); ?>',
+        description: '<?php echo e($service->description); ?>',
+        price: '<?php echo e($service->price ?? ""); ?>',
+        priceType: '<?php echo e($service->price_type ?? "fixed"); ?>',
+        hasPrice: <?php echo e($service->price ? 'true' : 'false'); ?>,
+        buttonText: '<?php echo e($service->button_text); ?>',
+        buttonLink: '<?php echo e($service->button_link); ?>',
+        orderIndex: '<?php echo e($service->order_index ?? 1); ?>'
+    };
     
-    if (!price) {
-        priceElement.textContent = 'По договоренности';
-        return;
-    }
+    // Инициализируем страницы услуг
+    initializeSwiper();
+    bindEvents();
     
-    let formattedPrice = new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
+    // Загружаем старые значения если есть ошибки валидации
+    <?php if(old()): ?>
+        const oldValues = <?php echo json_encode(old(), 15, 512) ?>;
+        Object.keys(oldValues).forEach(key => {
+            const element = document.querySelector(`[data-field="${key}"]`);
+            if (element && oldValues[key]) {
+                element.textContent = oldValues[key];
+            }
+        });
+    <?php endif; ?>
     
-    switch (priceType) {
-        case 'hourly':
-            formattedPrice += '/час';
-            break;
-        case 'project':
-            formattedPrice = 'от ' + formattedPrice;
-            break;
-    }
-    
-    priceElement.textContent = formattedPrice;
-}
-
-// Предварительный просмотр изображения
-document.getElementById('image').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const previewDiv = document.querySelector('.service-image');
-            previewDiv.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="img-fluid rounded">';
-        };
-        reader.readAsDataURL(file);
-    }
+    // Показываем ошибки если они есть
+    <?php if($errors->any()): ?>
+        const errorMessages = <?php echo json_encode($errors->all(), 15, 512) ?>;
+        if (errorMessages.length > 0) {
+            showNotification('Исправьте ошибки:\n' + errorMessages.join('\n'), 'error');
+        }
+    <?php endif; ?>
 });
-
-function deleteService(serviceId) {
-    if (confirm('Вы уверены, что хотите удалить эту услугу?')) {
-        const form = document.getElementById('deleteServiceForm');
-        form.action = "<?php echo e(route('admin.services.destroy', [$currentUserId, ':id'])); ?>".replace(':id', serviceId);
-        form.submit();
-    }
-}
 </script>
+  
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('admin.layout', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\link\resources\views/admin/services/edit.blade.php ENDPATH**/ ?>

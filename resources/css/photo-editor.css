@@ -1,0 +1,828 @@
+/* Стили для миниредактора фотографий */
+
+/* Основные модальные окна */
+.photo-editor-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    z-index: 10000;
+    overflow: auto; /* Позволяем скролл внутри модального окна */
+    /* Позволяем свободный скролл модального окна */
+    touch-action: auto;
+    /* Дополнительная защита от блокировки touch событий когда скрыто */
+    pointer-events: none;
+}
+
+.photo-editor-modal.show {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Изменено с center на flex-start */
+    padding: 20px 0; /* Добавляем отступы сверху и снизу */
+    /* Включаем pointer-events только когда модальное окно показано */
+    pointer-events: auto;
+}
+
+.photo-editor-content {
+    width: 95vw;
+    height: auto; /* Изменено с 95vh на auto */
+    min-height: 90vh; /* Минимальная высота */
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    max-width: 1400px; /* Увеличено с 1200px */
+    max-height: none; /* Убираем ограничение по высоте */
+}
+
+/* Заголовок редактора */
+.photo-editor-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 12px 12px 0 0;
+}
+
+.photo-editor-title {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.photo-editor-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.photo-editor-close:hover {
+    background-color: #e9ecef;
+}
+
+/* Шаги редактирования для hero фона */
+.photo-editor-steps {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #e9ecef;
+    color: #6c757d;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.step-indicator.active {
+    background: #2A5885;
+    color: white;
+}
+
+.step-indicator .step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #6c757d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+.step-indicator.active .step-number {
+    background: white;
+    color: #2A5885;
+}
+
+/* Основная область редактирования */
+.photo-editor-body {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    overflow: visible; /* Изменено с hidden на visible */
+    min-height: 0; /* Добавлено для правильного flex-расчета */
+}
+
+/* Панель инструментов */
+.editor-toolbar {
+    width: 250px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.toolbar-section {
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 15px;
+}
+
+.toolbar-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.toolbar-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.file-input-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    width: 100%;
+}
+
+.file-input {
+    position: absolute;
+    left: -9999px;
+}
+
+.file-input-button {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    background: #2A5885;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.file-input-button:hover {
+    background: #1d3f5f;
+}
+
+/* Кнопки действий */
+.action-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.action-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.action-button.primary {
+    background: #28a745;
+    color: white;
+}
+
+.action-button.primary:hover {
+    background: #1e7e34;
+}
+
+.action-button.secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.action-button.secondary:hover {
+    background: #545b62;
+}
+
+.action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Область предварительного просмотра */
+.editor-canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+    border-radius: 8px;
+    position: relative;
+    overflow: auto; /* Позволяем скролл для больших контейнеров */
+    min-height: 400px;
+}
+
+/* Контейнер формата */
+.format-container {
+    position: relative;
+    background: white;
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Touch действия отключаем только когда есть изображение */
+    user-select: none;
+    -webkit-user-select: none;
+    /* Убираем общие ограничения - они будут задаваться для каждого формата отдельно */
+}
+
+/* Ограничиваем touch действия только внутри области изображения */
+.format-container.has-image {
+    touch-action: pan-x pan-y; /* Разрешаем скролл, но ограничиваем другие жесты */
+}
+
+/* Различные форматы - увеличенные для лучшего качества */
+.format-container.reel {
+    width: 540px !important; /* Принудительный размер */
+    height: 960px !important; /* Принудительный размер */
+    /* Если контейнер не помещается, масштабируем пропорционально */
+    aspect-ratio: 9 / 16;
+    /* Гарантируем, что контейнер не сжимается */
+    flex-shrink: 0;
+}
+
+.format-container.desktop {
+    width: 800px;
+    height: 450px; /* 16:9 точное соотношение */
+    max-width: min(70vw, 800px);
+    max-height: min(50vh, 450px);
+    aspect-ratio: 16 / 9;
+}
+
+.format-container.square {
+    width: 600px;
+    height: 600px; /* 1:1 точное соотношение */
+    max-width: min(50vw, 600px);
+    max-height: min(60vh, 600px);
+    aspect-ratio: 1 / 1;
+}
+
+.format-container.has-image {
+    border: 2px solid #2A5885;
+}
+
+/* Резервные правила для браузеров без поддержки aspect-ratio */
+@supports not (aspect-ratio: 1) {
+    .format-container.reel {
+        /* Если контейнер слишком широкий для экрана, масштабируем по высоте */
+        width: auto;
+        height: 60vh;
+        max-width: calc(60vh * 9 / 16);
+    }
+    
+    .format-container.desktop {
+        /* Для старых браузеров оставляем фиксированные размеры */
+        width: 800px;
+        height: 450px;
+    }
+    
+    .format-container.square {
+        width: 50vw;
+        height: 50vw;
+        max-width: 60vh;
+        max-height: 60vh;
+    }
+}
+
+/* Специальные правила для открытого модального окна */
+.photo-editor-modal.show .format-container.reel {
+    /* Убеждаемся, что рилс контейнер не искажается в открытом модальном окне */
+    width: 540px !important;
+    height: 960px !important;
+    /* Если не помещается на экране, используем transform для масштабирования */
+    transform-origin: center;
+}
+
+@media (max-height: 900px) {
+    .photo-editor-modal.show .format-container.reel {
+        /* На экранах с маленькой высотой используем zoom */
+        zoom: 0.7; /* 960px → 672px */
+    }
+}
+
+@media (max-height: 700px) {
+    .photo-editor-modal.show .format-container.reel {
+        /* На очень маленьких экранах еще больше уменьшаем */
+        zoom: 0.55; /* 960px → 528px */
+    }
+}
+
+@media (max-width: 600px) {
+    /* Переопределяем zoom для телефонов - приоритет над базовым 768px правилом */
+    .format-container.reel {
+        zoom: 0.5 !important; /* 540px → 270px, 960px → 480px */
+    }
+}
+
+@media (max-width: 480px) {
+    .format-container.reel {
+        zoom: 0.45 !important; /* 540px → 243px, 960px → 432px */
+    }
+    
+    .format-container.desktop {
+        zoom: 0.3 !important; /* 800px → 240px, 450px → 135px */
+    }
+    
+    .format-container.square {
+        zoom: 0.59 !important; /* 600px → 240px, 600px → 240px */
+    }
+}
+
+@media (max-width: 400px) {
+    .format-container.reel {
+        zoom: 0.4 !important; /* 540px → 216px, 960px → 384px */
+    }
+    
+    .format-container.desktop {
+        zoom: 0.28 !important; /* 800px → 224px, 450px → 126px */
+    }
+    
+    .format-container.square {
+        zoom: 0.35 !important; /* 600px → 210px, 600px → 210px */
+    }
+}
+
+@media (max-width: 360px) {
+    .format-container.reel {
+        zoom: 0.35 !important; /* 540px → 189px, 960px → 336px */
+    }
+    
+    .format-container.desktop {
+        zoom: 0.25 !important; /* 800px → 200px, 450px → 112.5px */
+    }
+    
+    .format-container.square {
+        zoom: 0.3 !important; /* 600px → 180px, 600px → 180px */
+    }
+}
+
+/* Изображение в редакторе */
+.editor-image {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    transform-origin: center;
+    transition: none;
+    /* Улучшения для touch устройств */
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.editor-image.dragging {
+    cursor: grabbing;
+}
+
+/* Контролы изменения размера */
+.resize-handles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.resize-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #2A5885;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: all;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.resize-handle.nw { top: 0; left: 0; cursor: nw-resize; }
+.resize-handle.ne { top: 0; right: 0; cursor: ne-resize; }
+.resize-handle.sw { bottom: 0; left: 0; cursor: sw-resize; }
+.resize-handle.se { bottom: 0; right: 0; cursor: se-resize; }
+
+/* Подсказки */
+.editor-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Загрузчик */
+.editor-loader {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    z-index: 100;
+}
+
+.editor-loader.show {
+    display: block;
+}
+
+.loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2A5885;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .photo-editor-content {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        max-width: none;
+        max-height: none;
+        /* Добавляем скролл для контента */
+        overflow-y: auto;
+    }
+    
+    /* На мобильных устройствах модальное окно не блокирует скролл страницы */
+    .photo-editor-modal {
+        position: fixed;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+    }
+    
+    /* Исправляем выравнивание для мобильных */
+    .photo-editor-modal.show {
+        align-items: stretch; /* Растягиваем на всю высоту */
+        padding: 0; /* Убираем отступы */
+    }
+
+    .photo-editor-header {
+        padding: 15px;
+        border-radius: 0;
+    }
+
+    .photo-editor-title {
+        font-size: 1.25rem;
+    }
+
+    .photo-editor-steps {
+        padding: 10px 15px;
+        gap: 10px;
+    }
+
+    .step-indicator {
+        padding: 6px 12px;
+        font-size: 0.875rem;
+    }
+
+    .photo-editor-body {
+        flex-direction: column;
+        padding: 15px;
+        gap: 15px;
+        /* Исправляем переполнение */
+        overflow: visible;
+        height: auto;
+        min-height: calc(100vh - 200px); /* Учитываем header и controls */
+    }
+
+    .editor-toolbar {
+        width: 100%;
+        padding: 15px;
+        order: 2;
+        /* Делаем тулбар более компактным */
+        flex-shrink: 0;
+    }
+
+    .editor-canvas-area {
+        order: 1;
+        min-height: 300px;
+        /* Позволяем скролл, если контейнер большой */
+        overflow: auto;
+        flex: 1;
+        /* Центрируем контент */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Упрощенные адаптивные размеры для мобильных - используем zoom */
+    .format-container.reel {
+        /* Оставляем стандартные размеры */
+        width: 540px !important;
+        height: 960px !important;
+        /* Базовый zoom для планшетов */
+        zoom: 0.6; /* 540px → 324px, 960px → 576px */
+        aspect-ratio: 9 / 16;
+    }
+
+    .format-container.desktop {
+        width: 800px !important;
+        height: 450px !important;
+        /* Убираем max-width и max-height для корректной работы zoom */
+        max-width: none !important;
+        max-height: none !important;
+        /* Базовый zoom для планшетов и мобильных */
+        zoom: 0.4; /* 800px → 320px, 450px → 180px */
+        aspect-ratio: 16 / 9;
+    }
+
+    .format-container.square {
+        width: 600px !important;
+        height: 600px !important;
+        /* Убираем max-width и max-height для корректной работы zoom */
+        max-width: none !important;
+        max-height: none !important;
+        /* Базовый zoom для планшетов и мобильных */
+        zoom: 0.5; /* 600px → 300px, 600px → 300px */
+        aspect-ratio: 1 / 1;
+    }
+
+    .resize-handle {
+        width: 16px;
+        height: 16px;
+    }
+
+    .editor-hint {
+        bottom: 10px;
+        font-size: 0.8rem;
+        padding: 8px 12px;
+    }
+    
+    /* Скрываем resize-handles на мобильных устройствах */
+    .resize-handles {
+        display: none !important;
+    }
+    
+    /* Добавляем визуальную подсказку для touch */
+    .format-container:not(.has-image)::after {
+        content: "Загрузите изображение и используйте жесты:\A• Одним пальцем - перетаскивание\A• Двумя пальцами - масштабирование\A• Свайп вниз - закрыть редактор";
+        white-space: pre;
+        text-align: center;
+        color: #666;
+        font-size: 12px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 15px;
+        line-height: 1.5;
+        pointer-events: none;
+    }
+}
+
+/* Дополнительные правила для очень маленьких экранов */
+@media (max-width: 480px) {
+    .photo-editor-content {
+        /* Убираем лишние отступы */
+        width: 100vw;
+        height: 100vh;
+    }
+    
+    .photo-editor-header {
+        padding: 10px 15px;
+        /* Делаем заголовок более компактным */
+    }
+    
+    .photo-editor-title {
+        font-size: 1.1rem;
+    }
+    
+    .photo-editor-body {
+        padding: 10px;
+        gap: 10px;
+        /* Уменьшаем отступы для экономии места */
+        min-height: calc(100vh - 150px);
+    }
+    
+    .editor-toolbar {
+        padding: 10px;
+    }
+    
+    /* Специально для формат-контейнеров на маленьких экранах */
+    .editor-canvas-area {
+        min-height: 200px;
+        padding: 5px;
+    }
+}
+
+@media (max-width: 400px) {
+    .photo-editor-body {
+        padding: 5px;
+        min-height: calc(100vh - 120px);
+    }
+    
+    .photo-editor-header {
+        padding: 8px 10px;
+    }
+    
+    .photo-editor-title {
+        font-size: 1rem;
+    }
+    
+    /* Дополнительная защита от переполнения */
+    .format-container {
+        max-width: calc(100vw - 20px) !important;
+        max-height: calc(100vh - 200px) !important;
+    }
+}
+
+/* Дополнительные стили для touch устройств */
+@media (pointer: coarse) {
+    /* На touch устройствах скрываем resize-handles */
+    .resize-handles {
+        display: none !important;
+    }
+    
+    /* Увеличиваем области нажатия для кнопок */
+    .action-button {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+    
+    .file-input-button {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+}
+
+/* Анимации для плавных переходов */
+.format-container {
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.action-button {
+    transition: all 0.2s ease;
+}
+
+.step-indicator {
+    transition: all 0.3s ease;
+}
+
+/* Дополнительные визуальные эффекты */
+.photo-editor-modal {
+    backdrop-filter: blur(5px);
+}
+
+.format-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 49%, rgba(0,0,0,0.1) 50%, transparent 51%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.format-container:not(.has-image)::before {
+    opacity: 1;
+}
+
+/* Стили для режима владельца */
+.owner-mode .hero {
+    position: relative;
+}
+
+/* Кликабельный фон hero для владельца */
+.owner-mode .hero:hover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(42, 88, 133, 0.1);
+    backdrop-filter: brightness(0.9);
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.owner-mode .hero::after {
+    content: '📷 Нажмите, чтобы изменить фон';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(42, 88, 133, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.owner-mode .hero:hover::after {
+    opacity: 1;
+}
+
+/* Кликабельная аватарка для владельца */
+.hero-logo {
+    position: relative;
+}
+
+.owner-mode .hero-logo:hover {
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+}
+
+.owner-mode .hero-logo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(42, 88, 133, 0.7);
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.owner-mode .hero-logo:hover::before {
+    opacity: 1;
+}
+
+.owner-mode .hero-logo::after {
+    content: '📷';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 24px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.owner-mode .hero-logo:hover::after {
+    opacity: 1;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .owner-mode .hero::after {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .owner-mode .hero-logo::after {
+        font-size: 20px;
+    }
+    
+    .owner-mode .hero-logo:hover {
+        transform: scale(1.03);
+    }
+}

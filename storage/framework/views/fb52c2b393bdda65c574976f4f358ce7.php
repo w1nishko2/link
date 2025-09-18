@@ -152,7 +152,7 @@ unset($__errorArgs, $__bag); ?>
             <i class="bi bi-check-circle me-2"></i>
             Сохранить социальные сети
         </button>
-        <a href="<?php echo e(route('admin.dashboard', $user->id)); ?>" class="btn btn-outline-secondary flex-fill">
+        <a href="<?php echo e(route('admin.profile', $user->id)); ?>" class="btn btn-outline-secondary flex-fill">
             <i class="bi bi-arrow-left me-2"></i>
             Назад к панели
         </a>

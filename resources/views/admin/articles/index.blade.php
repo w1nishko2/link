@@ -25,13 +25,9 @@
         @foreach($articles as $article)
             <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card h-100">
-                    @if($article->image_path)
+                   
                         <img src="{{ asset('storage/' . $article->image_path) }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ $article->title }}">
-                    @else
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
-                            <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
-                        </div>
-                    @endif
+                 
                     
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ Str::limit($article->title, 50) }}</h5>

@@ -1,0 +1,386 @@
+/**
+ * CSS стили для административной панели управления услугами
+ * Используется на страницах создания, редактирования и просмотра услуг
+ */
+
+/* ========================================
+   Основные стили для работы с услугами
+   ======================================== */
+
+/* Стили для Swiper слайдера услуг */
+.swiper.services-swiper {
+    padding: 20px !important;
+    width: 100%;
+    height: 600px;
+    padding: 20px 0;
+}
+
+/* ========================================
+   Стили для карточек услуг
+   ======================================== */
+
+/* Стили для кликабельных карточек */
+.clickable-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.clickable-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.edit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+}
+
+.service-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.clickable-card:hover .edit-overlay {
+    opacity: 1;
+}
+
+.edit-overlay i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.edit-overlay span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* ========================================
+   Стили для редактируемых элементов
+   ======================================== */
+
+.editable-card {
+    position: relative;
+}
+
+.editable-image {
+    cursor: pointer;
+    position: relative;
+}
+
+.editable-image .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+}
+
+.editable-image:hover .image-overlay {
+    opacity: 1;
+}
+
+.editable-title,
+.editable-description,
+.editable-price {
+    outline: none;
+    border: none;
+    background: transparent;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    cursor: pointer;
+}
+
+.editable-title:focus,
+.editable-description:focus,
+.editable-price:focus {
+    background-color: rgba(13, 110, 253, 0.1);
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+.editable-title:hover,
+.editable-description:hover,
+.editable-price:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.editable-button {
+    cursor: pointer;
+    position: relative;
+}
+
+.editable-button:hover {
+    opacity: 0.8;
+}
+
+/* ========================================
+   Стили для кнопок и управления
+   ======================================== */
+
+.service-buttons {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    align-content: center;
+    flex-wrap: nowrap;
+}
+
+.add-price-button {
+    white-space: nowrap;
+    font-size: 0.875rem;
+}
+
+.service-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ========================================
+   Стили навигации Swiper
+   ======================================== */
+
+.swiper-button-next,
+.swiper-button-prev {
+    color: #007bff !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    width: 40px !important;
+    height: 40px !important;
+    margin-top: -20px !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+}
+
+/* Убираем пагинацию */
+.swiper-pagination {
+    display: none !important;
+}
+
+/* ========================================
+   Индикатор загрузки
+   ======================================== */
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-content {
+    text-align: center;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ========================================
+   Стили форм и модальных окон
+   ======================================== */
+
+.card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+#advanced-settings {
+    transition: all 0.3s ease;
+}
+
+#advanced-settings .card-body {
+    padding: 1rem;
+}
+
+.form-select-sm,
+.form-control-sm {
+    font-size: 0.875rem;
+}
+
+/* ========================================
+   Адаптивные стили
+   ======================================== */
+
+/* Планшеты */
+@media (max-width: 768px) {
+    .services-swiper {
+        height: 500px;
+    }
+    
+    .service-buttons {
+        gap: 10px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .add-price-button {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .edit-overlay i {
+        font-size: 1.5rem;
+    }
+    
+    .edit-overlay span {
+        font-size: 0.8rem;
+    }
+}
+
+/* Мобильные устройства */
+@media (max-width: 480px) {
+    .services-swiper {
+        height: 450px;
+        padding: 10px !important;
+    }
+    
+    .swiper.services-swiper {
+        padding: 10px !important;
+    }
+    
+    .editable-title,
+    .editable-description,
+    .editable-price {
+        padding: 4px 6px;
+        margin: -4px -6px;
+    }
+    
+    .service-bottom {
+        gap: 8px;
+    }
+    
+    .card-footer .d-grid {
+        gap: 0.5rem;
+    }
+    
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 320px) {
+    .services-swiper {
+        height: 400px;
+    }
+    
+    .service-buttons {
+        gap: 5px;
+    }
+    
+    .add-price-button {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+
+/* ========================================
+   Дополнительные стили для улучшения UX
+   ======================================== */
+
+/* Анимации для показа/скрытия элементов */
+.service-price {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.service-price[style*="display: none"] {
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+.service-price[style*="display: block"] {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Плавные переходы для кнопок */
+.add-price-button {
+    transition: all 0.2s ease;
+}
+
+.add-price-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Улучшенные стили для редактируемых элементов */
+.editable-title[contenteditable="true"]:empty:before,
+.editable-description[contenteditable="true"]:empty:before,
+.editable-price[contenteditable="true"]:empty:before {
+    content: attr(placeholder);
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Стили для улучшения доступности */
+.editable-title:focus,
+.editable-description:focus,
+.editable-price:focus {
+    position: relative;
+    z-index: 1;
+}
+
+.editable-button:focus {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+/* Стили для состояния загрузки */
+.loading-overlay .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Дополнительные стили для модальных окон */
+.modal-content {
+    border-radius: 0.5rem;
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}

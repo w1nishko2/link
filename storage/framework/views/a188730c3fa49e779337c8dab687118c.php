@@ -147,7 +147,7 @@
                     По запросу <strong>"<?php echo e($search); ?>"</strong> статьи не найдены.<br>
                     Попробуйте изменить поисковый запрос или <a href="<?php echo e(route('articles.all')); ?>">посмотреть Мир линка</a>.
                 </p>
-                <a href="<?php echo e(route('articles.all')); ?>" class="btn btn-outline-primary">
+                <a href="<?php echo e(route('articles.all')); ?>" class="btn 
                     <i class="bi bi-arrow-left"></i> Показать Мир линка
                 </a>
             <?php else: ?>

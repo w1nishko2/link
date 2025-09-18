@@ -67,12 +67,61 @@ unset($__errorArgs, $__bag); ?>
         </div>
     </div>
 
+    <!-- Секция изображений -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h6 class="text-muted mb-3">Аватар</h6>
+            <div class="text-center">
+                <?php if($user->avatar): ?>
+                    <img src="<?php echo e(asset('storage/' . $user->avatar)); ?>" 
+                         alt="Аватар <?php echo e($user->name); ?>" 
+                         class="rounded-circle mb-3" 
+                         style="width: 100px; height: 100px; object-fit: cover;">
+                <?php else: ?>
+                    <div class="bg-light rounded-circle mb-3 d-flex align-items-center justify-content-center" 
+                         style="width: 100px; height: 100px; color: #6c757d;">
+                        <i class="bi bi-person-circle" style="font-size: 48px;"></i>
+                    </div>
+                <?php endif; ?>
+                <div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="openAvatarEditor()">
+                        <i class="bi bi-pencil me-1"></i>
+                        Редактировать аватар
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <h6 class="text-muted mb-3">Фоновое изображение</h6>
+            <div class="text-center">
+                <?php if($user->background_image): ?>
+                    <img src="<?php echo e(asset('storage/' . $user->background_image)); ?>" 
+                         alt="Фон <?php echo e($user->name); ?>" 
+                         class="img-thumbnail mb-3" 
+                         style="width: 100px; height: 60px; object-fit: cover;">
+                <?php else: ?>
+                    <div class="bg-light img-thumbnail mb-3 d-flex align-items-center justify-content-center" 
+                         style="width: 100px; height: 60px; color: #6c757d;">
+                        <i class="bi bi-image" style="font-size: 24px;"></i>
+                    </div>
+                <?php endif; ?>
+                <div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="openBackgroundEditor()">
+                        <i class="bi bi-pencil me-1"></i>
+                        Редактировать фон
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex flex-column flex-sm-row gap-2">
         <button type="submit" class="btn btn-primary flex-fill">
             <i class="bi bi-check-circle me-2"></i>
             Сохранить основную информацию
         </button>
-        <a href="<?php echo e(route('admin.dashboard', $user->id)); ?>" class="btn btn-outline-secondary flex-fill">
+        <a href="<?php echo e(route('admin.profile', $user->id)); ?>" class="btn btn-outline-secondary flex-fill">
             <i class="bi bi-arrow-left me-2"></i>
             Назад к панели
         </a>

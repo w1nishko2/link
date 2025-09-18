@@ -1,6 +1,6 @@
 
 <?php if($banners->count() > 0 || (isset($section) && ($section->title || $section->subtitle)) || ($currentUser && $currentUser->id === $pageUser->id)): ?>
-<section class="banners" aria-label="Рекламные блоки">
+<section class="banners" id="banners" aria-label="Рекламные блоки">
     <div class="container">
         <?php if(isset($section) && (!empty(trim($section->title)) || !empty(trim($section->subtitle)))): ?>
             <header class="banners-header mb-4 ">
@@ -19,6 +19,19 @@
         
         <div class="swiper banners-swiper">
             <div class="swiper-wrapper">
+                
+                <?php if($currentUser && $currentUser->id === $pageUser->id): ?>
+                    <div class="swiper-slide">
+                        <a href="<?php echo e(route('admin.banners.create', $currentUser->id)); ?>" class="owner-default-block banner-add">
+                            <div class="owner-default-icon"></div>
+                            <div class="owner-default-text">
+                                <div class="owner-default-title">Добавить баннер</div>
+                                <div class="owner-default-subtitle">Разместите рекламу или объявления</div>
+                            </div>
+                        </a>
+                    </div>
+                <?php endif; ?>
+
                 <?php $__currentLoopData = $banners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $banner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <div class="swiper-slide">
                         <div class="banners-banner" data-analytics="banner" data-analytics-id="<?php echo e($banner->id); ?>"
@@ -44,19 +57,6 @@
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                 
-                <?php if($currentUser && $currentUser->id === $pageUser->id): ?>
-                    <div class="swiper-slide">
-                        <a href="<?php echo e(route('admin.banners', $currentUser->id)); ?>" class="owner-default-block banner-add">
-                            <div class="owner-default-icon"></div>
-                            <div class="owner-default-text">
-                                <div class="owner-default-title">Добавить баннер</div>
-                                <div class="owner-default-subtitle">Разместите рекламу или объявления</div>
-                            </div>
-                        </a>
-                    </div>
-                <?php endif; ?>
-
-                
                 <?php if($banners->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id)): ?>
                     <div class="swiper-slide">
                         <div class="banners-banner">
@@ -76,6 +76,8 @@
                     </div>
                 <?php endif; ?>
             </div>
+            
+           
         </div>
     </div>
 </section>

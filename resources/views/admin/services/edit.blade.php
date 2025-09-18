@@ -3,430 +3,312 @@
 @section('title', 'Редактирование услуги - ' . config('app.name'))
 @section('description', 'Редактирование описания и настроек услуги')
 
-@push('head')
-<style>
-/* Компактная форма */
-@media (max-width: 768px) {
-    .form-text {
-        font-size: 0.7rem;
-        margin-top: 0.2rem;
-    }
-    
-    .mb-3 {
-        margin-bottom: 0.75rem !important;
-    }
-    
-    .card-body {
-        padding: 0.75rem;
-    }
-}
-
-/* Оптимизация пространства для мелких полей */
-.form-label {
-    margin-bottom: 0.2rem;
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-/* Упрощенный текст подсказок */
-.form-text {
-    margin-top: 0.2rem;
-    font-size: 0.75rem;
-    color: #6c757d;
-}
-
-/* Компактные кнопки */
-.btn-group .btn,
-.d-flex .btn {
-    padding: 0.5rem 1rem;
-}
-
-@media (max-width: 456px) {
-    .card-header h5 {
-        font-size: 0.95rem;
-    }
-    
-    .col-lg-8 {
-        margin-bottom: 0.75rem;
-    }
-    
-    .form-label {
-        font-size: 0.85rem;
-        margin-bottom: 0.15rem;
-    }
-    
-    .form-text {
-        font-size: 0.7rem;
-        margin-top: 0.15rem;
-    }
-    
-    .mb-3 {
-        margin-bottom: 0.6rem !important;
-    }
-    
-    .card-body {
-        padding: 0.5rem;
-    }
-    
-    .form-control,
-    .form-select {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.75rem;
-    }
-}
-</style>
-@endpush
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+@vite(['resources/css/services-reels.css', 'resources/css/admin-services.css', 'resources/js/admin-services.js'])
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
     
     <a href="{{ route('admin.services', $currentUserId) }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-2"></i>
-        Назад к услугам
+        <span class="d-none d-sm-inline">Назад к услугам</span>
+        <span class="d-sm-none">Назад</span>
     </a>
 </div>
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
+<!-- Скрытая форма для отправки данных -->
+<form id="service-form" action="{{ route('admin.services.update', [$currentUserId, $service]) }}" method="POST" enctype="multipart/form-data" style="display: none;">
+    @csrf
+    @method('PUT')
+    <input type="hidden" name="title" id="hidden-title">
+    <input type="hidden" name="description" id="hidden-description">
+    <input type="hidden" name="price" id="hidden-price">
+    <input type="hidden" name="price_type" id="hidden-price-type" value="fixed">
+    <input type="hidden" name="button_text" id="hidden-button-text">
+    <input type="hidden" name="button_link" id="hidden-button-link">
+    <input type="hidden" name="order_index" id="hidden-order-index">
+    <input type="file" name="image" id="hidden-image" accept="image/*">
+</form>
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-4">
+        
+            <div class="swiper services-swiper" id="edit-services-swiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <div class="service-card editable-card" id="editable-service-card">
+                            <!-- Изображение с возможностью загрузки -->
+                            <div class="service-image editable-image" onclick="selectImage()">
+                                <img id="service-image" 
+                                     src="{{ $service->image_path ? asset('storage/' . $service->image_path) : '/hero.png' }}" 
+                                     alt="Изображение услуги" 
+                                     loading="lazy"
+                                     width="300"
+                                     height="600"
+                                     decoding="async">
+                                <div class="image-overlay">
+                                    <i class="bi bi-camera-fill"></i>
+                                    <span>Изменить изображение</span>
+                                </div>
+                            </div>
+                            
+                            <div class="service-content">
+                                <!-- Редактируемое название -->
+                                <h3 class="editable-title" 
+                                    contenteditable="true" 
+                                    placeholder="Введите название услуги..."
+                                    data-max-length="100"
+                                    onclick="selectText(this)">{{ $service->title }}</h3>
+                                
+                                <!-- Редактируемое описание -->
+                                <p class="editable-description" 
+                                   contenteditable="true" 
+                                   placeholder="Введите описание услуги..."
+                                   data-max-length="500"
+                                   onclick="selectText(this)">{{ $service->description }}</p>
+                                
+                                <div class="service-bottom">
+                                    <!-- Редактируемая цена -->
+                                    <div class="service-price editable-price" 
+                                         contenteditable="true" 
+                                         placeholder="Цена"
+                                         onclick="selectText(this)"
+                                         style="display: {{ $service->price ? 'block' : 'none' }};margin:0;">{{ $service->formatted_price ?? '' }}</div>
+                                    
+                                    <div class="service-buttons" style="flex-wrap: nowrap">
+                                        <!-- Кнопка добавления цены -->
+                                        <button type="button" class="btn btn-outline-success btn-sm add-price-button" 
+                                                onclick="addPriceInCard()" id="add-price-card-btn"
+                                                style="display: {{ $service->price ? 'none' : 'inline-block' }};">
+                                            <i class="bi bi-tag me-1"></i> Добавить цену
+                                        </button>
+                                        
+                                        <!-- Редактируемая кнопка -->
+                                        <div class="service-button btn btn-primary btn-sm editable-button" 
+                                             onclick="editButton()">
+                                            {{ $service->button_text ?? 'Кнопка' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-12">
+                        <!-- Основные действия -->
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="saveService()">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Обновить услугу
+                            </button>
+                            <a href="{{ route('admin.services', $currentUserId) }}" class="btn btn-outline-secondary btn-sm">
+                                Отмена
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+        
+        <!-- Дополнительные настройки (скрыты по умолчанию) -->
+        <div class="card mt-3" id="advanced-settings" style="display: none;">
             <div class="card-header">
-                <h5 class="card-title mb-0">Редактирование услуги</h5>
+                <h6 class="card-title mb-0">Дополнительные настройки</h6>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.services.update', [$currentUserId, $service]) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-                    
-                    <!-- Первый ряд: Название и Порядок -->
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="mb-3">
-                                <label for="title" class="form-label">Название услуги *</label>
-                                <input type="text" class="form-control @error('title') is-invalid @enderror" 
-                                       id="title" name="title" value="{{ old('title', $service->title) }}" required maxlength="100">
-                                @error('title')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text">Максимум 100 символов. Осталось: <span id="title-counter">100</span></div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="order_index" class="form-label">Порядок</label>
-                                <input type="number" class="form-control @error('order_index') is-invalid @enderror" 
-                                       id="order_index" name="order_index" value="{{ old('order_index', $service->order_index) }}" placeholder="Авто">
-                                @error('order_index')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text">Порядок показа</div>
-                            </div>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <!-- Управление ценой -->
+                        <label class="form-label">Управление ценой</label>
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="togglePrice()" id="price-toggle">
+                                <i class="bi bi-tag me-1"></i> {{ $service->price ? 'Убрать цену' : 'Добавить цену' }}
+                            </button>
                         </div>
                     </div>
-
-                    <!-- Описание - полная ширина -->
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Описание услуги *</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" 
-                                  id="description" name="description" rows="3" required maxlength="500">{{ old('description', $service->description) }}</textarea>
-                        @error('description')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <div class="form-text">Максимум 500 символов. Осталось: <span id="description-counter">500</span></div>
+                    <div class="col-6">
+                        <label class="form-label">Тип цены</label>
+                        <select class="form-select form-select-sm" id="price-type-select">
+                            <option value="fixed" {{ $service->price_type == 'fixed' ? 'selected' : '' }}>Фиксированная</option>
+                            <option value="hourly" {{ $service->price_type == 'hourly' ? 'selected' : '' }}>За час</option>
+                            <option value="project" {{ $service->price_type == 'project' ? 'selected' : '' }}>За проект</option>
+                        </select>
                     </div>
-
-                    <!-- Второй ряд: Цена и Тип цены -->
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label for="price" class="form-label">Цена (₽)</label>
-                                <input type="number" class="form-control @error('price') is-invalid @enderror" 
-                                       id="price" name="price" value="{{ old('price', $service->price) }}" min="0" step="0.01" placeholder="0">
-                                @error('price')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                        
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label for="price_type" class="form-label">Тип цены *</label>
-                                <select class="form-select @error('price_type') is-invalid @enderror" 
-                                        id="price_type" name="price_type" required>
-                                    <option value="fixed" {{ old('price_type', $service->price_type) == 'fixed' ? 'selected' : '' }}>Фиксированная</option>
-                                    <option value="hourly" {{ old('price_type', $service->price_type) == 'hourly' ? 'selected' : '' }}>За час</option>
-                                    <option value="project" {{ old('price_type', $service->price_type) == 'project' ? 'selected' : '' }}>За проект</option>
-                                </select>
-                                @error('price_type')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+                    <div class="col-6">
+                        <label class="form-label">Порядок отображения</label>
+                        <input type="number" class="form-control form-control-sm" id="order-input" placeholder="Авто" value="{{ $service->order_index }}">
                     </div>
-
-                    <!-- Третий ряд: Изображение и Статус -->
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="mb-3">
-                                <label for="image" class="form-label">Изображение услуги</label>
-                                <input type="file" class="form-control @error('image') is-invalid @enderror" 
-                                       id="image" name="image" accept="image/*">
-                                @error('image')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                @if($service->image_path)
-                                    <div class="mt-2">
-                                        <small class="text-muted">Текущее:</small>
-                                        <img src="{{ asset('storage/' . $service->image_path) }}" 
-                                             alt="{{ $service->title }}" class="img-thumbnail mt-1" style="max-height: 60px;">
-                                    </div>
-                                @endif
-                                <div class="form-text">WebP оптимизация</div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="mb-3">
-                                <label class="form-label">Статус</label>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" 
-                                           {{ old('is_active', $service->is_active) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="is_active">
-                                        Активна
-                                    </label>
-                                </div>
-                                <div class="form-text">Показывать на сайте</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Четвертый ряд: Настройки кнопки действия -->
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label for="button_text" class="form-label">Текст кнопки</label>
-                                <select class="form-select @error('button_text') is-invalid @enderror" 
-                                        id="button_text" name="button_text">
-                                    <option value="">Без кнопки</option>
-                                    <option value="Заказать услугу" {{ old('button_text', $service->button_text) == 'Заказать услугу' ? 'selected' : '' }}>Заказать услугу</option>
-                                    <option value="Связаться с нами" {{ old('button_text', $service->button_text) == 'Связаться с нами' ? 'selected' : '' }}>Связаться с нами</option>
-                                    <option value="Узнать подробнее" {{ old('button_text', $service->button_text) == 'Узнать подробнее' ? 'selected' : '' }}>Узнать подробнее</option>
-                                    <option value="Написать в WhatsApp" {{ old('button_text', $service->button_text) == 'Написать в WhatsApp' ? 'selected' : '' }}>Написать в WhatsApp</option>
-                                    <option value="Написать в Telegram" {{ old('button_text', $service->button_text) == 'Написать в Telegram' ? 'selected' : '' }}>Написать в Telegram</option>
-                                    <option value="Позвонить" {{ old('button_text', $service->button_text) == 'Позвонить' ? 'selected' : '' }}>Позвонить</option>
-                                    <option value="Отправить email" {{ old('button_text', $service->button_text) == 'Отправить email' ? 'selected' : '' }}>Отправить email</option>
-                                </select>
-                                @error('button_text')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label for="button_link" class="form-label">Ссылка для кнопки</label>
-                                <select class="form-select @error('button_link') is-invalid @enderror" 
-                                        id="button_link" name="button_link">
-                                    <option value="">Выберите ссылку</option>
-                                    @if($user->phone)
-                                        <option value="tel:{{ $user->phone }}" {{ old('button_link', $service->button_link) == 'tel:' . $user->phone ? 'selected' : '' }}>
-                                            Телефон: {{ $user->phone }}
-                                        </option>
-                                    @endif
-                                    @if($user->email)
-                                        <option value="mailto:{{ $user->email }}" {{ old('button_link', $service->button_link) == 'mailto:' . $user->email ? 'selected' : '' }}>
-                                            Email: {{ $user->email }}
-                                        </option>
-                                    @endif
-                                    @if($user->telegram_url)
-                                        <option value="{{ $user->telegram_url }}" {{ old('button_link', $service->button_link) == $user->telegram_url ? 'selected' : '' }}>
-                                            Telegram
-                                        </option>
-                                    @endif
-                                    @if($user->whatsapp_url)
-                                        <option value="{{ $user->whatsapp_url }}" {{ old('button_link', $service->button_link) == $user->whatsapp_url ? 'selected' : '' }}>
-                                            WhatsApp
-                                        </option>
-                                    @endif
-                                    @if($user->vk_url)
-                                        <option value="{{ $user->vk_url }}" {{ old('button_link', $service->button_link) == $user->vk_url ? 'selected' : '' }}>
-                                            VK
-                                        </option>
-                                    @endif
-                                    @if($user->instagram_url)
-                                        <option value="{{ $user->instagram_url }}" {{ old('button_link', $service->button_link) == $user->instagram_url ? 'selected' : '' }}>
-                                            Instagram
-                                        </option>
-                                    @endif
-                                    @if($user->website_url)
-                                        <option value="{{ $user->website_url }}" {{ old('button_link', $service->button_link) == $user->website_url ? 'selected' : '' }}>
-                                            Сайт
-                                        </option>
-                                    @endif
-                                    @foreach($user->socialLinks as $socialLink)
-                                        <option value="{{ $socialLink->url }}" {{ old('button_link', $service->button_link) == $socialLink->url ? 'selected' : '' }}>
-                                            {{ $socialLink->service_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('button_link')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text">Куда ведёт кнопка</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg me-2"></i>
-                            Обновить 
-                        </button>
-                        <a href="{{ route('admin.services', $currentUserId) }}" class="btn btn-outline-secondary">Отмена</a>
-                    </div>
-                </form>
+                </div>
             </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <button type="button" class="btn btn-link btn-sm" onclick="toggleAdvanced()">
+                <i class="bi bi-gear me-1"></i> Дополнительные настройки
+            </button>
         </div>
     </div>
+</div>
 
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Предварительный просмотр</h5>
+<!-- Модальные окна -->
+<!-- Модальное окно редактирования кнопки -->
+<div class="modal fade" id="buttonModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Настройка кнопки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="card-body">
-                <div class="service-preview">
-                    <div class="service-image mb-3" style="height: 200px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        @if($service->image_path)
-                            <img src="{{ asset('storage/' . $service->image_path) }}" 
-                                 alt="{{ $service->title }}" class="img-fluid rounded">
-                        @else
-                            <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Текст кнопки</label>
+                    <select class="form-select" id="button-text-select">
+                        <option value="">Выберите текст</option>
+                        <option value="Заказать услугу" {{ $service->button_text == 'Заказать услугу' ? 'selected' : '' }}>Заказать услугу</option>
+                        <option value="Связаться с нами" {{ $service->button_text == 'Связаться с нами' ? 'selected' : '' }}>Связаться с нами</option>
+                        <option value="Узнать подробнее" {{ $service->button_text == 'Узнать подробнее' ? 'selected' : '' }}>Узнать подробнее</option>
+                        <option value="Написать в WhatsApp" {{ $service->button_text == 'Написать в WhatsApp' ? 'selected' : '' }}>Написать в WhatsApp</option>
+                        <option value="Написать в Telegram" {{ $service->button_text == 'Написать в Telegram' ? 'selected' : '' }}>Написать в Telegram</option>
+                        <option value="Позвонить" {{ $service->button_text == 'Позвонить' ? 'selected' : '' }}>Позвонить</option>
+                        <option value="Отправить email" {{ $service->button_text == 'Отправить email' ? 'selected' : '' }}>Отправить email</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ссылка</label>
+                    <select class="form-select" id="button-link-select">
+                        <option value="">Выберите ссылку</option>
+                        @if($user->phone)
+                            <option value="tel:{{ $user->phone }}" {{ $service->button_link == 'tel:' . $user->phone ? 'selected' : '' }}>Телефон: {{ $user->phone }}</option>
                         @endif
-                    </div>
-                    <h5 class="service-title">{{ $service->title }}</h5>
-                    <p class="service-description text-muted">{{ $service->description }}</p>
-                    <div class="service-price">
-                        <strong>{{ $service->formatted_price }}</strong>
-                    </div>
+                        @if($user->email)
+                            <option value="mailto:{{ $user->email }}" {{ $service->button_link == 'mailto:' . $user->email ? 'selected' : '' }}>Email: {{ $user->email }}</option>
+                        @endif
+                        @if($user->telegram_url)
+                            <option value="{{ $user->telegram_url }}" {{ $service->button_link == $user->telegram_url ? 'selected' : '' }}>Telegram</option>
+                        @endif
+                        @if($user->whatsapp_url)
+                            <option value="{{ $user->whatsapp_url }}" {{ $service->button_link == $user->whatsapp_url ? 'selected' : '' }}>WhatsApp</option>
+                        @endif
+                        @if($user->vk_url)
+                            <option value="{{ $user->vk_url }}" {{ $service->button_link == $user->vk_url ? 'selected' : '' }}>VK</option>
+                        @endif
+                        @if($user->instagram_url)
+                            <option value="{{ $user->instagram_url }}" {{ $service->button_link == $user->instagram_url ? 'selected' : '' }}>Instagram</option>
+                        @endif
+                        @if($user->website_url)
+                            <option value="{{ $user->website_url }}" {{ $service->button_link == $user->website_url ? 'selected' : '' }}>Сайт</option>
+                        @endif
+                        @foreach($user->socialLinks as $socialLink)
+                            <option value="{{ $socialLink->url }}" {{ $service->button_link == $socialLink->url ? 'selected' : '' }}>{{ $socialLink->service_name }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
-        </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Действия</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-flex gap-2">
-                    <a href="{{ route('user.page', auth()->user()->username) }}" class="btn  btn-sm" target="_blank">
-                        <i class="bi bi-eye me-2"></i>
-                        Посмотреть 
-                    </a>
-                    <button type="button" class="btn  btn-sm" onclick="deleteService({{ $service->id }})">
-                        <i class="bi bi-trash me-2"></i>
-                        Удалить 
-                    </button>
-                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="applyButtonSettings()">Применить</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Form для удаления -->
-<form id="deleteServiceForm" method="POST" style="display: none;">
-    @csrf
-    @method('DELETE')
-</form>
+<!-- Модальное окно для настройки кнопки -->
+<div class="modal fade" id="buttonModal" tabindex="-1" aria-labelledby="buttonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="buttonModalLabel">Настройка кнопки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="button-text-select" class="form-label">Текст кнопки</label>
+                    <select class="form-select" id="button-text-select">
+                        <option value="">Выберите текст кнопки</option>
+                        <option value="Подробнее">Подробнее</option>
+                        <option value="Заказать">Заказать</option>
+                        <option value="Узнать больше">Узнать больше</option>
+                        <option value="Связаться">Связаться</option>
+                        <option value="Получить консультацию">Получить консультацию</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="button-link-select" class="form-label">Ссылка</label>
+                    <select class="form-select" id="button-link-select">
+                        <option value="">Выберите действие</option>
+                        <option value="#contact">Контакты</option>
+                        <option value="#order">Форма заказа</option>
+                        <option value="tel:+7">Позвонить</option>
+                        <option value="mailto:info@example.com">Написать email</option>
+                        <option value="https://wa.me/">WhatsApp</option>
+                        <option value="https://t.me/">Telegram</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="applyButtonSettings()">Применить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
 <script>
-// Счетчики символов
-function setupCharCounter(inputId, counterId, maxLength) {
-    const input = document.getElementById(inputId);
-    const counter = document.getElementById(counterId);
-    
-    function updateCounter() {
-        const currentLength = input.value.length;
-        const remaining = maxLength - currentLength;
-        counter.textContent = remaining;
-        
-        if (remaining < 0) {
-            counter.style.color = '#dc3545';
-        } else if (remaining < 20) {
-            counter.style.color = '#fd7e14';
-        } else {
-            counter.style.color = '#6c757d';
-        }
-    }
-    
-    updateCounter();
-    input.addEventListener('input', updateCounter);
-    input.addEventListener('keydown', updateCounter);
-    input.addEventListener('paste', function() {
-        setTimeout(updateCounter, 10);
-    });
-}
-
+// Инициализация страницы редактирования услуг с данными из сервера
 document.addEventListener('DOMContentLoaded', function() {
-    setupCharCounter('title', 'title-counter', 100);
-    setupCharCounter('description', 'description-counter', 500);
-});
-
-// Предварительный просмотр
-document.getElementById('title').addEventListener('input', function() {
-    document.querySelector('.service-title').textContent = this.value || 'Название услуги';
-});
-
-document.getElementById('description').addEventListener('input', function() {
-    document.querySelector('.service-description').textContent = this.value || 'Описание услуги будет отображаться здесь...';
-});
-
-document.getElementById('price').addEventListener('input', updatePrice);
-document.getElementById('price_type').addEventListener('change', updatePrice);
-
-function updatePrice() {
-    const price = document.getElementById('price').value;
-    const priceType = document.getElementById('price_type').value;
-    const priceElement = document.querySelector('.service-price strong');
+    const initialState = {
+        title: '{{ $service->title }}',
+        description: '{{ $service->description }}',
+        price: '{{ $service->price ?? "" }}',
+        priceType: '{{ $service->price_type ?? "fixed" }}',
+        hasPrice: {{ $service->price ? 'true' : 'false' }},
+        buttonText: '{{ $service->button_text }}',
+        buttonLink: '{{ $service->button_link }}',
+        orderIndex: '{{ $service->order_index ?? 1 }}'
+    };
     
-    if (!price) {
-        priceElement.textContent = 'По договоренности';
-        return;
-    }
+    // Инициализируем страницы услуг
+    initializeSwiper();
+    bindEvents();
     
-    let formattedPrice = new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
+    // Загружаем старые значения если есть ошибки валидации
+    @if(old())
+        const oldValues = @json(old());
+        Object.keys(oldValues).forEach(key => {
+            const element = document.querySelector(`[data-field="${key}"]`);
+            if (element && oldValues[key]) {
+                element.textContent = oldValues[key];
+            }
+        });
+    @endif
     
-    switch (priceType) {
-        case 'hourly':
-            formattedPrice += '/час';
-            break;
-        case 'project':
-            formattedPrice = 'от ' + formattedPrice;
-            break;
-    }
-    
-    priceElement.textContent = formattedPrice;
-}
-
-// Предварительный просмотр изображения
-document.getElementById('image').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const previewDiv = document.querySelector('.service-image');
-            previewDiv.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="img-fluid rounded">';
-        };
-        reader.readAsDataURL(file);
-    }
+    // Показываем ошибки если они есть
+    @if($errors->any())
+        const errorMessages = @json($errors->all());
+        if (errorMessages.length > 0) {
+            showNotification('Исправьте ошибки:\n' + errorMessages.join('\n'), 'error');
+        }
+    @endif
 });
-
-function deleteService(serviceId) {
-    if (confirm('Вы уверены, что хотите удалить эту услугу?')) {
-        const form = document.getElementById('deleteServiceForm');
-        form.action = "{{ route('admin.services.destroy', [$currentUserId, ':id']) }}".replace(':id', serviceId);
-        form.submit();
-    }
-}
 </script>
+  
 @endsection

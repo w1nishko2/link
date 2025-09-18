@@ -35,9 +35,7 @@
     
     // Определяем заголовок по текущему маршруту
     $pageTitle = '';
-    if(request()->routeIs('admin.dashboard')) {
-        $pageTitle = 'Главная';
-    } elseif(request()->routeIs('admin.profile.edit')) {
+    if(request()->routeIs('admin.profile.edit')) {
         $pageTitle = 'Редактирование профиля';
     } elseif(request()->routeIs('admin.profile*')) {
         $pageTitle = 'Управление профилем';
@@ -109,10 +107,16 @@
     </div>
     
     <nav class="nav flex-column">
-        <a class="nav-link <?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>" href="<?php echo e(route('admin.dashboard', $userId)); ?>">
-            <i class="bi bi-speedometer2 me-2"></i>
-            Главная
+        <a class="nav-link <?php echo e(request()->routeIs('admin.analytics*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.analytics', $userId)); ?>">
+            <i class="bi bi-graph-up me-2"></i>
+            Аналитика
         </a>
+        
+        <a class="nav-link " href="<?php echo e(route('articles.all')); ?>">
+            <i class="bi bi-collection me-2"></i>
+            Мир Линка
+        </a>
+      
         <a class="nav-link <?php echo e(request()->routeIs('admin.profile*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.profile', $userId)); ?>">
             <i class="bi bi-person-circle me-2"></i>
             Профиль

@@ -24,6 +24,10 @@ class Banner extends Model
         'is_active' => 'boolean'
     ];
 
+    protected $attributes = [
+        'is_active' => true
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -3,18 +3,29 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
+// Маршрут для персональных страниц пользователей (публичный) - используем префикс "user"
+Route::middleware(['throttle:60,1'])->group(function () {
+    Route::get('/user/{username}', [App\Http\Controllers\HomeController::class, 'show'])->name('user.show');
+    
+    // Маршрут для галереи пользователя
+    Route::get('/user/{username}/gallery', [App\Http\Controllers\HomeController::class, 'gallery'])->name('user.gallery');
+    Route::get('/user/{username}/gallery/{image}', [App\Http\Controllers\HomeController::class, 'galleryImage'])->name('user.gallery.image');
+    
+    // Маршруты для услуг
+    Route::get('/user/{username}/services', [App\Http\Controllers\HomeController::class, 'services'])->name('user.services');
+    Route::get('/user/{username}/services/{service}', [App\Http\Controllers\HomeController::class, 'serviceDetail'])->name('user.service.detail');
+    
+    // Маршруты для статей
+    Route::get('/user/{username}/articles', [App\Http\Controllers\ArticleController::class, 'index'])->name('articles.index');
+    Route::get('/user/{username}/article/{slug}', [App\Http\Controllers\ArticleController::class, 'show'])->name('articles.show');
+});
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
+// Роуты для фоторедактора (требуют авторизации)
+Route::middleware('auth')->prefix('photo-editor')->group(function () {
+    Route::post('/save', [App\Http\Controllers\PhotoEditorController::class, 'save'])->name('photo-editor.save');
+    Route::get('/current-images', [App\Http\Controllers\PhotoEditorController::class, 'getCurrentImages'])->name('photo-editor.current');
+    Route::delete('/delete-image', [App\Http\Controllers\PhotoEditorController::class, 'deleteImage'])->name('photo-editor.delete');
+});
 Route::get('/', [App\Http\Controllers\HomeController::class, 'redirectToHome'])->name('welcome');
 
 Auth::routes(['reset' => false, 'verify' => false]);
@@ -36,11 +47,14 @@ Route::middleware(['auth'])->prefix('super-admin')->name('super-admin.')->group(
 
 // Маршруты админки (требуют авторизации) - должны быть ПЕРЕД публичными маршрутами
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-    // Главная страница админки - теперь с ID пользователя
+    // Перенаправление на аналитику
     Route::get('/', function() {
-        return redirect()->route('admin.dashboard', ['user' => auth()->id()]);
+        return redirect()->route('admin.analytics', ['user' => auth()->id()]);
     });
-    Route::get('/user/{user}', [App\Http\Controllers\AdminController::class, 'index'])->name('dashboard');
+    
+    // Аналитика
+    Route::get('/user/{user}/analytics', [App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics');
+    Route::get('/user/{user}/analytics/data', [App\Http\Controllers\AnalyticsController::class, 'getChartData'])->name('analytics.data');
     
     // Управление профилем
     Route::get('/user/{user}/profile', [App\Http\Controllers\AdminController::class, 'profile'])->name('profile');
@@ -56,7 +70,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // Управление галереей
     Route::get('/user/{user}/gallery', [App\Http\Controllers\AdminController::class, 'gallery'])->name('gallery');
+    Route::get('/user/{user}/gallery/create', [App\Http\Controllers\AdminController::class, 'galleryCreate'])->name('gallery.create');
     Route::post('/user/{user}/gallery', [App\Http\Controllers\AdminController::class, 'galleryStore'])->name('gallery.store');
+    Route::get('/user/{user}/gallery/{image}/edit', [App\Http\Controllers\AdminController::class, 'galleryEdit'])->name('gallery.edit');
     Route::put('/user/{user}/gallery/{image}', [App\Http\Controllers\AdminController::class, 'galleryUpdate'])->name('gallery.update');
     Route::delete('/user/{user}/gallery/{image}', [App\Http\Controllers\AdminController::class, 'galleryDestroy'])->name('gallery.destroy');
     
@@ -78,6 +94,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // Управление баннерами
     Route::get('/user/{user}/banners', [App\Http\Controllers\AdminController::class, 'banners'])->name('banners');
+    Route::get('/user/{user}/banners/create', [App\Http\Controllers\AdminController::class, 'bannersCreate'])->name('banners.create');
     Route::post('/user/{user}/banners', [App\Http\Controllers\AdminController::class, 'bannersStore'])->name('banners.store');
     Route::get('/user/{user}/banners/{banner}/edit', [App\Http\Controllers\AdminController::class, 'bannersEdit'])->name('banners.edit');
     Route::put('/user/{user}/banners/{banner}', [App\Http\Controllers\AdminController::class, 'bannersUpdate'])->name('banners.update');
@@ -92,6 +109,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Управление разделами сайта
     Route::get('/user/{user}/sections', [App\Http\Controllers\AdminController::class, 'getSectionSettings'])->name('sections.get');
     Route::post('/user/{user}/sections', [App\Http\Controllers\AdminController::class, 'updateSectionSettings'])->name('sections.update');
+    
+    // Роуты для фоторедактора
+    Route::prefix('photo-editor')->group(function () {
+        Route::post('/save', [App\Http\Controllers\PhotoEditorController::class, 'save'])->name('photo-editor.save');
+        Route::get('/current-images', [App\Http\Controllers\PhotoEditorController::class, 'getCurrentImages'])->name('photo-editor.current');
+        Route::delete('/delete-image', [App\Http\Controllers\PhotoEditorController::class, 'deleteImage'])->name('photo-editor.delete');
+    });
     
     // Обратная совместимость со старыми маршрутами
     Route::get('/gallery', function() {
@@ -128,6 +152,7 @@ Route::put('/user/{username}/update', [App\Http\Controllers\HomeController::clas
 
 // Маршруты для обновления изображений на пользовательской странице (требует авторизации)
 Route::post('/user/{username}/update-background', [App\Http\Controllers\HomeController::class, 'updateBackground'])->name('user.update.background')->middleware('auth');
+Route::post('/user/{username}/update-dual-background', [App\Http\Controllers\HomeController::class, 'updateDualBackground'])->name('user.update.dual.background')->middleware('auth');
 Route::post('/user/{username}/update-avatar', [App\Http\Controllers\HomeController::class, 'updateAvatar'])->name('user.update.avatar')->middleware('auth');
 if (app()->environment('production')) {
     URL::forceScheme('https');

@@ -9,10 +9,7 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <nav class="nav">
-                    <a class="nav-link admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard', $currentUserId) }}">
-                        <i class="bi bi-speedometer2 me-1"></i>
-                        <span class="d-none d-md-inline">Главная</span>
-                    </a>
+                   
                     <a class="nav-link admin-nav-link {{ request()->routeIs('admin.profile*') ? 'active' : '' }}" href="{{ route('admin.profile', $currentUserId) }}">
                         <i class="bi bi-person-circle me-1"></i>
                         <span class="d-none d-md-inline">Профиль</span>

@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     
+    <!-- User ID Meta Tags for JavaScript -->
+    <?php if(auth()->guard()->check()): ?>
+    <meta name="current-user-id" content="<?php echo e(auth()->id()); ?>">
+    <meta name="page-user-id" content="<?php echo e(auth()->id()); ?>">
+    <?php endif; ?>
+    
     <!-- SEO Meta Tags -->
     <title><?php echo $__env->yieldContent('title', 'Настройки - ' . config('app.name', 'Laravel')); ?></title>
-    <meta name="description" content="<?php echo $__env->yieldContent('description', 'Панель управления контентом персонального сайта'); ?>">
+    <meta name="description" content="<?php echo $__env->yieldContent('description', 'Аналитика и управление контентом персонального сайта'); ?>">
     <meta name="robots" content="noindex, nofollow">
     
     <!-- Favicon -->
@@ -17,7 +23,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
-    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/css/admin.css']); ?>
+    <?php echo app('Illuminate\Foundation\Vite')([
+        'resources/css/app.css', 
+        'resources/css/admin.css',
+        'resources/js/app.js',
+        'resources/js/admin-loading.js',
+        'resources/js/admin-toggles.js',
+        'resources/js/admin-images.js',
+        'resources/js/admin-forms.js',
+        'resources/js/admin-services.js',
+        'resources/js/admin-gallery.js',
+        'resources/js/admin-banners.js',
+        'resources/js/admin-articles.js'
+    ]); ?>
     
     <style>
        
@@ -30,8 +48,8 @@
             <i class="bi bi-list"></i>
         </button>
         <h5 class="mb-0">
-            <?php if(request()->routeIs('admin.dashboard')): ?>
-                Главная
+            <?php if(request()->routeIs('admin.analytics*')): ?>
+                Аналитика
             <?php elseif(request()->routeIs('admin.profile.edit')): ?>
                 Редактирование профиля
             <?php elseif(request()->routeIs('admin.profile*')): ?>
@@ -87,11 +105,10 @@
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
-                
                 <nav class="nav flex-column">
-                    <a class="nav-link <?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>" href="<?php echo e(route('admin.dashboard', $currentUserId)); ?>">
-                        <i class="bi bi-speedometer2 me-2"></i>
-                        Главная
+                    <a class="nav-link <?php echo e(request()->routeIs('admin.analytics*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.analytics', $currentUserId)); ?>">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Аналитика
                     </a>
                     <a class="nav-link <?php echo e(request()->routeIs('admin.profile*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.profile', $currentUserId)); ?>">
                         <i class="bi bi-person-circle me-2"></i>
@@ -199,11 +216,32 @@
         window.addEventListener('resize', function() {
             if (window.innerWidth >= 768) {
                 closeSidebar();
+                // Дополнительная проверка - убираем overflow:hidden с body на больших экранах
+                document.body.style.overflow = '';
             }
         });
         
+        // Дополнительная проверка при загрузке страницы - если мы на больших экранах, убираем блокировку скролла
+        function checkScrollLock() {
+            if (window.innerWidth >= 768) {
+                const sidebar = document.getElementById('adminSidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                
+                if (sidebar) sidebar.classList.remove('show');
+                if (overlay) overlay.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+        
         // Улучшения для форм на мобильных устройствах
         document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем и исправляем скролл при загрузке страницы
+            checkScrollLock();
+            
+            // Если это мобильное устройство, убеждаемся что скролл не заблокирован
+            if (window.innerWidth < 768) {
+                document.body.style.overflow = '';
+            }
             // Prevent zoom on iOS when focusing inputs
             if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
                 const viewport = document.querySelector('meta[name=viewport]');
@@ -223,6 +261,9 @@
     </script>
     
     <?php echo $__env->yieldContent('scripts'); ?>
+    
+   
+
 </body>
 </html>
 <?php /**PATH C:\OSPanel\domains\link\resources\views/admin/layout.blade.php ENDPATH**/ ?>

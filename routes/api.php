@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PhotoEditorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +18,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// Остальные API роуты для фоторедактора (если нужны в будущем)
+// Route::middleware('auth')->prefix('photo-editor')->group(function () {
+//     Route::get('/current-images', [PhotoEditorController::class, 'getCurrentImages']);
+//     Route::delete('/delete-image', [PhotoEditorController::class, 'deleteImage']);
+// });

@@ -159,7 +159,7 @@
             </div>
             <h3 class="h4 text-muted mb-3">Статьи не найдены</h3>
             <p class="text-muted mb-4">У {{ $user->name }} пока нет опубликованных статей</p>
-            <a href="{{ route('user.page', $user->username) }}" class="btn btn-outline-primary">
+            <a href="{{ route('user.page', $user->username) }}" class="btn 
                 <i class="bi bi-arrow-left"></i> Вернуться на главную
             </a>
         </div>

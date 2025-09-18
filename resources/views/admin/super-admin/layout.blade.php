@@ -139,10 +139,7 @@
                 </div>
                 
                 <nav class="nav flex-column">
-                    <a class="nav-link {{ request()->routeIs('super-admin.index') ? 'active' : '' }}" href="{{ route('super-admin.index') }}">
-                        <i class="bi bi-speedometer2 me-2"></i>
-                        Главная
-                    </a>
+                  
                     <a class="nav-link {{ request()->routeIs('super-admin.users*') ? 'active' : '' }}" href="{{ route('super-admin.users') }}">
                         <i class="bi bi-people me-2"></i>
                         Пользователи
@@ -160,7 +157,7 @@
                 <hr class="my-4">
                 
                 <div class="nav flex-column">
-                    <a class="nav-link" href="{{ route('admin.dashboard', auth()->id()) }}">
+                    <a class="nav-link" href="{{ route('admin.profile', auth()->id()) }}">
                         <i class="bi bi-person-gear me-2"></i>
                         Мои Настройки
                     </a>

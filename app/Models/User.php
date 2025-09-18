@@ -30,6 +30,8 @@ class User extends Authenticatable
         'youtube_url',
         'ok_url',
         'background_image',
+        'background_image_pc',
+        'background_image_mobile',
         'avatar',
     ];
 

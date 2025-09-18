@@ -1,5 +1,5 @@
 {{-- Секция Услуги --}}
-<section class="services" aria-label="Услуги">
+<section class="services" id="services" aria-label="Услуги">
     <div class="container">
         @if(isset($section) && (!empty(trim($section->title)) || !empty(trim($section->subtitle))))
             <header class="services-header mb-4 ">
@@ -14,6 +14,18 @@
         
         <div class="swiper services-swiper">
             <div class="swiper-wrapper">
+                {{-- Дефолтный блок для создания услуги (только для владельца) --}}
+                @if ($currentUser && $currentUser->id === $pageUser->id)
+                    <div class="swiper-slide">
+                        <a href="{{ route('admin.services.create', $currentUser->id) }}" class="owner-default-block service-add">
+                            <div class="owner-default-icon"></div>
+                            <div class="owner-default-text">
+                                <div class="owner-default-title">Добавить услугу</div>
+                                <div class="owner-default-subtitle">Расскажите о своих услугах</div>
+                            </div>
+                        </a>
+                    </div>
+                @endif
                
                 @foreach($services as $service)
                     <div class="swiper-slide">
@@ -62,19 +74,6 @@
                     </div>
                 @endforeach
 
-                {{-- Дефолтный блок для создания услуги (только для владельца) --}}
-                @if ($currentUser && $currentUser->id === $pageUser->id)
-                    <div class="swiper-slide">
-                        <a href="{{ route('admin.services.create', $currentUser->id) }}" class="owner-default-block service-add">
-                            <div class="owner-default-icon"></div>
-                            <div class="owner-default-text">
-                                <div class="owner-default-title">Добавить услугу</div>
-                                <div class="owner-default-subtitle">Расскажите о своих услугах</div>
-                            </div>
-                        </a>
-                    </div>
-                @endif
-
                 {{-- Показываем сообщение только если нет услуг и пользователь не владелец --}}
                 @if($services->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id))
                     <div class="swiper-slide">
@@ -85,6 +84,7 @@
                     </div>
                 @endif
             </div>
+
 
         </div>
     </div>

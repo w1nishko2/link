@@ -1,5 +1,5 @@
 {{-- Секция Галерея --}}
-<section class="gallery" aria-label="Галерея работ">
+<section class="gallery" id="gallery" aria-label="Галерея работ">
     <div class="container">
         @if((isset($section) && (!empty(trim($section->title)) || !empty(trim($section->subtitle)))) || !isset($section))
         <header class="gallery-header mb-4">
@@ -23,6 +23,19 @@
                 <!-- Swiper галерея -->
                 <div class="gallery-swiper swiper">
                     <div class="swiper-wrapper">
+                        {{-- Дефолтный блок для добавления изображения (только для владельца) --}}
+                        @if ($currentUser && $currentUser->id === $pageUser->id)
+                            <div class="swiper-slide">
+                                <a href="{{ route('admin.gallery.create', $currentUser->id) }}" class="owner-default-block gallery-add">
+                                    <div class="owner-default-icon"></div>
+                                    <div class="owner-default-text">
+                                        <div class="owner-default-title">Добавить фото</div>
+                                        <div class="owner-default-subtitle">Покажите свои работы</div>
+                                    </div>
+                                </a>
+                            </div>
+                        @endif
+
                         @foreach($galleryBlocks as $index => $block)
                             @foreach ($block['images'] as $image)
                                 <div class="swiper-slide">
@@ -43,26 +56,15 @@
                                 </div>
                             @endforeach
                         @endforeach
-
-                        {{-- Дефолтный блок для добавления изображения (только для владельца) --}}
-                        @if ($currentUser && $currentUser->id === $pageUser->id)
-                            <div class="swiper-slide">
-                                <a href="{{ route('admin.gallery', $currentUser->id) }}" class="owner-default-block gallery-add">
-                                    <div class="owner-default-icon"></div>
-                                    <div class="owner-default-text">
-                                        <div class="owner-default-title">Добавить фото</div>
-                                        <div class="owner-default-subtitle">Покажите свои работы</div>
-                                    </div>
-                                </a>
-                            </div>
-                        @endif
                     </div>
+                    
+                 
                 </div>
             @else
                 {{-- Показываем дефолтный блок или сообщение в зависимости от владельца --}}
                 @if ($currentUser && $currentUser->id === $pageUser->id)
                     <div class=" justify-content-center">
-                        <a href="{{ route('admin.gallery', $currentUser->id) }}" class="owner-default-block gallery-add" style="max-width: 400px;">
+                        <a href="{{ route('admin.gallery.create', $currentUser->id) }}" class="owner-default-block gallery-add" style="max-width: 400px;">
                             <div class="owner-default-icon"></div>
                             <div class="owner-default-text">
                                 <div class="owner-default-title">Добавить фото</div>

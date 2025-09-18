@@ -84,7 +84,7 @@
                                 @if($article->is_published)
                                 <a href="{{ route('articles.show', ['username' => $article->user->username, 'slug' => $article->slug]) }}" 
                                    target="_blank" 
-                                   class="btn btn-sm btn-outline-primary">
+                                   class="btn btn-sm ">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 @endif

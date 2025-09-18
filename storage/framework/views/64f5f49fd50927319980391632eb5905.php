@@ -623,4 +623,49 @@ function showAlert(message, type = 'info') {
         }, 5000); 
     }
 }
+
+// Функции для открытия редактора изображений
+function openAvatarEditor() {
+    console.log('Opening avatar editor from admin panel');
+    if (window.imageEditor && typeof window.imageEditor.openEditor === 'function') {
+        window.imageEditor.openEditor('avatar');
+    } else {
+        // Если редактор еще не загружен, ждем его
+        document.addEventListener('imageEditorReady', function() {
+            if (window.imageEditor) {
+                window.imageEditor.openEditor('avatar');
+            }
+        }, { once: true });
+        
+        // Если через 1 секунду редактор так и не загрузился, показываем ошибку
+        setTimeout(() => {
+            if (!window.imageEditor) {
+                console.error('Image editor not loaded');
+                alert('Редактор изображений не загружен. Пожалуйста, обновите страницу.');
+            }
+        }, 1000);
+    }
+}
+
+function openBackgroundEditor() {
+    console.log('Opening background editor from admin panel');
+    if (window.imageEditor && typeof window.imageEditor.openEditor === 'function') {
+        window.imageEditor.openEditor('background');
+    } else {
+        // Если редактор еще не загружен, ждем его
+        document.addEventListener('imageEditorReady', function() {
+            if (window.imageEditor) {
+                window.imageEditor.openEditor('background');
+            }
+        }, { once: true });
+        
+        // Если через 1 секунду редактор так и не загрузился, показываем ошибку
+        setTimeout(() => {
+            if (!window.imageEditor) {
+                console.error('Image editor not loaded');
+                alert('Редактор изображений не загружен. Пожалуйста, обновите страницу.');
+            }
+        }, 1000);
+    }
+}
 </script><?php /**PATH C:\OSPanel\domains\link\resources\views/admin/profile/scripts.blade.php ENDPATH**/ ?>

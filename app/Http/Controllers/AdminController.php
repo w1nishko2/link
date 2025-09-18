@@ -26,7 +26,8 @@ class AdminController extends Controller
         // Добавляем проверку доступа для защищенных методов админки
         $this->middleware(function ($request, $next) {
             // Проверяем, что пользователь может управлять только своими данными
-            $userId = $request->route('user');
+            $routeUser = $request->route('user');
+            $userId = $routeUser instanceof \App\Models\User ? $routeUser->id : $routeUser;
             if ($userId && auth()->user()->id != (int)$userId && !auth()->user()->isAdmin()) {
                 abort(403, 'Доступ запрещен');
             }
@@ -34,95 +35,6 @@ class AdminController extends Controller
         });
         
         $this->imageService = $imageService;
-    }
-
-    /**
-     * Главная страница админки
-        $this->imageService = $imageService;
-
-
-
-     * Показать главную страницу админки с подробной статистикой
-     */
-    public function index($user = null)
-    {
-        // Если передан ID пользователя, используем его, иначе текущего авторизованного
-        if ($user) {
-            $targetUser = User::findOrFail($user);
-            // Проверяем права доступа - пользователь может видеть только свою админку
-            // Сравниваем числовой ID пользователя (из URL) с ID текущего авторизованного пользователя
-            if (auth()->user()->id != (int)$user) {
-                abort(403, 'Доступ запрещен');
-            }
-        } else {
-            $targetUser = auth()->user();
-        }
-        
-        // Основная статистика (временно используем прямые запросы к базе)
-        $stats = [
-            'total_gallery_images' => GalleryImage::where('user_id', $targetUser->id)->count(),
-            'active_gallery_images' => GalleryImage::where('user_id', $targetUser->id)->where('is_active', true)->count(),
-            'total_services' => Service::where('user_id', $targetUser->id)->count(),
-            'active_services' => Service::where('user_id', $targetUser->id)->where('is_active', true)->count(),
-            'total_articles' => Article::where('user_id', $targetUser->id)->count(),
-            'published_articles' => Article::where('user_id', $targetUser->id)->where('is_published', true)->count(),
-            'total_banners' => Banner::where('user_id', $targetUser->id)->count(),
-            'active_banners' => Banner::where('user_id', $targetUser->id)->where('is_active', true)->count(),
-        ];
-
-        // Последние добавленные элементы
-        $recent = [
-            'recent_articles' => $targetUser->articles()->latest()->limit(5)->get(),
-            'recent_services' => $targetUser->services()->latest()->limit(5)->get(),
-            'recent_gallery' => $targetUser->galleryImages()->latest()->limit(5)->get(),
-            'recent_banners' => $targetUser->banners()->latest()->limit(5)->get(),
-        ];
-
-        // Статистика по датам (последние 30 дней)
-        $dateStats = [];
-        for ($i = 29; $i >= 0; $i--) {
-            $date = now()->subDays($i)->format('Y-m-d');
-            $dateStats[] = [
-                'date' => $date,
-                'articles' => $targetUser->articles()->whereDate('created_at', $date)->count(),
-                'services' => $targetUser->services()->whereDate('created_at', $date)->count(),
-                'gallery' => $targetUser->galleryImages()->whereDate('created_at', $date)->count(),
-            ];
-        }
-
-        // Популярность контента (можно расширить в будущем для отслеживания просмотров)
-        $contentPerformance = [
-            'most_recent_article' => $targetUser->articles()->published()->latest()->first(),
-            'total_content_items' => $stats['total_articles'] + $stats['total_services'] + $stats['total_gallery_images'],
-            'profile_completion' => $this->calculateProfileCompletion($targetUser),
-        ];
-
-        return view('admin.index', compact('stats', 'recent', 'dateStats', 'contentPerformance'))->with('user', $targetUser);
-    }
-
-    /**
-     * Вычисляет процент заполненности профиля
-     */
-    private function calculateProfileCompletion($user)
-    {
-        $fields = [
-            'name' => !empty($user->name),
-            'bio' => !empty($user->bio),
-            'avatar' => !empty($user->avatar),
-            'background_image' => !empty($user->background_image),
-            'telegram_url' => !empty($user->telegram_url),
-            'whatsapp_url' => !empty($user->whatsapp_url),
-            'vk_url' => !empty($user->vk_url),
-            'youtube_url' => !empty($user->youtube_url),
-            'has_services' => $user->services()->count() > 0,
-            'has_articles' => $user->articles()->count() > 0,
-            'has_gallery' => $user->galleryImages()->count() > 0,
-        ];
-
-        $completed = count(array_filter($fields));
-        $total = count($fields);
-
-        return round(($completed / $total) * 100);
     }
 
     /**
@@ -363,8 +275,16 @@ class AdminController extends Controller
     public function gallery()
     {
         $user = auth()->user();
-        $images = $user->galleryImages()->ordered()->paginate(12);
-        return view('admin.gallery.index', compact('images'));
+        $images = GalleryImage::where('user_id', $user->id)->orderBy('order_index')->get();
+        return view('admin.gallery.index', compact('images'))
+            ->with('currentUserId', $user->id);
+    }
+
+    public function galleryCreate()
+    {
+        $user = auth()->user();
+        return view('admin.gallery.create', compact('user'))
+            ->with('currentUserId', $user->id);
     }
 
     public function galleryStore(Request $request)
@@ -372,36 +292,47 @@ class AdminController extends Controller
         $request->validate([
             'title' => 'nullable|string|max:100',
             'alt_text' => 'nullable|string|max:150',
-            'image' => 'required|file',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
+            'order_index' => 'nullable|integer|min:0'
         ]);
 
         $user = auth()->user();
         
-        // Валидируем изображение
-        $validationErrors = $this->imageService->validateImage($request->file('image'), 'gallery');
-        if (!empty($validationErrors)) {
-            return redirect()->back()->withErrors(['image' => $validationErrors[0]]);
-        }
-        
-        // Обрабатываем и сохраняем изображение
-        $imagePath = $this->imageService->processAndStore(
-            $request->file('image'), 
-            'gallery', 
-            'gallery/' . $user->id
-        );
-        
-        if (!$imagePath) {
-            return redirect()->back()->withErrors(['image' => 'Ошибка при обработке изображения']);
-        }
+        try {
+            // Валидируем изображение
+            $validationErrors = $this->imageService->validateImage($request->file('image'), 'gallery');
+            if (!empty($validationErrors)) {
+                return redirect()->back()->withErrors(['image' => $validationErrors[0]])->withInput();
+            }
+            
+            // Обрабатываем и сохраняем изображение
+            $imagePath = $this->imageService->processAndStore(
+                $request->file('image'), 
+                'gallery', 
+                'gallery/' . $user->id
+            );
+            
+            if (!$imagePath) {
+                return redirect()->back()->withErrors(['image' => 'Ошибка при обработке изображения'])->withInput();
+            }
 
-        $user->galleryImages()->create([
-            'title' => $request->title,
-            'alt_text' => $request->alt_text ?: $request->title,
-            'image_path' => $imagePath,
-            'order_index' => $request->order_index ?: $user->galleryImages()->count(),
-        ]);
+            $orderIndex = $request->order_index ?? (GalleryImage::where('user_id', $user->id)->max('order_index') + 1);
 
-        return redirect()->route('admin.gallery', $user->id)->with('success', 'Изображение добавлено в галерею!');
+            GalleryImage::create([
+                'user_id' => $user->id,
+                'title' => $request->title,
+                'alt_text' => $request->alt_text ?: $request->title,
+                'image_path' => $imagePath,
+                'order_index' => $orderIndex,
+                'is_active' => true
+            ]);
+
+            $redirectUrl = route('user.page', $user->username) . '#gallery';
+            return redirect($redirectUrl)->with('success', 'Изображение добавлено в галерею!');
+        } catch (\Exception $e) {
+            Log::error('Ошибка добавления изображения: ' . $e->getMessage());
+            return back()->withErrors(['image' => 'Ошибка при загрузке изображения.'])->withInput();
+        }
     }
 
     public function galleryUpdate(Request $request, $user, GalleryImage $image)
@@ -422,11 +353,46 @@ class AdminController extends Controller
             'alt_text' => 'nullable|string|max:150',
             'order_index' => 'nullable|integer',
             'is_active' => 'boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
         ]);
 
-        $image->update($request->only(['title', 'alt_text', 'order_index', 'is_active']));
+        try {
+            // Если загружается новое изображение
+            if ($request->hasFile('image')) {
+                // Валидируем изображение
+                $validationErrors = $this->imageService->validateImage($request->file('image'), 'gallery');
+                if (!empty($validationErrors)) {
+                    return redirect()->back()->withErrors(['image' => $validationErrors[0]])->withInput();
+                }
+                
+                // Удаляем старое изображение
+                if ($image->image_path) {
+                    $this->imageService->deleteImage($image->image_path);
+                }
+                
+                // Обрабатываем и сохраняем новое изображение
+                $imagePath = $this->imageService->processAndStore(
+                    $request->file('image'), 
+                    'gallery', 
+                    'gallery/' . $image->user_id
+                );
+                
+                if (!$imagePath) {
+                    return redirect()->back()->withErrors(['image' => 'Ошибка при обработке изображения'])->withInput();
+                }
+                
+                $image->image_path = $imagePath;
+            }
 
-        return redirect()->route('admin.gallery', auth()->user()->id)->with('success', 'Изображение обновлено!');
+            // Обновляем остальные поля
+            $image->update($request->only(['title', 'alt_text', 'order_index', 'is_active']));
+
+            $redirectUrl = route('user.page', auth()->user()->username) . '#gallery';
+            return redirect($redirectUrl)->with('success', 'Изображение обновлено!');
+        } catch (\Exception $e) {
+            Log::error('Ошибка обновления изображения: ' . $e->getMessage());
+            return back()->withErrors(['image' => 'Ошибка при обновлении изображения.'])->withInput();
+        }
     }
 
     public function galleryDestroy($user, GalleryImage $image)
@@ -458,7 +424,26 @@ class AdminController extends Controller
 
         Log::info('Изображение успешно удалено', ['image_id' => $image->id]);
 
-        return redirect()->route('admin.gallery', auth()->user()->id)->with('success', 'Изображение удалено!');
+        $redirectUrl = route('user.page', auth()->user()->username) . '#gallery';
+        return redirect($redirectUrl)->with('success', 'Изображение удалено!');
+    }
+
+    public function galleryEdit($user, GalleryImage $image)
+    {
+        // Проверяем, что пользователь авторизован
+        if (!auth()->check()) {
+            abort(401, 'Необходима авторизация');
+        }
+
+        // Для админов разрешаем редактировать любые изображения
+        // Если нужна строгая проверка владельца, раскомментируйте:
+        // if ($image->user_id !== auth()->user()->id) {
+        //     abort(403);
+        // }
+
+        $user = auth()->user();
+        return view('admin.gallery.edit', compact('user', 'image'))
+            ->with('currentUserId', $user->id);
     }
 
     /**
@@ -545,7 +530,8 @@ class AdminController extends Controller
 
         Service::create($data);
 
-        return redirect()->route('admin.services', $user->id)->with('success', 'Услуга добавлена!');
+        $redirectUrl = route('user.page', $user->username) . '#services';
+        return redirect($redirectUrl)->with('success', 'Услуга добавлена!');
     }
 
     public function servicesEdit(User $user, Service $service)
@@ -623,7 +609,8 @@ class AdminController extends Controller
 
         $service->update($data);
 
-        return redirect()->route('admin.services', $user->id)->with('success', 'Услуга обновлена!');
+        $redirectUrl = route('user.page', $user->username) . '#services';
+        return redirect($redirectUrl)->with('success', 'Услуга обновлена!');
     }
 
     public function servicesDestroy(User $user, Service $service)
@@ -644,7 +631,8 @@ class AdminController extends Controller
 
         $service->delete();
 
-        return redirect()->route('admin.services', $user->id)->with('success', 'Услуга удалена!');
+        $redirectUrl = route('user.page', $user->username) . '#services';
+        return redirect($redirectUrl)->with('success', 'Услуга удалена!');
     }
 
     /**
@@ -680,7 +668,8 @@ class AdminController extends Controller
             abort(403, 'Доступ запрещен');
         }
 
-        return view('admin.articles.create', compact('user'));
+        $currentUserId = $user->id;
+        return view('admin.articles.create', compact('user', 'currentUserId'));
     }
 
     public function articlesStore(Request $request)
@@ -689,17 +678,27 @@ class AdminController extends Controller
             'title' => 'required|string|max:150',
             'excerpt' => 'required|string|max:300',
             'content' => 'required|string',
-            'image' => 'nullable|file|max:10240',
+            'image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp|max:10240',
             'read_time' => 'nullable|integer|min:1',
             'order_index' => 'nullable|integer',
-            'is_published' => 'boolean',
+            'is_published' => 'nullable|in:0,1',
         ]);
 
+        /** @var User $user */
         $user = auth()->user();
         $data = $request->only(['title', 'excerpt', 'content', 'read_time', 'order_index', 'is_published']);
         $data['user_id'] = $user->id;
         $data['slug'] = Str::slug($request->title);
-        $data['order_index'] = $data['order_index'] ?: $user->articles()->count();
+        
+        // Приводим is_published к boolean
+        $data['is_published'] = $request->input('is_published') == '1';
+        
+        // Устанавливаем order_index
+        if ($request->has('order_index') && $request->input('order_index') !== null) {
+            $data['order_index'] = $request->input('order_index');
+        } else {
+            $data['order_index'] = Article::where('user_id', $user->id)->count();
+        }
 
         if ($request->hasFile('image')) {
             // Валидируем изображение
@@ -722,7 +721,8 @@ class AdminController extends Controller
 
         Article::create($data);
 
-        return redirect()->route('admin.articles', auth()->user()->id)->with('success', 'Статья добавлена!');
+        $redirectUrl = route('user.page', $user->username) . '#articles';
+        return redirect($redirectUrl)->with('success', 'Статья добавлена!');
     }
 
     public function articlesEdit($user, Article $article)
@@ -731,7 +731,8 @@ class AdminController extends Controller
         //     abort(403);
         // }
 
-        return view('admin.articles.edit', compact('article'));
+        $currentUserId = auth()->user()->id;
+        return view('admin.articles.edit', compact('article', 'currentUserId'));
     }
 
     public function articlesUpdate(Request $request, $user, Article $article)
@@ -744,13 +745,21 @@ class AdminController extends Controller
             'title' => 'required|string|max:150',
             'excerpt' => 'required|string|max:300',
             'content' => 'required|string',
-            'image' => 'nullable|file|max:10240',
+            'image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp|max:10240',
             'read_time' => 'nullable|integer|min:1',
             'order_index' => 'nullable|integer',
-            'is_published' => 'boolean',
+            'is_published' => 'nullable|in:0,1',
         ]);
 
         $data = $request->only(['title', 'excerpt', 'content', 'read_time', 'order_index', 'is_published']);
+        
+        // Приводим is_published к boolean
+        $data['is_published'] = $request->input('is_published') == '1';
+        
+        // Обновляем slug если изменился заголовок
+        if ($request->title !== $article->title) {
+            $data['slug'] = Str::slug($request->title);
+        }
 
         if ($request->hasFile('image')) {
             // Валидируем изображение
@@ -774,7 +783,8 @@ class AdminController extends Controller
 
         $article->update($data);
 
-        return redirect()->route('admin.articles', auth()->user()->id)->with('success', 'Статья обновлена!');
+        $redirectUrl = route('user.page', $user->username) . '#articles';
+        return redirect($redirectUrl)->with('success', 'Статья обновлена!');
     }
 
     public function articlesDestroy($user, Article $article)
@@ -789,7 +799,8 @@ class AdminController extends Controller
 
         $article->delete();
 
-        return redirect()->route('admin.articles', auth()->user()->id)->with('success', 'Статья удалена!');
+        $redirectUrl = route('user.page', auth()->user()->username) . '#articles';
+        return redirect($redirectUrl)->with('success', 'Статья удалена!');
     }
 
     /**
@@ -801,6 +812,21 @@ class AdminController extends Controller
         $banners = $user->banners()->ordered()->paginate(10);
         $currentUserId = $user->id;
         return view('admin.banners.index', compact('banners', 'currentUserId'));
+    }
+
+    public function bannersCreate(User $user = null)
+    {
+        // Если параметр user не передан, используем текущего авторизованного пользователя
+        if (!$user) {
+            $user = auth()->user();
+        }
+        
+        // Проверяем права доступа
+        if (auth()->user()->id != $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        return view('admin.banners.create', compact('user'));
     }
 
     public function bannersStore(Request $request)
@@ -817,7 +843,7 @@ class AdminController extends Controller
         $user = auth()->user();
         $data = $request->only(['title', 'description', 'link_url', 'link_text', 'order_index']);
         $data['user_id'] = $user->id;
-        $data['is_active'] = $request->has('is_active') ? true : false;
+        $data['is_active'] = true; // Все баннеры автоматически активны
         $data['order_index'] = $data['order_index'] ?: $user->banners()->count();
 
         if ($request->hasFile('image')) {
@@ -841,7 +867,8 @@ class AdminController extends Controller
 
         Banner::create($data);
 
-        return redirect()->route('admin.banners', auth()->user()->id)->with('success', 'Баннер добавлен!');
+        $redirectUrl = route('user.page', auth()->user()->username) . '#banners';
+        return redirect($redirectUrl)->with('success', 'Баннер добавлен!');
     }
 
     public function bannersEdit($user, Banner $banner)
@@ -866,10 +893,10 @@ class AdminController extends Controller
             'link_url' => 'nullable|url|max:255',
             'link_text' => 'nullable|string|max:50',
             'order_index' => 'nullable|integer',
-            'is_active' => 'boolean',
         ]);
 
-        $data = $request->only(['title', 'description', 'link_url', 'link_text', 'order_index', 'is_active']);
+        $data = $request->only(['title', 'description', 'link_url', 'link_text', 'order_index']);
+        $data['is_active'] = true; // Принудительно устанавливаем активность
 
         if ($request->hasFile('image')) {
             // Валидируем изображение
@@ -893,7 +920,8 @@ class AdminController extends Controller
 
         $banner->update($data);
 
-        return redirect()->route('admin.banners', auth()->user()->id)->with('success', 'Баннер обновлен!');
+        $redirectUrl = route('user.page', auth()->user()->username) . '#banners';
+        return redirect($redirectUrl)->with('success', 'Баннер обновлен!');
     }
 
     public function bannersDestroy($user, Banner $banner)
@@ -908,7 +936,8 @@ class AdminController extends Controller
 
         $banner->delete();
 
-        return redirect()->route('admin.banners', auth()->user()->id)->with('success', 'Баннер удален!');
+        $redirectUrl = route('user.page', auth()->user()->username) . '#banners';
+        return redirect($redirectUrl)->with('success', 'Баннер удален!');
     }
 
     /**
@@ -1071,7 +1100,7 @@ class AdminController extends Controller
                     'Что я предлагаю',
                     'Мои возможности',
                     'Чем могу помочь',
-                    'Услуги и консультации'
+                    'Услуги и Консультация'
                 ],
                 'subtitles' => [
                     'Пусто',
@@ -1131,7 +1160,7 @@ class AdminController extends Controller
                     'Мой блог',
                     'Полезные материалы',
                     'Последние публикации',
-                    'Советы и рекомендации'
+                    'Блог'
                 ],
                 'subtitles' => [
                     'Пусто',
@@ -1220,6 +1249,11 @@ class AdminController extends Controller
             ];
 
             foreach ($request->sections as $sectionData) {
+                // Пропускаем обновление настроек для главного экрана
+                if ($sectionData['section_key'] === 'hero') {
+                    continue;
+                }
+                
                 $order = $fixedOrder[$sectionData['section_key']] ?? 999;
                 
                 // Преобразуем пустые строки в null для корректного сохранения

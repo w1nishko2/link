@@ -15,9 +15,7 @@
     
     // Определяем заголовок по текущему маршруту
     $pageTitle = '';
-    if(request()->routeIs('admin.dashboard')) {
-        $pageTitle = 'Главная';
-    } elseif(request()->routeIs('admin.profile.edit')) {
+    if(request()->routeIs('admin.profile.edit')) {
         $pageTitle = 'Редактирование профиля';
     } elseif(request()->routeIs('admin.profile*')) {
         $pageTitle = 'Управление профилем';
@@ -89,10 +87,16 @@
     </div>
     
     <nav class="nav flex-column">
-        <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard', $userId) }}">
-            <i class="bi bi-speedometer2 me-2"></i>
-            Главная
+        <a class="nav-link {{ request()->routeIs('admin.analytics*') ? 'active' : '' }}" href="{{ route('admin.analytics', $userId) }}">
+            <i class="bi bi-graph-up me-2"></i>
+            Аналитика
         </a>
+        
+        <a class="nav-link " href="{{ route('articles.all') }}">
+            <i class="bi bi-collection me-2"></i>
+            Мир Линка
+        </a>
+      
         <a class="nav-link {{ request()->routeIs('admin.profile*') ? 'active' : '' }}" href="{{ route('admin.profile', $userId) }}">
             <i class="bi bi-person-circle me-2"></i>
             Профиль

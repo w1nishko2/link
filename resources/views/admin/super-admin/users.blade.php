@@ -60,7 +60,7 @@
                             <div class="btn-group" role="group">
                                 <a href="{{ route('user.page', $user->username) }}" 
                                    target="_blank" 
-                                   class="btn btn-sm btn-outline-primary">
+                                   class="btn btn-sm 
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <button type="button" class="btn btn-sm btn-outline-secondary" disabled>

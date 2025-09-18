@@ -424,6 +424,25 @@ function renderSections(sections) {
     const html = `
         <div class="sections-list" id="sectionsList">
             ${sections.map(section => {
+                // Для главного экрана не показываем поля заголовка и подзаголовка
+                if (section.section_key === 'hero') {
+                    return `
+                    <div class="section-item card mb-3" data-section-key="${section.section_key}">
+                        <div class="card-body">
+                            <div class="section-header mb-3">
+                                <h6 class="mb-1 fw-bold text-primary">${section.section_name}</h6>
+                                <small class="text-muted">Порядок: ${section.order}</small>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Настройки заголовка и подзаголовка для главного экрана фиксированы и не могут быть изменены.
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }
+                
                 return `
                 <div class="section-item card mb-3" data-section-key="${section.section_key}">
                     <div class="card-body">
@@ -544,11 +563,26 @@ function saveSections() {
 
     const sections = [];
     document.querySelectorAll('.section-item').forEach((item, index) => {
-        const titleValue = item.querySelector('.section-title').value;
-        const subtitleValue = item.querySelector('.section-subtitle').value;
+        const sectionKey = item.dataset.sectionKey;
+        
+        // Пропускаем главный экран при сохранении
+        if (sectionKey === 'hero') {
+            return;
+        }
+        
+        const titleSelect = item.querySelector('.section-title');
+        const subtitleSelect = item.querySelector('.section-subtitle');
+        
+        // Проверяем, что элементы существуют (для hero их может не быть)
+        if (!titleSelect || !subtitleSelect) {
+            return;
+        }
+        
+        const titleValue = titleSelect.value;
+        const subtitleValue = subtitleSelect.value;
         
         const sectionData = {
-            section_key: item.dataset.sectionKey,
+            section_key: sectionKey,
             title: titleValue === 'Пусто' ? '' : titleValue,
             subtitle: subtitleValue === 'Пусто' ? '' : subtitleValue
         };
@@ -621,6 +655,51 @@ function showAlert(message, type = 'info') {
                 alert.remove();
             }
         }, 5000); 
+    }
+}
+
+// Функции для открытия редактора изображений
+function openAvatarEditor() {
+    console.log('Opening avatar editor from admin panel');
+    if (window.imageEditor && typeof window.imageEditor.openEditor === 'function') {
+        window.imageEditor.openEditor('avatar');
+    } else {
+        // Если редактор еще не загружен, ждем его
+        document.addEventListener('imageEditorReady', function() {
+            if (window.imageEditor) {
+                window.imageEditor.openEditor('avatar');
+            }
+        }, { once: true });
+        
+        // Если через 1 секунду редактор так и не загрузился, показываем ошибку
+        setTimeout(() => {
+            if (!window.imageEditor) {
+                console.error('Image editor not loaded');
+                alert('Редактор изображений не загружен. Пожалуйста, обновите страницу.');
+            }
+        }, 1000);
+    }
+}
+
+function openBackgroundEditor() {
+    console.log('Opening background editor from admin panel');
+    if (window.imageEditor && typeof window.imageEditor.openEditor === 'function') {
+        window.imageEditor.openEditor('background');
+    } else {
+        // Если редактор еще не загружен, ждем его
+        document.addEventListener('imageEditorReady', function() {
+            if (window.imageEditor) {
+                window.imageEditor.openEditor('background');
+            }
+        }, { once: true });
+        
+        // Если через 1 секунду редактор так и не загрузился, показываем ошибку
+        setTimeout(() => {
+            if (!window.imageEditor) {
+                console.error('Image editor not loaded');
+                alert('Редактор изображений не загружен. Пожалуйста, обновите страницу.');
+            }
+        }, 1000);
     }
 }
 </script>

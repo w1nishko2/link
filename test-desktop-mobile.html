@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест десктоп-контейнера на мобильном</title>
+    <style>
+        /* Базовые стили */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .screen-info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        /* Правила для десктоп-контейнера */
+        .format-container {
+            position: relative;
+            background: white;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            user-select: none;
+            margin: 0 auto;
+        }
+        
+        .format-container.desktop {
+            width: 800px;
+            height: 450px;
+            aspect-ratio: 16 / 9;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        
+        .format-container.desktop::before {
+            content: "Десктоп 16:9\A800×450px";
+            white-space: pre;
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        /* Мобильные правила - точно как в photo-editor.css */
+        @media (max-width: 768px) {
+            .format-container.desktop {
+                width: 800px !important;
+                height: 450px !important;
+                max-width: none !important;
+                max-height: none !important;
+                zoom: 0.4; /* 800px → 320px, 450px → 180px */
+                aspect-ratio: 16 / 9;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .format-container.desktop {
+                zoom: 0.3 !important; /* 800px → 240px, 450px → 135px */
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .format-container.desktop {
+                zoom: 0.28 !important; /* 800px → 224px, 450px → 126px */
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .format-container.desktop {
+                zoom: 0.25 !important; /* 800px → 200px, 450px → 112.5px */
+            }
+        }
+        
+        .measurements {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-info">
+        <strong>Информация об экране:</strong><br>
+        Ширина экрана: <span id="screenWidth"></span>px<br>
+        Высота экрана: <span id="screenHeight"></span>px<br>
+        Ширина viewport: <span id="viewportWidth"></span>px<br>
+        Высота viewport: <span id="viewportHeight"></span>px
+    </div>
+    
+    <div class="test-container">
+        <h2>Тест десктоп-контейнера (16:9)</h2>
+        <p>Контейнер должен сохранять пропорции 16:9 на всех экранах</p>
+        
+        <div class="format-container desktop" id="desktopContainer"></div>
+        
+        <div class="measurements">
+            <div>Размеры контейнера:</div>
+            <div>Ширина: <span id="containerWidth"></span>px</div>
+            <div>Высота: <span id="containerHeight"></span>px</div>
+            <div>Соотношение: <span id="containerRatio"></span></div>
+            <div>Zoom: <span id="containerZoom"></span></div>
+            <div>Целевое соотношение 16:9: <span id="targetRatio"></span></div>
+            <div>Правильное соотношение: <span id="isCorrect"></span></div>
+        </div>
+    </div>
+    
+    <script>
+        function updateInfo() {
+            // Информация об экране
+            document.getElementById('screenWidth').textContent = screen.width;
+            document.getElementById('screenHeight').textContent = screen.height;
+            document.getElementById('viewportWidth').textContent = window.innerWidth;
+            document.getElementById('viewportHeight').textContent = window.innerHeight;
+            
+            // Размеры контейнера
+            const container = document.getElementById('desktopContainer');
+            const rect = container.getBoundingClientRect();
+            const computedStyle = window.getComputedStyle(container);
+            
+            document.getElementById('containerWidth').textContent = Math.round(rect.width);
+            document.getElementById('containerHeight').textContent = Math.round(rect.height);
+            
+            const ratio = rect.width / rect.height;
+            const targetRatio = 16 / 9;
+            
+            document.getElementById('containerRatio').textContent = ratio.toFixed(4);
+            document.getElementById('containerZoom').textContent = computedStyle.zoom || '1';
+            document.getElementById('targetRatio').textContent = targetRatio.toFixed(4);
+            
+            const isCorrect = Math.abs(ratio - targetRatio) < 0.01;
+            document.getElementById('isCorrect').textContent = isCorrect ? '✅ Да' : '❌ Нет';
+            document.getElementById('isCorrect').style.color = isCorrect ? 'green' : 'red';
+        }
+        
+        // Обновляем при загрузке и изменении размера окна
+        window.addEventListener('load', updateInfo);
+        window.addEventListener('resize', updateInfo);
+        
+        // Обновляем каждую секунду (на случай изменений CSS)
+        setInterval(updateInfo, 1000);
+    </script>
+</body>
+</html>

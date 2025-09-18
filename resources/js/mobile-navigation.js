@@ -29,6 +29,9 @@
             return;
         }
         
+        // Проверяем и исправляем скролл при инициализации
+        checkAndFixScroll();
+        
         // Добавляем обработчики событий
         setupEventListeners();
         
@@ -37,6 +40,25 @@
         
         isInitialized = true;
         console.log('Mobile navigation initialized');
+    }
+    
+    /**
+     * Проверка и исправление скролла
+     */
+    function checkAndFixScroll() {
+        // Если ширина экрана больше 768px, убираем блокировку скролла
+        if (window.innerWidth >= 768) {
+            document.body.style.overflow = '';
+            document.body.classList.remove('mobile-sidebar-open');
+        }
+        // На мобильных устройствах проверяем, не заблокирован ли скролл случайно
+        else if (window.innerWidth < 768) {
+            // Если сайдбар не показан, убираем блокировку скролла
+            if (!sidebar || !sidebar.classList.contains('show')) {
+                document.body.style.overflow = '';
+                document.body.classList.remove('mobile-sidebar-open');
+            }
+        }
     }
     
     /**
@@ -112,6 +134,9 @@
     function handleWindowResize() {
         if (window.innerWidth >= 768) {
             closeMobileSidebar();
+            // Дополнительная проверка - убираем overflow:hidden с body на больших экранах
+            document.body.style.overflow = '';
+            document.body.classList.remove('mobile-sidebar-open');
         }
     }
     
@@ -194,6 +219,20 @@
         window.addEventListener('load', function() {
             // Повторная инициализация на случай если элементы добавились позже
             setTimeout(initMobileNavigation, 100);
+            
+            // Дополнительная проверка скролла через 500мс после загрузки
+            setTimeout(function() {
+                // Принудительно убираем блокировку скролла для всех устройств
+                document.body.style.overflow = '';
+                document.body.classList.remove('mobile-sidebar-open');
+                
+                // Дополнительная проверка для владельцев страниц
+                if (document.body.classList.contains('owner-mode')) {
+                    document.body.style.overflow = '';
+                    document.body.style.position = '';
+                    document.body.style.width = '';
+                }
+            }, 500);
         });
     }
     

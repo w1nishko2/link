@@ -4,7 +4,7 @@
 
 /* Основной контейнер Swiper для услуг */
 .services-swiper {
-    padding: 20px 0;
+    padding: 0px 0;
     overflow: hidden;
     position: relative;
     direction: ltr;
@@ -37,7 +37,7 @@
 }
 
 .service-card:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-0.2px) scale(1);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     border-color: var(--bs-gray-300);
 }
@@ -59,7 +59,7 @@
 }
 
 .service-card:hover .service-image img {
-    transform: scale(1.1);
+    transform: scale(1.008);
 }
 
 /* Контент занимает меньше места (30% от высоты) */
@@ -222,7 +222,7 @@
     border-color: var(--bs-primary);
     background: var(--bs-primary-subtle);
     color: var(--bs-primary);
-    transform: translateY(-5px);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {

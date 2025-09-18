@@ -134,7 +134,7 @@ unset($__errorArgs, $__bag); ?>
             <i class="bi bi-shield-check me-2"></i>
             Обновить пароль
         </button>
-        <a href="<?php echo e(route('admin.dashboard', $user->id)); ?>" class="btn btn-outline-secondary flex-fill">
+        <a href="<?php echo e(route('admin.profile', $user->id)); ?>" class="btn btn-outline-secondary flex-fill">
             <i class="bi bi-arrow-left me-2"></i>
             Назад к панели
         </a>

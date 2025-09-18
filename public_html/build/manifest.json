@@ -1,56 +1,76 @@
 {
+  "resources/css/admin-banners.css": {
+    "file": "assets/admin-banners-pewSeC9z.css",
+    "src": "resources/css/admin-banners.css",
+    "isEntry": true
+  },
+  "resources/css/admin-services.css": {
+    "file": "assets/admin-services-CzIV5i_M.css",
+    "src": "resources/css/admin-services.css",
+    "isEntry": true
+  },
   "resources/css/admin.css": {
-    "file": "assets/admin-CDWHTQ6V.css",
+    "file": "assets/admin-BTeXX0Mq.css",
     "src": "resources/css/admin.css",
     "isEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-CJen_xZ9.css",
+    "file": "assets/app-CI5TKPzM.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
-  "resources/css/image-editor.css": {
-    "file": "assets/image-editor-DoYr41F8.css",
-    "src": "resources/css/image-editor.css",
+  "resources/js/admin-articles.js": {
+    "file": "assets/admin-articles-yR_Ag4Fk.js",
+    "name": "admin-articles",
+    "src": "resources/js/admin-articles.js",
     "isEntry": true
   },
-  "resources/css/mobile-navigation.css": {
-    "file": "assets/mobile-navigation-rekka73z.css",
-    "src": "resources/css/mobile-navigation.css",
+  "resources/js/admin-banners.js": {
+    "file": "assets/admin-banners-4YT3UUsd.js",
+    "name": "admin-banners",
+    "src": "resources/js/admin-banners.js",
     "isEntry": true
   },
-  "resources/css/owner-defaults.css": {
-    "file": "assets/owner-defaults-C6Yr0ex5.css",
-    "src": "resources/css/owner-defaults.css",
+  "resources/js/admin-forms.js": {
+    "file": "assets/admin-forms-v1QQSRJF.js",
+    "name": "admin-forms",
+    "src": "resources/js/admin-forms.js",
     "isEntry": true
   },
-  "resources/css/services-reels.css": {
-    "file": "assets/services-reels-BU0KghO6.css",
-    "src": "resources/css/services-reels.css",
+  "resources/js/admin-gallery.js": {
+    "file": "assets/admin-gallery-Bg2r_wci.js",
+    "name": "admin-gallery",
+    "src": "resources/js/admin-gallery.js",
+    "isEntry": true
+  },
+  "resources/js/admin-images.js": {
+    "file": "assets/admin-images-BrdYEGHH.js",
+    "name": "admin-images",
+    "src": "resources/js/admin-images.js",
+    "isEntry": true
+  },
+  "resources/js/admin-loading.js": {
+    "file": "assets/admin-loading-CcxBrVig.js",
+    "name": "admin-loading",
+    "src": "resources/js/admin-loading.js",
+    "isEntry": true
+  },
+  "resources/js/admin-services.js": {
+    "file": "assets/admin-services-CirzTCzJ.js",
+    "name": "admin-services",
+    "src": "resources/js/admin-services.js",
+    "isEntry": true
+  },
+  "resources/js/admin-toggles.js": {
+    "file": "assets/admin-toggles-DNVUJ__i.js",
+    "name": "admin-toggles",
+    "src": "resources/js/admin-toggles.js",
     "isEntry": true
   },
   "resources/js/app.js": {
     "file": "assets/app-l0sNRNKZ.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
-  },
-  "resources/js/image-editor.js": {
-    "file": "assets/image-editor-C7AqgYGO.js",
-    "name": "image-editor",
-    "src": "resources/js/image-editor.js",
-    "isEntry": true
-  },
-  "resources/js/long-press-editor.js": {
-    "file": "assets/long-press-editor-hPrGwlVB.js",
-    "name": "long-press-editor",
-    "src": "resources/js/long-press-editor.js",
-    "isEntry": true
-  },
-  "resources/js/mobile-navigation.js": {
-    "file": "assets/mobile-navigation-BRdGpZ7U.js",
-    "name": "mobile-navigation",
-    "src": "resources/js/mobile-navigation.js",
     "isEntry": true
   }
 }

@@ -26,7 +26,7 @@ class HomeController extends Controller
     public function __construct(ImageProcessingService $imageService)
     {
         $this->imageService = $imageService;
-        $this->middleware('auth')->only(['index', 'updateProfile', 'updateBackground', 'updateAvatar']);
+        $this->middleware('auth')->only(['index', 'updateProfile', 'updateBackground', 'updateDualBackground', 'updateAvatar']);
     }
 
     /**
@@ -319,11 +319,36 @@ class HomeController extends Controller
     private function createDefaultSectionSettings($user)
     {
         $defaultSections = [
-            ['section_key' => 'hero', 'order' => 1],
-            ['section_key' => 'services', 'order' => 2],
-            ['section_key' => 'gallery', 'order' => 3],
-            ['section_key' => 'banners', 'order' => 4],
-            ['section_key' => 'articles', 'order' => 5],
+            [
+                'section_key' => 'hero', 
+                'order' => 1,
+                'title' => null,
+                'subtitle' => null
+            ],
+            [
+                'section_key' => 'services', 
+                'order' => 2,
+                'title' => 'Услуги и Консультация',
+                'subtitle' => null
+            ],
+            [
+                'section_key' => 'gallery', 
+                'order' => 3,
+                'title' => 'Портфолио',
+                'subtitle' => null
+            ],
+            [
+                'section_key' => 'banners', 
+                'order' => 4,
+                'title' => 'Новости и акции',
+                'subtitle' => null
+            ],
+            [
+                'section_key' => 'articles', 
+                'order' => 5,
+                'title' => 'Блог',
+                'subtitle' => null
+            ],
         ];
 
         foreach ($defaultSections as $section) {
@@ -333,8 +358,8 @@ class HomeController extends Controller
                     'section_key' => $section['section_key']
                 ],
                 [
-                    'title' => null, // Пустой заголовок по умолчанию
-                    'subtitle' => null, // Пустой подзаголовок по умолчанию
+                    'title' => $section['title'],
+                    'subtitle' => $section['subtitle'],
                     'is_visible' => true,
                     'order' => $section['order'],
                 ]
@@ -406,6 +431,134 @@ class HomeController extends Controller
             
         } catch (Exception $e) {
             Log::error('Ошибка при обновлении фона', [
+                'username' => $username,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['success' => false, 'message' => 'Произошла ошибка при обновлении фона'], 500);
+        }
+    }
+
+    /**
+     * Update user's dual background images (desktop + mobile).
+     *
+     * @param string $username
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateDualBackground($username, Request $request)
+    {
+        try {
+            $request->validate([
+                'desktop_image' => 'required|string', // base64 encoded image
+                'mobile_image' => 'required|string', // base64 encoded image
+            ]);
+
+            // Находим пользователя по username
+            $pageUser = User::where('username', $username)->firstOrFail();
+            
+            // Проверяем, что текущий пользователь может редактировать этот профиль
+            $currentUser = auth()->user();
+            if (!$currentUser || $currentUser->id !== $pageUser->id) {
+                return response()->json(['success' => false, 'message' => 'Доступ запрещен'], 403);
+            }
+
+            // Обрабатываем base64 изображения
+            $desktopImageData = $request->input('desktop_image');
+            $mobileImageData = $request->input('mobile_image');
+            
+            // Декодируем base64 изображения
+            if (preg_match('/^data:image\/(\w+);base64,/', $desktopImageData, $matches)) {
+                $desktopImageData = substr($desktopImageData, strpos($desktopImageData, ',') + 1);
+                $desktopImageData = base64_decode($desktopImageData);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Неверный формат изображения для ПК'], 422);
+            }
+            
+            if (preg_match('/^data:image\/(\w+);base64,/', $mobileImageData, $matches)) {
+                $mobileImageData = substr($mobileImageData, strpos($mobileImageData, ',') + 1);
+                $mobileImageData = base64_decode($mobileImageData);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Неверный формат изображения для мобильных'], 422);
+            }
+
+            // Создаем временные файлы
+            $desktopTempFile = tempnam(sys_get_temp_dir(), 'desktop_bg_');
+            $mobileTempFile = tempnam(sys_get_temp_dir(), 'mobile_bg_');
+            
+            file_put_contents($desktopTempFile, $desktopImageData);
+            file_put_contents($mobileTempFile, $mobileImageData);
+            
+            // Создаем UploadedFile объекты
+            $desktopFile = new \Illuminate\Http\UploadedFile(
+                $desktopTempFile,
+                'desktop_background.jpg',
+                'image/jpeg',
+                null,
+                true
+            );
+            
+            $mobileFile = new \Illuminate\Http\UploadedFile(
+                $mobileTempFile,
+                'mobile_background.jpg',
+                'image/jpeg',
+                null,
+                true
+            );
+            
+            // Обрабатываем и сохраняем изображения
+            $desktopImagePath = $this->imageService->processAndStore(
+                $desktopFile,
+                'background',
+                'backgrounds/' . $pageUser->id . '/desktop',
+                $pageUser->background_image_pc
+            );
+            
+            $mobileImagePath = $this->imageService->processAndStore(
+                $mobileFile,
+                'background',
+                'backgrounds/' . $pageUser->id . '/mobile',
+                $pageUser->background_image_mobile
+            );
+            
+            // Очищаем временные файлы
+            unlink($desktopTempFile);
+            unlink($mobileTempFile);
+            
+            if ($desktopImagePath && $mobileImagePath) {
+                $pageUser->update([
+                    'background_image_pc' => $desktopImagePath,
+                    'background_image_mobile' => $mobileImagePath,
+                    'background_image' => $desktopImagePath // Устанавливаем десктопную версию как основную
+                ]);
+                
+                Log::info('Двойной фон пользователя обновлен', [
+                    'user_id' => $pageUser->id,
+                    'username' => $username,
+                    'desktop_image_path' => $desktopImagePath,
+                    'mobile_image_path' => $mobileImagePath
+                ]);
+
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Фон успешно обновлен для всех устройств!',
+                    'desktop_url' => asset('storage/' . $desktopImagePath),
+                    'mobile_url' => asset('storage/' . $mobileImagePath)
+                ]);
+            }
+
+            return response()->json(['success' => false, 'message' => 'Ошибка при сохранении изображений'], 500);
+                            
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Пользователь не найден'], 404);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->first();
+            return response()->json(['success' => false, 'message' => $errors], 422);
+            
+        } catch (Exception $e) {
+            Log::error('Ошибка при обновлении двойного фона', [
                 'username' => $username,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()

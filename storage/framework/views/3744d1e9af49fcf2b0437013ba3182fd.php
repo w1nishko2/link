@@ -1,5 +1,5 @@
 
-<section class="services" aria-label="Услуги">
+<section class="services" id="services" aria-label="Услуги">
     <div class="container">
         <?php if(isset($section) && (!empty(trim($section->title)) || !empty(trim($section->subtitle)))): ?>
             <header class="services-header mb-4 ">
@@ -14,6 +14,18 @@
         
         <div class="swiper services-swiper">
             <div class="swiper-wrapper">
+                
+                <?php if($currentUser && $currentUser->id === $pageUser->id): ?>
+                    <div class="swiper-slide">
+                        <a href="<?php echo e(route('admin.services.create', $currentUser->id)); ?>" class="owner-default-block service-add">
+                            <div class="owner-default-icon"></div>
+                            <div class="owner-default-text">
+                                <div class="owner-default-title">Добавить услугу</div>
+                                <div class="owner-default-subtitle">Расскажите о своих услугах</div>
+                            </div>
+                        </a>
+                    </div>
+                <?php endif; ?>
                
                 <?php $__currentLoopData = $services; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $service): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <div class="swiper-slide">
@@ -64,19 +76,6 @@
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                 
-                <?php if($currentUser && $currentUser->id === $pageUser->id): ?>
-                    <div class="swiper-slide">
-                        <a href="<?php echo e(route('admin.services.create', $currentUser->id)); ?>" class="owner-default-block service-add">
-                            <div class="owner-default-icon"></div>
-                            <div class="owner-default-text">
-                                <div class="owner-default-title">Добавить услугу</div>
-                                <div class="owner-default-subtitle">Расскажите о своих услугах</div>
-                            </div>
-                        </a>
-                    </div>
-                <?php endif; ?>
-
-                
                 <?php if($services->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id)): ?>
                     <div class="swiper-slide">
                         <div class="service-card text-center">
@@ -86,6 +85,7 @@
                     </div>
                 <?php endif; ?>
             </div>
+
 
         </div>
     </div>

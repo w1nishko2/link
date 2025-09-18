@@ -1,5 +1,5 @@
 
-<section class="articles" aria-label="Статьи блога">
+<section class="articles" id="articles" aria-label="Статьи блога">
     <div class="container">
         <?php if((isset($section) && (!empty(trim($section->title)) || !empty(trim($section->subtitle)))) || !isset($section)): ?>
         <header class="articles-header">

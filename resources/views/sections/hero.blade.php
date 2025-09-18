@@ -1,27 +1,47 @@
 {{-- Секция Hero --}}
 <section class="hero {{ isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id ? 'owner-mode' : '' }}"
-    style="background-image: url('{{ $pageUser->background_image ? asset('storage/' . $pageUser->background_image) : '/hero.png' }}');"
     aria-label="Главная информация о {{ $pageUser->name }}"
-    @if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id) id="hero-background-editable" @endif>
-    
     @if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id)
-        <!-- Кнопки редактирования для владельца -->
-        <div class="hero-edit-controls">
-            <button type="button" class="hero-edit-btn" onclick="openBackgroundEditor()" title="Изменить фон">
-                <i class="bi bi-image"></i>
-            </button>
-            <button type="button" class="hero-edit-btn" onclick="openAvatarEditor()" title="Изменить аватар">
-                <i class="bi bi-person-circle"></i>
-            </button>
-        </div>
+        id="hero-background-section"
+        data-owner="true"
+        title="Нажмите на фон, чтобы изменить его"
+    @endif>
+    
+    @php
+        $desktopBg = $pageUser->background_image_pc ?: $pageUser->background_image ?: '/hero.png';
+        $mobileBg = $pageUser->background_image_mobile ?: $pageUser->background_image ?: '/hero.png';
         
-        <div class="edit-overlay" id="background-edit-overlay">
-            <div class="edit-hint">
-                <i class="bi bi-camera"></i>
-                <span>Нажмите, чтобы изменить фон</span>
-            </div>
-        </div>
-    @endif
+        if (!str_starts_with($desktopBg, '/') && !str_starts_with($desktopBg, 'http')) {
+            $desktopBg = asset('storage/' . $desktopBg);
+        } else if (str_starts_with($desktopBg, '/') && $desktopBg !== '/hero.png') {
+            $desktopBg = asset($desktopBg);
+        } else {
+            $desktopBg = asset($desktopBg);
+        }
+        
+        if (!str_starts_with($mobileBg, '/') && !str_starts_with($mobileBg, 'http')) {
+            $mobileBg = asset('storage/' . $mobileBg);
+        } else if (str_starts_with($mobileBg, '/') && $mobileBg !== '/hero.png') {
+            $mobileBg = asset($mobileBg);
+        } else {
+            $mobileBg = asset($mobileBg);
+        }
+    @endphp
+    
+    <!-- Адаптивный фон -->
+    <style>
+        .hero {
+            background-image: url('{{ $desktopBg }}');
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                background-image: url('{{ $mobileBg }}');
+            }
+        }
+    </style>
+    
+
     <div class="container">
         <div class="hero-section">
             <div class="hero-info">
@@ -111,16 +131,13 @@
                     @endif
                 </ul>
             </div>
-            <div class="hero-logo {{ isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id ? 'editable-avatar' : '' }}"
-                 @if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id) id="avatar-editable" @endif>
+            <div class="hero-logo"
                 @if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id)
-                    <div class="avatar-edit-overlay" id="avatar-edit-overlay">
-                        <div class="edit-hint">
-                            <i class="bi bi-camera"></i>
-                            <span>Изменить фото</span>
-                        </div>
-                    </div>
-                @endif
+                    onclick="openPhotoEditor('avatar'); event.stopPropagation();" 
+                    style="cursor: pointer;" 
+                    title="Нажмите, чтобы изменить аватар"
+                @endif>
+                
                 <x-optimized-image 
                     :src="$pageUser->avatar ? asset('storage/' . $pageUser->avatar) : null"
                     :alt="'Фотография ' . $pageUser->name"
@@ -133,17 +150,13 @@
     </div>
     
     @if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id)
-        {{-- Скрытые input'ы для загрузки файлов --}}
-        <input type="file" id="background-input" accept="image/*" style="display: none;">
-        <input type="file" id="avatar-input" accept="image/*" style="display: none;">
-        
         {{-- Модальное окно для редактирования текста --}}
         <div class="edit-modal" id="edit-modal">
             <div class="edit-modal-content">
                 <h3 id="edit-modal-title">Редактировать</h3>
                 <div class="edit-field-container">
                     <input type="text" id="edit-input" style="display: none;" maxlength="50" placeholder="Введите имя...">
-                    <textarea id="edit-textarea" style="display: none;" maxlength="1000" placeholder="Расскажите о себе..."></textarea>
+                    <textarea id="edit-textarea" style="display: none;" maxlength="190" placeholder="Расскажите о себе..."></textarea>
                     <div class="character-counter" id="character-counter">
                         <span id="current-length">0</span> / <span id="max-length">50</span>
                     </div>
@@ -161,17 +174,10 @@
 </section>
 
 @if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id)
-    <style>
-     
-    </style>
 
     @if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id)
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const backgroundEditableElement = document.getElementById('hero-background-editable');
-            const avatarEditableElement = document.getElementById('avatar-editable');
-            const backgroundInput = document.getElementById('background-input');
-            const avatarInput = document.getElementById('avatar-input');
             const heroCSRFToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             
             // Элементы для редактирования текста
@@ -186,16 +192,6 @@
             const characterCounter = document.getElementById('character-counter');
             const currentLengthSpan = document.getElementById('current-length');
             const maxLengthSpan = document.getElementById('max-length');
-            
-            console.log('Editable elements found:', {
-                name: !!editableNameElement,
-                bio: !!editableBioElement,
-                modal: !!editModal
-            });
-            
-            console.log('Name element:', editableNameElement);
-            console.log('Bio element:', editableBioElement);
-            console.log('Modal element:', editModal);
             
             let currentEditType = null;
             let currentEditElement = null;
@@ -232,8 +228,8 @@
             
             // Функция валидации описания
             function validateBio(value) {
-                if (value && value.length > 1000) {
-                    return { isValid: false, message: 'Описание не должно превышать 1000 символов' };
+                if (value && value.length > 190) {
+                    return { isValid: false, message: 'Описание не должно превышать 190 символов' };
                 }
                 const scriptRegex = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi;
                 if (scriptRegex.test(value)) {
@@ -252,38 +248,52 @@
             
             // Обработчик клика по имени
             if (editableNameElement) {
-                console.log('Adding click listener to name element');
                 editableNameElement.addEventListener('click', function(e) {
-                    console.log('Name element clicked!');
                     e.stopPropagation();
                     openEditModal('name', 'Редактировать имя', this.textContent.trim());
                 });
-            } else {
-                console.log('Name element not found!');
             }
             
             // Обработчик клика по описанию
             if (editableBioElement) {
-                console.log('Adding click listener to bio element');
                 editableBioElement.addEventListener('click', function(e) {
-                    console.log('Bio element clicked!');
                     e.stopPropagation();
                     const currentText = this.textContent.trim();
                     const bioText = currentText === 'Добро пожаловать на мою страницу!' ? '' : currentText;
                     openEditModal('bio', 'Редактировать описание', bioText);
                 });
-            } else {
-                console.log('Bio element not found!');
+            }
+            
+            // Обработчик клика по фону hero-секции (для изменения фона)
+            const heroSection = document.getElementById('hero-background-section');
+            if (heroSection && heroSection.dataset.owner === 'true') {
+                heroSection.addEventListener('click', function(e) {
+                    // Проверяем, что клик не был по hero-section или hero-logo
+                    const heroContentElement = e.target.closest('.hero-section');
+                    const heroLogoElement = e.target.closest('.hero-logo');
+                    const isInteractiveElement = e.target.closest('a, button, [contenteditable], .editable-name, .editable-bio, .social-link');
+                    
+                    // Если клик был по содержимому секции, логотипу или интерактивным элементам - не открываем редактор
+                    if (heroContentElement || heroLogoElement || isInteractiveElement) {
+                        return;
+                    }
+                    
+                    // Открываем фоторедактор только если клик был по фону
+                    if (typeof openPhotoEditor === 'function') {
+                        openPhotoEditor('hero');
+                    }
+                });
+                
+                // Добавляем курсор pointer только для фона
+                heroSection.style.cursor = 'pointer';
             }
             
             // Функция открытия модального окна
             function openEditModal(type, title, currentValue) {
-                console.log('Opening edit modal:', type, title, currentValue);
                 currentEditType = type;
                 currentEditElement = type === 'name' ? editableNameElement : editableBioElement;
                 
                 if (!editModal) {
-                    console.error('Edit modal not found!');
                     return;
                 }
                 
@@ -323,11 +333,11 @@
                     editTextarea.style.display = 'block';
                     editInput.style.display = 'none';
                     editTextarea.classList.remove('invalid');
-                    updateCharacterCounter(editTextarea, 1000);
+                    updateCharacterCounter(editTextarea, 190);
                     
                     // Добавляем обработчики для валидации в реальном времени
                     editTextarea.oninput = function() {
-                        updateCharacterCounter(this, 1000);
+                        updateCharacterCounter(this, 190);
                         const validation = validateBio(this.value);
                         if (validation.isValid) {
                             this.classList.remove('invalid');
@@ -456,185 +466,6 @@
                 });
             }
             
-            // Сначала регистрируем обработчик клика по аватару с захватом события
-            if (avatarEditableElement) {
-                avatarEditableElement.addEventListener('click', function(e) {
-                    console.log('Avatar click event', e.target);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-                    console.log('Opening avatar editor');
-                    // Ждем загрузки imageEditor и затем вызываем редактор
-                    if (window.imageEditor && typeof window.imageEditor.openEditor === 'function') {
-                        window.imageEditor.openEditor('avatar');
-                    } else {
-                        // Если редактор еще не загружен, ждем его
-                        document.addEventListener('imageEditorReady', function() {
-                            if (window.imageEditor) {
-                                window.imageEditor.openEditor('avatar');
-                            }
-                        }, { once: true });
-                        
-                        // Если через 1 секунду редактор так и не загрузился, показываем ошибку
-                        setTimeout(() => {
-                            if (!window.imageEditor) {
-                                console.error('Image editor not loaded');
-                                alert('Редактор изображений не загружен. Пожалуйста, обновите страницу.');
-                            }
-                        }, 1000);
-                    }
-                }, true); // true означает захват события в фазе захвата
-            }
-            
-            // Обработчик клика по фону
-            if (backgroundEditableElement) {
-                backgroundEditableElement.addEventListener('click', function(e) {
-                    console.log('Background click event', e.target);
-                    console.log('Event path:', e.composedPath());
-                    
-                    // Проверяем, что клик НЕ по аватару
-                    const isAvatarClick = e.target.closest('.hero-logo') || 
-                                         e.target.closest('#avatar-editable') ||
-                                         e.target.closest('.avatar-edit-overlay') ||
-                                         e.target.classList.contains('editable-avatar') ||
-                                         e.target.tagName === 'IMG';
-                    
-                    // Проверяем, что клик НЕ по содержимому hero-section (но разрешаем клик по overlay)
-                    const isContentClick = (e.target.closest('.container') ||
-                                          e.target.closest('.hero-section') ||
-                                          e.target.closest('.hero-info') ||
-                                          e.target.closest('.hero-links') ||
-                                          e.target.tagName === 'H1' ||
-                                          e.target.tagName === 'P' ||
-                                          e.target.tagName === 'A' ||
-                                          e.target.tagName === 'UL' ||
-                                          e.target.tagName === 'LI') && 
-                                         !e.target.closest('.edit-overlay') &&
-                                         !e.target.classList.contains('edit-overlay');
-                    
-                    // Клик должен быть именно по фону или по overlay области
-                    const isBackgroundClick = e.target === backgroundEditableElement ||
-                                            e.target.classList.contains('edit-overlay') ||
-                                            e.target.closest('.edit-overlay') ||
-                                            e.target.classList.contains('edit-hint') ||
-                                            e.target.closest('.edit-hint');
-                    
-                    console.log('Is avatar click:', isAvatarClick);
-                    console.log('Is content click:', isContentClick);
-                    console.log('Is background click:', isBackgroundClick);
-                    console.log('Target element:', e.target);
-                    console.log('Target classes:', e.target.className);
-                    
-                    if (!isAvatarClick && !isContentClick && isBackgroundClick) {
-                        console.log('Opening background editor');
-                        // Ждем загрузки imageEditor и затем вызываем редактор
-                        if (window.imageEditor && typeof window.imageEditor.openEditor === 'function') {
-                            window.imageEditor.openEditor('background');
-                        } else {
-                            // Если редактор еще не загружен, ждем его
-                            document.addEventListener('imageEditorReady', function() {
-                                if (window.imageEditor) {
-                                    window.imageEditor.openEditor('background');
-                                }
-                            }, { once: true });
-                            
-                            // Если через 1 секунду редактор так и не загрузился, показываем ошибку
-                            setTimeout(() => {
-                                if (!window.imageEditor) {
-                                    console.error('Image editor not loaded');
-                                    alert('Редактор изображений не загружен. Пожалуйста, обновите страницу.');
-                                }
-                            }, 1000);
-                        }
-                    } else {
-                        console.log('Click ignored - either avatar click, content click, or not background area');
-                    }
-                });
-            }
-            
-            function uploadImage(file, type) {
-                // Проверяем размер файла (10MB максимум)
-                if (file.size > 10 * 1024 * 1024) {
-                    alert('Файл слишком большой. Максимальный размер: 10MB');
-                    return;
-                }
-                
-                // Проверяем тип файла
-                if (!file.type.match(/^image\/(jpeg|png|jpg|gif|webp)$/)) {
-                    alert('Поддерживаются только изображения: JPEG, PNG, JPG, GIF, WebP');
-                    return;
-                }
-                
-                const formData = new FormData();
-                formData.append(type === 'background' ? 'background_image' : 'avatar', file);
-                
-                const url = type === 'background' 
-                    ? '{{ route("user.update.background", $pageUser->username) }}'
-                    : '{{ route("user.update.avatar", $pageUser->username) }}';
-                
-                // Показываем индикатор загрузки
-                showLoading(type);
-                
-                fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': heroCSRFToken,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    hideLoading(type);
-                    
-                    if (data.success) {
-                        // Обновляем изображение на странице
-                        if (type === 'background') {
-                            backgroundEditableElement.style.backgroundImage = `url('${data.image_url}')`;
-                        } else {
-                            const avatarImg = avatarEditableElement.querySelector('img');
-                            if (avatarImg) {
-                                avatarImg.src = data.image_url;
-                            }
-                        }
-                        
-                        // Показываем уведомление об успехе
-                        showNotification(data.message, 'success');
-                    } else {
-                        showNotification(data.message || 'Произошла ошибка при загрузке изображения', 'error');
-                    }
-                })
-                .catch(error => {
-                    hideLoading(type);
-                    console.error('Error:', error);
-                    showNotification('Произошла ошибка при загрузке изображения', 'error');
-                });
-            }
-            
-            function showLoading(type) {
-                const element = type === 'background' ? backgroundEditableElement : avatarEditableElement;
-                const overlay = element.querySelector('.edit-overlay, .avatar-edit-overlay');
-                if (overlay) {
-                    overlay.innerHTML = '<div class="edit-hint"><i class="bi bi-arrow-repeat spin"></i><span>Загрузка...</span></div>';
-                    overlay.style.opacity = '1';
-                    overlay.style.visibility = 'visible';
-                }
-            }
-            
-            function hideLoading(type) {
-                const element = type === 'background' ? backgroundEditableElement : avatarEditableElement;
-                const overlay = element.querySelector('.edit-overlay, .avatar-edit-overlay');
-                if (overlay) {
-                    if (type === 'background') {
-                        overlay.innerHTML = '<div class="edit-hint"><i class="bi bi-camera"></i><span>Нажмите, чтобы изменить фон</span></div>';
-                    } else {
-                        overlay.innerHTML = '<div class="edit-hint"><i class="bi bi-camera"></i><span>Изменить фото</span></div>';
-                    }
-                    overlay.style.opacity = '0';
-                    overlay.style.visibility = 'hidden';
-                }
-            }
-            
             function showNotification(message, type) {
                 // Простое уведомление через alert (можно заменить на более красивое)
                 if (type === 'success') {
@@ -646,23 +477,10 @@
         });
     </script>
     @endif
-    
-    <style>
-        .spin {
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-    </style>
 @endif
 
 @if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id)
-    <!-- Компонент редактора изображений -->
-    @include('components.image-editor')
-    
+   
     <!-- Передаем ID текущего пользователя в JavaScript -->
     <script>
         window.currentUserId = {{ $currentUser->id }};

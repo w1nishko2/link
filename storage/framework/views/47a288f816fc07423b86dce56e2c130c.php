@@ -26,13 +26,9 @@
         <?php $__currentLoopData = $articles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $article): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card h-100">
-                    <?php if($article->image_path): ?>
+                   
                         <img src="<?php echo e(asset('storage/' . $article->image_path)); ?>" class="card-img-top" style="height: 180px; object-fit: cover;" alt="<?php echo e($article->title); ?>">
-                    <?php else: ?>
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
-                            <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
-                        </div>
-                    <?php endif; ?>
+                 
                     
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title"><?php echo e(Str::limit($article->title, 50)); ?></h5>
@@ -48,7 +44,7 @@
                     <div class="card-footer bg-transparent">
                         <div class="d-flex gap-2">
                             <a href="<?php echo e(route('admin.articles.edit', [$currentUserId, $article])); ?>" class="btn  btn-sm">
-                                <i class="bi bi-pencil me-2"></i>
+                               
                                 Редактировать
                             </a>
                             <button type="button" class="btn  btn-sm" onclick="deleteArticle(<?php echo e($article->id); ?>)">

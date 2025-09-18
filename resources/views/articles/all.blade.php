@@ -146,7 +146,7 @@
                     По запросу <strong>"{{ $search }}"</strong> статьи не найдены.<br>
                     Попробуйте изменить поисковый запрос или <a href="{{ route('articles.all') }}">посмотреть Мир линка</a>.
                 </p>
-                <a href="{{ route('articles.all') }}" class="btn btn-outline-primary">
+                <a href="{{ route('articles.all') }}" class="btn 
                     <i class="bi bi-arrow-left"></i> Показать Мир линка
                 </a>
             @else

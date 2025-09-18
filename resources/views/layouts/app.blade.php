@@ -18,7 +18,14 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Дополнительные мета-теги для мобильных устройств -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2A5885">
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -87,8 +94,7 @@
     @if(isset($pageUser) && isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id)
         @vite(['resources/css/mobile-navigation.css', 'resources/js/mobile-navigation.js'])
         @vite(['resources/css/owner-defaults.css'])
-        @vite(['resources/css/image-editor.css', 'resources/js/image-editor.js'])
-        @vite(['resources/js/long-press-editor.js'])
+        @vite(['resources/css/photo-editor.css', 'resources/js/photo-editor.js'])
         @vite(['resources/js/long-press-editor.js'])
     @endif
 
@@ -116,18 +122,13 @@
                     <a class="navbar-brand fw-bold" href="{{ route('home') }}">
                         {{ config('app.name', 'Персональные Сайты') }}
                     </a>
-
                     <!-- Общие ссылки для всех пользователей -->
                     <div class="navbar-nav ">
                         <a class="nav-link" href="{{ route('articles.all') }}">
                             <i class="bi bi-collection me-1"></i>Мир линка
                         </a>
                     </div>
-
                     @auth
-                  
-
-                      
                     @else
                         <!-- Меню для неавторизованных пользователей -->
                         <div class="navbar-nav ms-auto">
@@ -144,7 +145,6 @@
                 </div>
             </nav>
         @endif
-        
         <main class="">
             @yield('content')
         </main>
@@ -271,14 +271,11 @@
             const bannersSwiper = new Swiper('.banners-swiper', {
                 slidesPerView: 2.4,
                 spaceBetween: 20,
-                loop: true,
-                // autoplay: {
-                //     delay: 5000,
-                //     disableOnInteraction: false,
-                // },
+                loop: false, // Отключаем цикличность
+                initialSlide: 0, // Начинаем с первого слайда
                 navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
+                    nextEl: '.banners-swiper .swiper-button-next',
+                    prevEl: '.banners-swiper .swiper-button-prev',
                 },
                 breakpoints: {
                     320: {
@@ -300,14 +297,11 @@
             const servicesSwiper = new Swiper('.services-swiper', {
                 slidesPerView: 2.4,
                 spaceBetween: 20,
-                loop: true,
-                // autoplay: {
-                //     delay: 5000,
-                //     disableOnInteraction: false,
-                // },
+                loop: false, // Отключаем цикличность
+                initialSlide: 0, // Начинаем с первого слайда
                 navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
+                    nextEl: '.services-swiper .swiper-button-next',
+                    prevEl: '.services-swiper .swiper-button-prev',
                 },
                 breakpoints: {
                     320: {
@@ -375,8 +369,8 @@
                 const swiper = new Swiper('.gallery-swiper', {
                     slidesPerView: 1.2,
                     spaceBetween: 20,
-                    centeredSlides: false,
-                      loop: true,
+                    loop: false, // Отключаем цикличность
+                    initialSlide: 0, // Начинаем с первого слайда
                     navigation: {
                         nextEl: '.gallery-swiper .swiper-button-next',
                         prevEl: '.gallery-swiper .swiper-button-prev',
@@ -390,7 +384,7 @@
                         320: {
                             slidesPerView: 1.1,
                             spaceBetween: 20,
-                            centeredSlides: true,
+                            centeredSlides: false, // Убираем центрирование для лучшего доступа к первому слайду
                         },
                         480: {
                             slidesPerView: 2.1,
@@ -1015,6 +1009,31 @@
         </div>
     </div>
     @endauth
+
+    <!-- Защита от заблокированного скролла на мобильных устройствах -->
+    <script>
+        // Проверяем и исправляем скролл при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Если на мобильном устройстве и нет активного сайдбара, убираем блокировку скролла
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('mobileAdminSidebar') || document.getElementById('adminSidebar');
+                if (!sidebar || !sidebar.classList.contains('show')) {
+                    document.body.style.overflow = '';
+                    document.body.classList.remove('mobile-sidebar-open');
+                }
+            }
+        });
+        
+        // Дополнительная проверка при изменении размера окна
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                document.body.style.overflow = '';
+                document.body.classList.remove('mobile-sidebar-open');
+            }
+        });
+    </script>
+
+    @yield('scripts')
 </body>
 
 </html>

@@ -1,6 +1,6 @@
 {{-- Секция Баннеры --}}
 @if($banners->count() > 0 || (isset($section) && ($section->title || $section->subtitle)) || ($currentUser && $currentUser->id === $pageUser->id))
-<section class="banners" aria-label="Рекламные блоки">
+<section class="banners" id="banners" aria-label="Рекламные блоки">
     <div class="container">
         @if(isset($section) && (!empty(trim($section->title)) || !empty(trim($section->subtitle))))
             <header class="banners-header mb-4 ">
@@ -19,6 +19,19 @@
         
         <div class="swiper banners-swiper">
             <div class="swiper-wrapper">
+                {{-- Дефолтный блок для создания баннера (только для владельца) --}}
+                @if ($currentUser && $currentUser->id === $pageUser->id)
+                    <div class="swiper-slide">
+                        <a href="{{ route('admin.banners.create', $currentUser->id) }}" class="owner-default-block banner-add">
+                            <div class="owner-default-icon"></div>
+                            <div class="owner-default-text">
+                                <div class="owner-default-title">Добавить баннер</div>
+                                <div class="owner-default-subtitle">Разместите рекламу или объявления</div>
+                            </div>
+                        </a>
+                    </div>
+                @endif
+
                 @foreach($banners as $banner)
                     <div class="swiper-slide">
                         <div class="banners-banner" data-analytics="banner" data-analytics-id="{{ $banner->id }}"
@@ -43,19 +56,6 @@
                     </div>
                 @endforeach
 
-                {{-- Дефолтный блок для создания баннера (только для владельца) --}}
-                @if ($currentUser && $currentUser->id === $pageUser->id)
-                    <div class="swiper-slide">
-                        <a href="{{ route('admin.banners', $currentUser->id) }}" class="owner-default-block banner-add">
-                            <div class="owner-default-icon"></div>
-                            <div class="owner-default-text">
-                                <div class="owner-default-title">Добавить баннер</div>
-                                <div class="owner-default-subtitle">Разместите рекламу или объявления</div>
-                            </div>
-                        </a>
-                    </div>
-                @endif
-
                 {{-- Показываем приветственный блок только если нет баннеров и пользователь не владелец --}}
                 @if($banners->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id))
                     <div class="swiper-slide">
@@ -76,6 +76,8 @@
                     </div>
                 @endif
             </div>
+            
+           
         </div>
     </div>
 </section>

@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
+    <!-- User ID Meta Tags for JavaScript -->
+    @auth
+    <meta name="current-user-id" content="{{ auth()->id() }}">
+    <meta name="page-user-id" content="{{ auth()->id() }}">
+    @endauth
+    
     <!-- SEO Meta Tags -->
     <title>@yield('title', 'Настройки - ' . config('app.name', 'Laravel'))</title>
-    <meta name="description" content="@yield('description', 'Панель управления контентом персонального сайта')">
+    <meta name="description" content="@yield('description', 'Аналитика и управление контентом персонального сайта')">
     <meta name="robots" content="noindex, nofollow">
     
     <!-- Favicon -->
@@ -17,7 +23,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
-    @vite(['resources/css/app.css', 'resources/css/admin.css'])
+    @vite([
+        'resources/css/app.css', 
+        'resources/css/admin.css',
+        'resources/js/app.js',
+        'resources/js/admin-loading.js',
+        'resources/js/admin-toggles.js',
+        'resources/js/admin-images.js',
+        'resources/js/admin-forms.js',
+        'resources/js/admin-services.js',
+        'resources/js/admin-gallery.js',
+        'resources/js/admin-banners.js',
+        'resources/js/admin-articles.js'
+    ])
     
     <style>
        
@@ -30,8 +48,8 @@
             <i class="bi bi-list"></i>
         </button>
         <h5 class="mb-0">
-            @if(request()->routeIs('admin.dashboard'))
-                Главная
+            @if(request()->routeIs('admin.analytics*'))
+                Аналитика
             @elseif(request()->routeIs('admin.profile.edit'))
                 Редактирование профиля
             @elseif(request()->routeIs('admin.profile*'))
@@ -87,11 +105,10 @@
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
-                
                 <nav class="nav flex-column">
-                    <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard', $currentUserId) }}">
-                        <i class="bi bi-speedometer2 me-2"></i>
-                        Главная
+                    <a class="nav-link {{ request()->routeIs('admin.analytics*') ? 'active' : '' }}" href="{{ route('admin.analytics', $currentUserId) }}">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Аналитика
                     </a>
                     <a class="nav-link {{ request()->routeIs('admin.profile*') ? 'active' : '' }}" href="{{ route('admin.profile', $currentUserId) }}">
                         <i class="bi bi-person-circle me-2"></i>
@@ -197,11 +214,32 @@
         window.addEventListener('resize', function() {
             if (window.innerWidth >= 768) {
                 closeSidebar();
+                // Дополнительная проверка - убираем overflow:hidden с body на больших экранах
+                document.body.style.overflow = '';
             }
         });
         
+        // Дополнительная проверка при загрузке страницы - если мы на больших экранах, убираем блокировку скролла
+        function checkScrollLock() {
+            if (window.innerWidth >= 768) {
+                const sidebar = document.getElementById('adminSidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                
+                if (sidebar) sidebar.classList.remove('show');
+                if (overlay) overlay.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+        
         // Улучшения для форм на мобильных устройствах
         document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем и исправляем скролл при загрузке страницы
+            checkScrollLock();
+            
+            // Если это мобильное устройство, убеждаемся что скролл не заблокирован
+            if (window.innerWidth < 768) {
+                document.body.style.overflow = '';
+            }
             // Prevent zoom on iOS when focusing inputs
             if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
                 const viewport = document.querySelector('meta[name=viewport]');
@@ -221,5 +259,8 @@
     </script>
     
     @yield('scripts')
+    
+   
+
 </body>
 </html>

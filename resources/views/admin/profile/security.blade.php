@@ -106,7 +106,7 @@
             <i class="bi bi-shield-check me-2"></i>
             Обновить пароль
         </button>
-        <a href="{{ route('admin.dashboard', $user->id) }}" class="btn btn-outline-secondary flex-fill">
+        <a href="{{ route('admin.profile', $user->id) }}" class="btn btn-outline-secondary flex-fill">
             <i class="bi bi-arrow-left me-2"></i>
             Назад к панели
         </a>

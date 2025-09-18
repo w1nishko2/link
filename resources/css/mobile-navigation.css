@@ -26,8 +26,9 @@
     background: var(--mobile-nav-header-bg);
     backdrop-filter: blur(2px);
     border-bottom: 1px solid var(--mobile-nav-border);
-    padding: 15px;
+    padding: 10px 20px;
     position: sticky;
+    height: 50px !important;
     top: 0;
     z-index: 1020;
     box-shadow: var(--mobile-nav-shadow);
@@ -157,7 +158,7 @@
     margin-bottom: 0 !important;
 }
 .mb-4 {
-    margin-bottom: 1.5rem !important;
+    margin-bottom: 0.8rem !important;
 }
 .my-3 {
     margin-top: 1rem !important;

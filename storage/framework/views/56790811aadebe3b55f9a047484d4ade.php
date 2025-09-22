@@ -5,11 +5,10 @@
 
 <!-- Swiper CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-<?php echo app('Illuminate\Foundation\Vite')(['resources/css/services-reels.css', 'resources/css/admin-services.css', 'resources/js/admin-services.js']); ?>
+<?php echo app('Illuminate\Foundation\Vite')(['resources/css/services-reels.css', 'resources/css/admin-services.css']); ?>
 
 <?php $__env->startSection('content'); ?>
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
-    <h1 class="h4 mb-0">Услуги (<?php echo e($services->count()); ?>)</h1>
     <a href="<?php echo e(route('admin.services.create', $currentUserId)); ?>" class="btn btn-primary">
         <i class="bi bi-plus-circle me-2"></i>
         <span class="d-none d-sm-inline">Добавить услугу</span>

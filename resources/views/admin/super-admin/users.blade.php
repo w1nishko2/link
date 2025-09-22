@@ -58,7 +58,7 @@
                         <td>{{ $user->created_at->format('d.m.Y H:i') }}</td>
                         <td>
                             <div class="btn-group" role="group">
-                                <a href="{{ route('user.page', $user->username) }}" 
+                                <a href="{{ route('user.show', $user->username) }}" 
                                    target="_blank" 
                                    class="btn btn-sm 
                                     <i class="bi bi-eye"></i>

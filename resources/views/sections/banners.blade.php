@@ -56,17 +56,17 @@
                     </div>
                 @endforeach
 
-                {{-- Показываем приветственный блок только если нет баннеров и пользователь не владелец --}}
+                {{-- Показываем информативную пустышку только если нет баннеров и пользователь не владелец --}}
                 @if($banners->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id))
                     <div class="swiper-slide">
-                        <div class="banners-banner">
+                        <div class="banners-banner placeholder-content">
                             <div class="banners-banner-block">
-                                <h3>Добро пожаловать!</h3>
-                                <p>Здесь будут размещены баннеры</p>
+                                <h3>Скоро здесь будет интересно!</h3>
+                                <p>{{ $pageUser->name }} работает над наполнением этого раздела. Возвращайтесь, чтобы узнать о новых предложениях и объявлениях!</p>
                             </div>
                             <div class="banners-banner-block-img">
                                 <img src="/hero.png" 
-                                     alt="Добро пожаловать"
+                                     alt="Скоро здесь будут баннеры"
                                      loading="lazy"
                                      width="300"
                                      height="200"

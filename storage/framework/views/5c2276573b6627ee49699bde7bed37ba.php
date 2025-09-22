@@ -7,8 +7,7 @@
 
 <?php $__env->startSection('content'); ?>
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
-    <h1 class="h4 mb-0">Галерея (<?php echo e($images->count()); ?>)</h1>
-    <a href="<?php echo e(route('admin.gallery.create', $currentUserId)); ?>" class="btn btn-primary">
+     <a href="<?php echo e(route('admin.gallery.create', $currentUserId)); ?>" class="btn btn-primary">
         <i class="bi bi-plus-circle me-2"></i>
         <span class="d-none d-sm-inline">Добавить изображение</span>
         <span class="d-sm-none">Добавить</span>
@@ -186,7 +185,7 @@
 
 @media (max-width: 480px) {
     .gallery-swiper {
-        height: 300px;
+        height: 350px;
     }
 }
 </style>

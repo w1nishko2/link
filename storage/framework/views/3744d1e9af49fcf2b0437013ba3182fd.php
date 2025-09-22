@@ -60,14 +60,21 @@
                                     <?php if($service->price): ?>
                                         <div class="service-price"><?php echo e($service->formatted_price); ?></div>
                                     <?php endif; ?>
-                                    <?php if($service->button_text && $service->button_link): ?>
-                                        <a href="<?php echo e($service->button_link); ?>" 
-                                           class="service-button btn btn-primary btn-sm"
-                                           target="<?php echo e(str_starts_with($service->button_link, 'http') ? '_blank' : '_self'); ?>"
-                                           rel="<?php echo e(str_starts_with($service->button_link, 'http') ? 'noopener noreferrer' : ''); ?>">
-                                            <?php echo e($service->button_text); ?>
+                                    <?php if($service->button_text): ?>
+                                        <?php if($service->button_link): ?>
+                                            <a href="<?php echo e($service->button_link); ?>" 
+                                               class="service-button btn btn-primary btn-sm"
+                                               target="<?php echo e(str_starts_with($service->button_link, 'http') ? '_blank' : '_self'); ?>"
+                                               rel="<?php echo e(str_starts_with($service->button_link, 'http') ? 'noopener noreferrer' : ''); ?>">
+                                                <?php echo e($service->button_text); ?>
 
-                                        </a>
+                                            </a>
+                                        <?php else: ?>
+                                            <button class="service-button btn btn-primary btn-sm" type="button">
+                                                <?php echo e($service->button_text); ?>
+
+                                            </button>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -78,9 +85,22 @@
                 
                 <?php if($services->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id)): ?>
                     <div class="swiper-slide">
-                        <div class="service-card text-center">
-                            <h3>Услуги не найдены</h3>
-                            <p>Здесь будут отображены услуги</p>
+                        <div class="service-card placeholder-content">
+                            <div class="service-image">
+                                <img src="/hero.png" 
+                                     alt="Скоро здесь будут услуги" 
+                                     loading="lazy"
+                                     width="300"
+                                     height="600"
+                                     decoding="async">
+                            </div>
+                            <div class="service-content">
+                                <h3>Услуги скоро появятся</h3>
+                                <p><?php echo e($pageUser->name); ?> готовит описание своих услуг. Возвращайтесь позже, чтобы узнать о доступных предложениях!</p>
+                                <div class="service-bottom">
+                                    <div class="service-price">Готовим прайс...</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <?php endif; ?>

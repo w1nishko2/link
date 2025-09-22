@@ -60,7 +60,7 @@
     <h5 class="mb-0">{{ $pageTitle }}</h5>
     @if($isAdminArea)
         {{-- В админке показываем кнопку просмотра страницы --}}
-        <button class="mobile-menu-btn" type="button" onclick="window.open('{{ route('user.page', ['username' => $user->username]) }}', '_blank')">
+        <button class="mobile-menu-btn" type="button" onclick="window.open('{{ route('user.show', ['username' => $user->username]) }}', '_blank')">
             <i class="bi bi-eye"></i>
         </button>
     @else
@@ -142,7 +142,7 @@
     <hr class="my-4">
     
     <div class="nav flex-column">
-        <a class="nav-link" href="{{ route('user.page', ['username' => $user->username]) }}" target="_blank">
+        <a class="nav-link" href="{{ route('user.show', ['username' => $user->username]) }}" target="_blank">
             <i class="bi bi-eye me-2"></i>
             Посмотреть страницу
         </a>

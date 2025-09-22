@@ -4,15 +4,6 @@
 @section('description', 'Редактирование баннера в каталоге')
 
 @section('content')
-<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
-   
-    <a href="{{ route('admin.banners', $currentUserId) }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-2"></i>
-        <span class="d-none d-sm-inline">Назад к баннерам</span>
-        <span class="d-sm-none">Назад</span>
-    </a>
-</div>
-
 <!-- Скрытая форма для отправки данных -->
 <form id="banner-form" action="{{ route('admin.banners.update', [$currentUserId, $banner]) }}" method="POST" enctype="multipart/form-data" style="display: none;">
     @csrf
@@ -70,13 +61,7 @@
                 </div>
             </div>
             
-            <!-- Дополнительные настройки (скрыты по умолчанию) -->
-            <div class="mt-3">
-                <button type="button" class="btn btn-outline-info btn-sm" onclick="toggleAdvanced()">
-                    <i class="bi bi-sliders"></i> Дополнительные настройки
-                </button>
-            </div>
-            
+
             <div id="advanced-settings" style="display: none;" class="mt-3">
                 <div class="card">
                     <div class="card-body">
@@ -146,6 +131,13 @@
                     Отмена
                 </a>
             </div>
+                        <!-- Дополнительные настройки (скрыты по умолчанию) -->
+            <div class="mt-3">
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="toggleAdvanced()">
+                    <i class="bi bi-sliders"></i> Дополнительные настройки
+                </button>
+            </div>
+            
         </div>
     </div>
 </div>

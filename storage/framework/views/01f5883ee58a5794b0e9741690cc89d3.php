@@ -80,7 +80,7 @@
     <h5 class="mb-0"><?php echo e($pageTitle); ?></h5>
     <?php if($isAdminArea): ?>
         
-        <button class="mobile-menu-btn" type="button" onclick="window.open('<?php echo e(route('user.page', ['username' => $user->username])); ?>', '_blank')">
+        <button class="mobile-menu-btn" type="button" onclick="window.open('<?php echo e(route('user.show', ['username' => $user->username])); ?>', '_blank')">
             <i class="bi bi-eye"></i>
         </button>
     <?php else: ?>
@@ -162,7 +162,7 @@
     <hr class="my-4">
     
     <div class="nav flex-column">
-        <a class="nav-link" href="<?php echo e(route('user.page', ['username' => $user->username])); ?>" target="_blank">
+        <a class="nav-link" href="<?php echo e(route('user.show', ['username' => $user->username])); ?>" target="_blank">
             <i class="bi bi-eye me-2"></i>
             Посмотреть страницу
         </a>
@@ -176,4 +176,5 @@
     <form id="mobile-logout-form" action="<?php echo e(route('logout')); ?>" method="POST" class="d-none">
         <?php echo csrf_field(); ?>
     </form>
-</div><?php /**PATH C:\OSPanel\domains\link\resources\views/components/mobile-navigation.blade.php ENDPATH**/ ?>
+</div>
+<?php /**PATH C:\OSPanel\domains\link\resources\views/components/mobile-navigation.blade.php ENDPATH**/ ?>

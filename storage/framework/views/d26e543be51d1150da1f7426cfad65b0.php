@@ -1,4 +1,3 @@
-
 <section class="hero <?php echo e(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id ? 'owner-mode' : ''); ?>"
     aria-label="Главная информация о <?php echo e($pageUser->name); ?>"
     <?php if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id): ?>
@@ -18,7 +17,6 @@
         } else {
             $desktopBg = asset($desktopBg);
         }
-        
         if (!str_starts_with($mobileBg, '/') && !str_starts_with($mobileBg, 'http')) {
             $mobileBg = asset('storage/' . $mobileBg);
         } else if (str_starts_with($mobileBg, '/') && $mobileBg !== '/hero.png') {
@@ -27,21 +25,16 @@
             $mobileBg = asset($mobileBg);
         }
     ?>
-    
-    <!-- Адаптивный фон -->
     <style>
         .hero {
             background-image: url('<?php echo e($desktopBg); ?>');
         }
-        
         @media (max-width: 768px) {
             .hero {
                 background-image: url('<?php echo e($mobileBg); ?>');
             }
         }
     </style>
-    
-
     <div class="container">
         <div class="hero-section">
             <div class="hero-info">
@@ -79,33 +72,28 @@
                             <i class="bi bi-telegram"></i>
                         </a>
                     <?php endif; ?>
-
                     <?php if($pageUser->whatsapp_url): ?>
                         <a href="<?php echo e($pageUser->whatsapp_url); ?>" target="_blank" class="social-link whatsapp"
                             title="WhatsApp">
                             <i class="bi bi-whatsapp"></i>
                         </a>
                     <?php endif; ?>
-
                     <?php if($pageUser->vk_url): ?>
                         <a href="<?php echo e($pageUser->vk_url); ?>" target="_blank" class="social-link vk" title="ВКонтакте">
                             <i class="bi bi-chat-square-text"></i>
                         </a>
                     <?php endif; ?>
-
                     <?php if($pageUser->youtube_url): ?>
                         <a href="<?php echo e($pageUser->youtube_url); ?>" target="_blank" class="social-link youtube"
                             title="YouTube">
                             <i class="bi bi-youtube"></i>
                         </a>
                     <?php endif; ?>
-
                     <?php if($pageUser->ok_url): ?>
                         <a href="<?php echo e($pageUser->ok_url); ?>" target="_blank" class="social-link ok" title="Одноклассники">
                             <i class="bi bi-people-fill"></i>
                         </a>
                     <?php endif; ?>
-
                     
                     <?php if($socialLinks && $socialLinks->count() > 0): ?>
                         <?php $__currentLoopData = $socialLinks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $link): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -161,7 +149,6 @@
             </div>
         </div>
     </div>
-    
     <?php if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id): ?>
         
         <div class="edit-modal" id="edit-modal">
@@ -180,8 +167,6 @@
                 </div>
             </div>
         </div>
-        
-        
         <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <?php endif; ?>
 </section>
@@ -286,8 +271,21 @@
                     const heroLogoElement = e.target.closest('.hero-logo');
                     const isInteractiveElement = e.target.closest('a, button, [contenteditable], .editable-name, .editable-bio, .social-link');
                     
-                    // Если клик был по содержимому секции, логотипу или интерактивным элементам - не открываем редактор
-                    if (heroContentElement || heroLogoElement || isInteractiveElement) {
+                    // Исключаем клики по модальному окну редактирования текста и его элементам
+                    const isEditModal = e.target.closest('.edit-modal');
+                    const isEditModalElement = e.target.closest('#edit-modal, #edit-input, #edit-textarea, #edit-save, #edit-cancel, .edit-modal-content, .edit-field-container, .character-counter, .edit-modal-buttons, .btn-cancel, .btn-save');
+                    
+                    // Дополнительная проверка по ID и классам элементов редактирования
+                    const isTextEditingElement = e.target.id === 'edit-input' || 
+                                               e.target.id === 'edit-textarea' || 
+                                               e.target.id === 'edit-save' || 
+                                               e.target.id === 'edit-cancel' ||
+                                               e.target.classList.contains('edit-modal-content') ||
+                                               e.target.classList.contains('btn-cancel') ||
+                                               e.target.classList.contains('btn-save');
+                    
+                    // Если клик был по содержимому секции, логотипу, интерактивным элементам или модальному окну редактирования - не открываем редактор
+                    if (heroContentElement || heroLogoElement || isInteractiveElement || isEditModal || isEditModalElement || isTextEditingElement) {
                         return;
                     }
                     
@@ -308,6 +306,12 @@
                 
                 if (!editModal) {
                     return;
+                }
+                
+                // Временно отключаем клики по hero-секции
+                const heroSection = document.getElementById('hero-background-section');
+                if (heroSection) {
+                    heroSection.style.pointerEvents = 'none';
                 }
                 
                 editModalTitle.textContent = title;
@@ -371,10 +375,14 @@
                 
                 editModal.classList.add('show');
             }
-            
             // Функция закрытия модального окна
             function closeEditModal() {
                 editModal.classList.remove('show');
+                // Восстанавливаем клики по hero-секции
+                const heroSection = document.getElementById('hero-background-section');
+                if (heroSection) {
+                    heroSection.style.pointerEvents = 'auto';
+                }
                 currentEditType = null;
                 currentEditElement = null;
                 editInput.value = '';
@@ -387,22 +395,41 @@
                 editInput.oninput = null;
                 editTextarea.oninput = null;
             }
-            
             // Обработчик кнопки "Отмена"
             editCancelBtn.addEventListener('click', closeEditModal);
-            
             // Обработчик клика по фону модального окна
             editModal.addEventListener('click', function(e) {
                 if (e.target === editModal) {
                     closeEditModal();
                 }
             });
-            
-            // Обработчик кнопки "Сохранить"
+            // Предотвращаем распространение события клика от модального окна к hero-секции
+            const editModalContent = document.querySelector('.edit-modal-content');
+            if (editModalContent) {
+                editModalContent.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+            // Также предотвращаем распространение от элементов ввода
+            if (editInput) {
+                editInput.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                editInput.addEventListener('focus', function(e) {
+                    e.stopPropagation();
+                });
+            }
+            if (editTextarea) {
+                editTextarea.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                editTextarea.addEventListener('focus', function(e) {
+                    e.stopPropagation();
+                });
+            }
             editSaveBtn.addEventListener('click', function() {
                 const newValue = currentEditType === 'name' ? editInput.value.trim() : editTextarea.value.trim();
                 
-                // Финальная валидация перед отправкой
                 let validation;
                 if (currentEditType === 'name') {
                     validation = validateName(newValue);
@@ -415,7 +442,6 @@
                     return;
                 }
                 
-                // Дополнительная проверка для имени
                 if (currentEditType === 'name' && newValue === '') {
                     alert('❌ Имя не может быть пустым');
                     return;
@@ -423,8 +449,6 @@
                 
                 saveTextEdit(currentEditType, newValue);
             });
-            
-            // Обработчик Enter для input и Ctrl+Enter для textarea
             editInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     editSaveBtn.click();
@@ -433,7 +457,6 @@
                     closeEditModal();
                 }
             });
-            
             editTextarea.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && e.ctrlKey) {
                     editSaveBtn.click();
@@ -442,8 +465,6 @@
                     closeEditModal();
                 }
             });
-            
-            // Функция сохранения изменений
             function saveTextEdit(type, value) {
                 const data = {};
                 data[type] = value;
@@ -478,7 +499,6 @@
                     showNotification('Произошла ошибка при сохранении', 'error');
                 });
             }
-            
             function showNotification(message, type) {
                 // Простое уведомление через alert (можно заменить на более красивое)
                 if (type === 'success') {
@@ -491,10 +511,7 @@
     </script>
     <?php endif; ?>
 <?php endif; ?>
-
 <?php if(isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id): ?>
-   
-    <!-- Передаем ID текущего пользователя в JavaScript -->
     <script>
         window.currentUserId = <?php echo e($currentUser->id); ?>;
         window.pageUsername = '<?php echo e($pageUser->username); ?>';

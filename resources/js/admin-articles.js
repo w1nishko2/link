@@ -1,473 +1,345 @@
 /**
- * JavaScript для работы со статьями
+ * JavaScript для администрирования статей
  * Используется на страницах создания и редактирования статей
  */
 
 // Глобальные переменные
-let selectedArticleFile = null;
-let articleSwiper = null;
+let selectedArticleImage = null;
+let articleEditor = null;
 
 // Состояние формы статьи
-let articleFormState = {};
+let articleFormState = {
+    title: '',
+    excerpt: '',
+    content: '',
+    isPublished: false,
+    readTime: 1
+};
 
 /**
  * Инициализация страницы статей
  * @param {Object} initialState - Начальное состояние формы
  */
 function initArticlePage(initialState = {}) {
-    articleFormState = {
-        title: '',
-        excerpt: '',
-        content: '',
-        metaTitle: '',
-        metaDescription: '',
-        metaKeywords: '',
-        hasMetadata: false,
-        isPublished: true,
-        publishedAt: '',
-        ...initialState
-    };
+    console.log('Инициализация страницы статей...');
     
-    // Инициализируем компоненты
-    initArticleSwiper();
+    // Устанавливаем начальное состояние
+    Object.assign(articleFormState, initialState);
+    
+    // Инициализируем обработчики событий
     initArticleEventListeners();
     
-    // Показываем/скрываем блок метаданных в зависимости от состояния
-    if (articleFormState.hasMetadata) {
-        document.querySelector('.article-metadata').style.display = 'block';
-        updateMetadataToggleButton(true);
-    }
-}
-
-/**
- * Инициализация Swiper для статей
- */
-function initArticleSwiper() {
-    if (document.querySelector('.articles-swiper')) {
-        articleSwiper = new Swiper('.articles-swiper', {
-            slidesPerView: 1,
-            spaceBetween: 20,
-            loop: false,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            breakpoints: {
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 30,
-                },
-                1024: {
-                    slidesPerView: 3,
-                    spaceBetween: 40,
-                }
-            }
-        });
-    }
+    // Обновляем скрытые поля
+    updateArticleHiddenFields();
+    
+    console.log('Страница статей инициализирована');
 }
 
 /**
  * Инициализация обработчиков событий для статей
  */
 function initArticleEventListeners() {
+    console.log('Инициализация обработчиков событий...');
+    
     // Обработчики для редактируемых элементов
-    const editableElements = document.querySelectorAll('[contenteditable="true"]');
-    editableElements.forEach(element => {
-        element.addEventListener('input', handleArticleContentEdit);
-        element.addEventListener('blur', handleArticleContentBlur);
-        element.addEventListener('paste', handleArticleContentPaste);
-        element.addEventListener('keydown', handleArticleContentKeydown);
-    });
-    
-    // Обработчик для загрузки изображений статьи
-    const imageInput = document.getElementById('article-image-input');
+    const editableTitle = document.querySelector('.editable-title');
+    const editableExcerpt = document.querySelector('.editable-excerpt');
+    const editableContent = document.querySelector('.editable-content');
+
+    if (editableTitle) {
+        editableTitle.addEventListener('input', handleArticleTitleChange);
+        editableTitle.addEventListener('keydown', limitTitleLength);
+        editableTitle.addEventListener('paste', handleContentPaste);
+    }
+
+    if (editableExcerpt) {
+        editableExcerpt.addEventListener('input', handleArticleExcerptChange);
+        editableExcerpt.addEventListener('keydown', limitExcerptLength);
+        editableExcerpt.addEventListener('paste', handleContentPaste);
+    }
+
+    if (editableContent) {
+        editableContent.addEventListener('input', handleArticleContentChange);
+        editableContent.addEventListener('paste', handleContentPaste);
+    }
+
+    // Обработчик для выбора изображения
+    const imageInput = document.getElementById('hidden-image');
     if (imageInput) {
-        imageInput.addEventListener('change', (e) => {
-            handleImageSelect(e, 'article-image-preview', (file, dataUrl) => {
-                selectedArticleFile = file;
-                updateArticleFormState();
-            });
-        });
+        imageInput.addEventListener('change', handleArticleImageSelect);
     }
-    
-    // Обработчик отправки формы
-    const form = document.getElementById('article-form');
-    if (form) {
-        form.addEventListener('submit', handleArticleFormSubmit);
-    }
-    
-    // Обработчик для чекбокса публикации
-    const publishedCheckbox = document.getElementById('is-published');
-    if (publishedCheckbox) {
-        publishedCheckbox.addEventListener('change', function() {
-            articleFormState.isPublished = this.checked;
-            togglePublishDateField(this.checked);
-        });
-    }
-    
-    // Обработчик для даты публикации
-    const publishDateInput = document.getElementById('published-at');
-    if (publishDateInput) {
-        publishDateInput.addEventListener('change', function() {
-            articleFormState.publishedAt = this.value;
-        });
-    }
+
+    console.log('Обработчики событий инициализированы');
 }
 
 /**
- * Обработка изменений в редактируемых элементах статьи
+ * Обработка изменения заголовка
  */
-function handleArticleContentEdit(event) {
-    const element = event.target;
-    const fieldName = element.getAttribute('data-field');
-    
-    if (fieldName && articleFormState.hasOwnProperty(fieldName)) {
-        articleFormState[fieldName] = element.textContent.trim();
-        
-        // Автоматическое создание мета-заголовка из заголовка
-        if (fieldName === 'title' && !articleFormState.metaTitle) {
-            const metaTitleElement = document.querySelector('[data-field="metaTitle"]');
-            if (metaTitleElement && metaTitleElement.textContent.trim() === '') {
-                const truncatedTitle = truncateText(element.textContent.trim(), 60);
-                metaTitleElement.textContent = truncatedTitle;
-                articleFormState.metaTitle = truncatedTitle;
-            }
-        }
-        
-        // Автоматическое создание мета-описания из краткого описания
-        if (fieldName === 'excerpt' && !articleFormState.metaDescription) {
-            const metaDescElement = document.querySelector('[data-field="metaDescription"]');
-            if (metaDescElement && metaDescElement.textContent.trim() === '') {
-                const truncatedExcerpt = truncateText(element.textContent.trim(), 160);
-                metaDescElement.textContent = truncatedExcerpt;
-                articleFormState.metaDescription = truncatedExcerpt;
-            }
-        }
-        
-        // Проверка длины контента для полей с ограничениями
-        if (fieldName === 'metaTitle') {
-            checkFieldLength(element, 60, 'Мета-заголовок слишком длинный');
-        }
-        if (fieldName === 'metaDescription') {
-            checkFieldLength(element, 160, 'Мета-описание слишком длинное');
-        }
-    }
+function handleArticleTitleChange(event) {
+    const newTitle = event.target.textContent.trim() || '';
+    articleFormState.title = newTitle;
+    updateArticleHiddenFields();
+    updateReadTime();
 }
 
 /**
- * Обработка потери фокуса редактируемых элементов статьи
+ * Обработка изменения описания
  */
-function handleArticleContentBlur(event) {
-    const element = event.target;
-    const fieldName = element.getAttribute('data-field');
-    
-    // Валидация и форматирование для конкретных полей
-    if (fieldName === 'title') {
-        if (element.textContent.trim().length < 5) {
-            element.classList.add('is-invalid');
-            showNotification('Заголовок статьи должен содержать минимум 5 символов', 'warning');
-            setTimeout(() => element.classList.remove('is-invalid'), 3000);
-        }
-    }
-    
-    if (fieldName === 'content') {
-        if (element.textContent.trim().length < 50) {
-            element.classList.add('is-invalid');
-            showNotification('Содержание статьи должно содержать минимум 50 символов', 'warning');
-            setTimeout(() => element.classList.remove('is-invalid'), 3000);
-        }
-    }
+function handleArticleExcerptChange(event) {
+    const newExcerpt = event.target.textContent.trim() || '';
+    articleFormState.excerpt = newExcerpt;
+    updateArticleHiddenFields();
+    updateReadTime();
 }
 
 /**
- * Обработка вставки контента в редактируемые элементы
+ * Обработка изменения содержания
  */
-function handleArticleContentPaste(event) {
-    const element = event.target;
-    const fieldName = element.getAttribute('data-field');
-    
-    // Для поля content разрешаем форматированный текст
-    if (fieldName === 'content') {
-        // Позволяем сохранить базовое форматирование
-        setTimeout(() => {
-            // Очищаем ненужные атрибуты, но сохраняем структуру
-            cleanPastedContent(element);
-            articleFormState[fieldName] = element.innerHTML;
-        }, 0);
-    } else {
-        // Для остальных полей только чистый текст
+function handleArticleContentChange(event) {
+    const newContent = event.target.innerHTML.trim() || '';
+    articleFormState.content = newContent;
+    updateArticleHiddenFields();
+    updateReadTime();
+}
+
+/**
+ * Ограничение длины заголовка
+ */
+function limitTitleLength(event) {
+    const maxLength = 150;
+    if (event.target.textContent.length >= maxLength && 
+        event.keyCode !== 8 && event.keyCode !== 46) {
         event.preventDefault();
-        const paste = (event.clipboardData || window.clipboardData).getData('text');
-        const selection = window.getSelection();
-        
-        if (!selection.rangeCount) return;
-        
-        selection.deleteFromDocument();
-        selection.getRangeAt(0).insertNode(document.createTextNode(paste));
-        selection.collapseToEnd();
-        
-        articleFormState[fieldName] = element.textContent.trim();
     }
 }
 
 /**
- * Обработка нажатий клавиш в редактируемых элементах
+ * Ограничение длины описания
  */
-function handleArticleContentKeydown(event) {
-    const element = event.target;
-    const fieldName = element.getAttribute('data-field');
-    
-    // Для контента разрешаем некоторые горячие клавиши
-    if (fieldName === 'content') {
-        // Ctrl+B для жирного текста
-        if (event.ctrlKey && event.key === 'b') {
-            event.preventDefault();
-            document.execCommand('bold', false, null);
-        }
-        // Ctrl+I для курсива
-        if (event.ctrlKey && event.key === 'i') {
-            event.preventDefault();
-            document.execCommand('italic', false, null);
-        }
-        // Ctrl+U для подчеркивания
-        if (event.ctrlKey && event.key === 'u') {
-            event.preventDefault();
-            document.execCommand('underline', false, null);
-        }
+function limitExcerptLength(event) {
+    const maxLength = 300;
+    if (event.target.textContent.length >= maxLength && 
+        event.keyCode !== 8 && event.keyCode !== 46) {
+        event.preventDefault();
     }
 }
 
 /**
- * Очистка вставленного контента
+ * Обработка вставки контента
  */
-function cleanPastedContent(element) {
-    // Удаляем нежелательные теги и атрибуты
-    const allowedTags = ['b', 'strong', 'i', 'em', 'u', 'br', 'p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li'];
-    const children = element.querySelectorAll('*');
-    
-    children.forEach(child => {
-        if (!allowedTags.includes(child.tagName.toLowerCase())) {
-            child.outerHTML = child.innerHTML;
-        } else {
-            // Удаляем все атрибуты
-            Array.from(child.attributes).forEach(attr => {
-                child.removeAttribute(attr.name);
-            });
-        }
-    });
-}
-
-/**
- * Проверка длины поля
- */
-function checkFieldLength(element, maxLength, message) {
-    const length = element.textContent.trim().length;
-    if (length > maxLength) {
-        element.classList.add('text-warning');
-        const remaining = maxLength - length;
-        showNotification(`${message} (${remaining} символов превышено)`, 'warning');
-    } else {
-        element.classList.remove('text-warning');
-    }
-}
-
-/**
- * Обрезание текста до указанной длины
- */
-function truncateText(text, maxLength) {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + '...';
-}
-
-/**
- * Переключение поля даты публикации
- */
-function togglePublishDateField(isPublished) {
-    const dateField = document.getElementById('publish-date-field');
-    if (dateField) {
-        dateField.style.display = isPublished ? 'block' : 'none';
-    }
-}
-
-/**
- * Обновление кнопки переключения метаданных
- */
-function updateMetadataToggleButton(hasMetadata) {
-    const toggleButton = document.getElementById('metadata-toggle');
-    if (!toggleButton) return;
-    
-    if (hasMetadata) {
-        toggleButton.innerHTML = '<i class="bi bi-dash"></i> Скрыть SEO';
-        toggleButton.className = 'btn btn-outline-danger btn-sm';
-    } else {
-        toggleButton.innerHTML = '<i class="bi bi-plus"></i> Показать SEO';
-        toggleButton.className = 'btn btn-outline-success btn-sm';
-    }
-}
-
-/**
- * Обработка отправки формы статьи
- */
-async function handleArticleFormSubmit(event) {
+function handleContentPaste(event) {
     event.preventDefault();
     
-    // Валидация
-    if (!validateArticleForm()) {
-        return;
-    }
+    // Получаем только текст без форматирования
+    const text = (event.clipboardData || window.clipboardData).getData('text');
     
-    // Обновляем состояние формы
-    updateArticleFormState();
-    
-    // Создаем FormData
-    const formData = new FormData();
-    
-    // Добавляем данные из состояния формы
-    Object.keys(articleFormState).forEach(key => {
-        if (articleFormState[key] !== null && articleFormState[key] !== undefined) {
-            formData.append(key, articleFormState[key]);
-        }
-    });
-    
-    // Добавляем изображение если выбрано
-    if (selectedArticleFile) {
-        formData.append('image', selectedArticleFile);
-    }
-    
-    // Добавляем CSRF токен
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    if (csrfToken) {
-        formData.append('_token', csrfToken);
-    }
-    
-    // Отправляем форму
-    await submitForm(event.target, {
-        method: 'POST',
-        loadingOverlayId: 'loadingOverlay',
-        validateBeforeSubmit: validateArticleForm,
-        onSuccess: (result) => {
-            if (result.redirect_url) {
-                window.location.href = result.redirect_url;
-            }
-        }
-    });
+    // Вставляем простой текст
+    document.execCommand('insertText', false, text);
 }
 
 /**
- * Обновление состояния формы статьи
+ * Выделение текста при клике
+ * @param {HTMLElement} element - Элемент для выделения
  */
-function updateArticleFormState() {
-    // Собираем данные из всех редактируемых элементов
-    const editableElements = document.querySelectorAll('[contenteditable="true"]');
-    editableElements.forEach(element => {
-        const fieldName = element.getAttribute('data-field');
-        if (fieldName && articleFormState.hasOwnProperty(fieldName)) {
-            if (fieldName === 'content') {
-                // Для контента сохраняем HTML
-                articleFormState[fieldName] = element.innerHTML;
-            } else {
-                // Для остальных полей только текст
-                articleFormState[fieldName] = element.textContent.trim();
-            }
+function selectText(element) {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
+/**
+ * Выбор изображения для статьи
+ */
+function selectImage() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            handleArticleImageFile(file);
         }
-    });
+    };
+    input.click();
+}
+
+/**
+ * Обработка файла изображения
+ * @param {File} file - Файл изображения
+ */
+function handleArticleImageFile(file) {
+    selectedArticleImage = file;
     
-    // Проверяем состояние метаданных
-    const metadataBlock = document.querySelector('.article-metadata');
-    articleFormState.hasMetadata = metadataBlock && metadataBlock.style.display !== 'none';
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const container = document.getElementById('article-image-container');
+        if (container) {
+            container.innerHTML = `
+                <img src="${e.target.result}" alt="Изображение статьи" class="img-fluid rounded">
+                <div class="image-overlay">
+                    <i class="bi bi-camera-fill"></i>
+                    <span>Изменить изображение</span>
+                </div>
+            `;
+        }
+    };
+    reader.readAsDataURL(file);
     
-    // Обновляем состояние чекбокса публикации
-    const publishedCheckbox = document.getElementById('is-published');
-    if (publishedCheckbox) {
-        articleFormState.isPublished = publishedCheckbox.checked;
+    // Обновляем скрытое поле
+    const hiddenImage = document.getElementById('hidden-image');
+    if (hiddenImage) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        hiddenImage.files = dt.files;
+    }
+}
+
+/**
+ * Обработка выбора изображения через input
+ */
+function handleArticleImageSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        handleArticleImageFile(file);
+    }
+}
+
+/**
+ * Обновление времени чтения
+ */
+function updateReadTime() {
+    const content = articleFormState.content.replace(/<[^>]*>/g, '');
+    const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
+    const readTime = Math.max(1, Math.ceil(wordCount / 200)); // 200 слов в минуту
+    
+    articleFormState.readTime = readTime;
+    
+    // Обновляем отображение времени чтения
+    const readTimeElement = document.querySelector('.read-time');
+    if (readTimeElement) {
+        readTimeElement.textContent = `${readTime} мин чтения`;
     }
     
-    // Обновляем дату публикации
-    const publishDateInput = document.getElementById('published-at');
-    if (publishDateInput) {
-        articleFormState.publishedAt = publishDateInput.value;
-    }
+    updateArticleHiddenFields();
+}
+
+/**
+ * Обновление скрытых полей формы
+ */
+function updateArticleHiddenFields() {
+    const hiddenTitle = document.getElementById('hidden-title');
+    const hiddenExcerpt = document.getElementById('hidden-excerpt');
+    const hiddenContent = document.getElementById('hidden-content');
+    const hiddenReadTime = document.getElementById('hidden-read-time');
+    const hiddenIsPublished = document.getElementById('hidden-is-published');
+
+    if (hiddenTitle) hiddenTitle.value = articleFormState.title;
+    if (hiddenExcerpt) hiddenExcerpt.value = articleFormState.excerpt;
+    if (hiddenContent) hiddenContent.value = articleFormState.content;
+    if (hiddenReadTime) hiddenReadTime.value = articleFormState.readTime;
+    if (hiddenIsPublished) hiddenIsPublished.value = articleFormState.isPublished ? '1' : '0';
 }
 
 /**
  * Валидация формы статьи
+ * @param {boolean} isPublishing - Флаг публикации
+ * @returns {boolean} - Результат валидации
  */
-function validateArticleForm() {
-    updateArticleFormState();
-    
-    // Проверяем обязательные поля
-    if (!articleFormState.title || articleFormState.title.trim() === '') {
-        showNotification('Пожалуйста, введите заголовок статьи', 'error');
-        const titleElement = document.querySelector('[data-field="title"]');
-        if (titleElement) {
-            titleElement.focus();
-            titleElement.classList.add('is-invalid');
-            setTimeout(() => titleElement.classList.remove('is-invalid'), 3000);
-        }
+function validateArticleForm(isPublishing = false) {
+    const errors = [];
+
+    // Проверяем заголовок
+    if (!articleFormState.title.trim() || articleFormState.title === 'Новая статья') {
+        errors.push('Пожалуйста, введите заголовок статьи');
+    }
+
+    // Проверяем описание
+    if (!articleFormState.excerpt.trim() || 
+        articleFormState.excerpt === 'Краткое описание статьи. Нажмите, чтобы редактировать.') {
+        errors.push('Пожалуйста, введите краткое описание статьи');
+    }
+
+    // Проверяем содержание
+    if (!articleFormState.content.trim() || 
+        articleFormState.content === '<p>Содержание статьи. Нажмите, чтобы начать писать...</p>') {
+        errors.push('Пожалуйста, введите содержание статьи');
+    }
+
+    // Показываем ошибки
+    if (errors.length > 0) {
+        alert(errors.join('\n'));
         return false;
     }
-    
-    if (articleFormState.title.trim().length < 5) {
-        showNotification('Заголовок статьи должен содержать минимум 5 символов', 'error');
-        return false;
-    }
-    
-    if (!articleFormState.excerpt || articleFormState.excerpt.trim() === '') {
-        showNotification('Пожалуйста, введите краткое описание статьи', 'error');
-        const excerptElement = document.querySelector('[data-field="excerpt"]');
-        if (excerptElement) {
-            excerptElement.focus();
-            excerptElement.classList.add('is-invalid');
-            setTimeout(() => excerptElement.classList.remove('is-invalid'), 3000);
-        }
-        return false;
-    }
-    
-    if (!articleFormState.content || articleFormState.content.trim() === '') {
-        showNotification('Пожалуйста, введите содержание статьи', 'error');
-        const contentElement = document.querySelector('[data-field="content"]');
-        if (contentElement) {
-            contentElement.focus();
-            contentElement.classList.add('is-invalid');
-            setTimeout(() => contentElement.classList.remove('is-invalid'), 3000);
-        }
-        return false;
-    }
-    
-    if (articleFormState.content.trim().length < 50) {
-        showNotification('Содержание статьи должно содержать минимум 50 символов', 'error');
-        return false;
-    }
-    
-    // Проверяем метаданные если они включены
-    if (articleFormState.hasMetadata) {
-        if (articleFormState.metaTitle && articleFormState.metaTitle.length > 60) {
-            showNotification('Мета-заголовок не должен превышать 60 символов', 'error');
-            return false;
-        }
-        
-        if (articleFormState.metaDescription && articleFormState.metaDescription.length > 160) {
-            showNotification('Мета-описание не должно превышать 160 символов', 'error');
-            return false;
-        }
-    }
-    
+
     return true;
 }
 
-// Экспортируем функции для глобального использования
-window.initArticlePage = initArticlePage;
-window.validateArticleForm = validateArticleForm;
-window.updateMetadataToggleButton = updateMetadataToggleButton;
+/**
+ * Сохранение статьи
+ * @param {boolean} publish - Флаг публикации
+ */
+function saveArticle(publish = false) {
+    console.log('Сохранение статьи...', { publish });
 
-// Автоинициализация при загрузке DOM
-document.addEventListener('DOMContentLoaded', function() {
-    // Проверяем, находимся ли мы на странице статей
-    if (document.getElementById('article-form')) {
-        initArticlePage();
+    // Валидируем форму
+    if (!validateArticleForm(publish)) {
+        return;
     }
+
+    // Показываем индикатор загрузки
+    showArticleLoading();
+
+    // Устанавливаем статус публикации
+    articleFormState.isPublished = publish;
+    
+    // Обновляем скрытые поля
+    updateArticleHiddenFields();
+    
+    // Отправляем форму
+    const form = document.getElementById('article-form');
+    if (form) {
+        form.submit();
+    } else {
+        hideArticleLoading();
+        alert('Ошибка: форма не найдена');
+    }
+}
+
+/**
+ * Показать индикатор загрузки
+ */
+function showArticleLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+    }
+}
+
+/**
+ * Скрыть индикатор загрузки
+ */
+function hideArticleLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
+
+/**
+ * Автосохранение при закрытии страницы
+ */
+document.addEventListener('beforeunload', function() {
+    updateArticleHiddenFields();
 });
+
+// Экспорт функций для глобального использования
+window.initArticlePage = initArticlePage;
+window.selectText = selectText;
+window.selectImage = selectImage;
+window.saveArticle = saveArticle;
+window.showArticleLoading = showArticleLoading;
+window.hideArticleLoading = hideArticleLoading;
+
+console.log('Модуль admin-articles.js загружен');

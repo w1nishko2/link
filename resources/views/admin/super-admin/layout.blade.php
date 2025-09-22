@@ -113,7 +113,7 @@
             <i class="bi bi-shield-check me-1"></i>
             Супер Настройки
         </h5>
-        <button class="mobile-menu-btn" type="button" onclick="window.open('{{ route('user.page', ['username' => auth()->user()->username]) }}', '_blank')">
+        <button class="mobile-menu-btn" type="button" onclick="window.open('{{ route('user.show', ['username' => auth()->user()->username]) }}', '_blank')">
             <i class="bi bi-eye"></i>
         </button>
     </div>
@@ -162,7 +162,7 @@
                         Мои Настройки
                     </a>
                     
-                    <a class="nav-link" href="{{ route('user.page', ['username' => auth()->user()->username]) }}" target="_blank">
+                    <a class="nav-link" href="{{ route('user.show', ['username' => auth()->user()->username]) }}" target="_blank">
                         <i class="bi bi-eye me-2"></i>
                         Моя страница
                     </a>

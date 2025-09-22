@@ -118,18 +118,42 @@
     text-align: center;
     margin: 10px 0 0 0;
 }
+
+/* Индикатор загрузки */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.loading-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
 </style>
 
 <?php $__env->startSection('content'); ?>
-<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
-
-    <a href="<?php echo e(route('admin.banners', $currentUserId)); ?>" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-2"></i>
-        <span class="d-none d-sm-inline">Назад к баннерам</span>
-        <span class="d-sm-none">Назад</span>
-    </a>
-</div>
-
 <!-- Скрытая форма для отправки данных -->
 <form id="banner-form" action="<?php echo e(route('admin.banners.store', $currentUserId)); ?>" method="POST" enctype="multipart/form-data" style="display: none;">
     <?php echo csrf_field(); ?>
@@ -179,12 +203,7 @@
                 </div>
             </div>
             
-            <!-- Дополнительные настройки (скрыты по умолчанию) -->
-            <div class="mt-3">
-                <button type="button" class="btn btn-outline-info btn-sm" onclick="toggleAdvanced()">
-                    <i class="bi bi-sliders"></i> Дополнительные настройки
-                </button>
-            </div>
+
             
             <div id="advanced-settings" style="display: none;" class="mt-3">
                 <div class="card">
@@ -256,6 +275,21 @@
                     Отмена
                 </a>
             </div>
+                        <!-- Дополнительные настройки (скрыты по умолчанию) -->
+            <div class="mt-3">
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="toggleAdvanced()">
+                    <i class="bi bi-sliders"></i> Дополнительные настройки
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Индикатор загрузки -->
+<div id="loading-overlay" style="display: none;">
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
         </div>
     </div>
 </div>
@@ -522,9 +556,22 @@ function saveBanner() {
         return;
     }
     
+    // Показываем индикатор загрузки
+    showLoading();
+    
     // Обновляем скрытые поля и отправляем форму
     updateHiddenFields();
     document.getElementById('banner-form').submit();
+}
+
+// Показать индикатор загрузки
+function showLoading() {
+    document.getElementById('loading-overlay').style.display = 'flex';
+}
+
+// Скрыть индикатор загрузки
+function hideLoading() {
+    document.getElementById('loading-overlay').style.display = 'none';
 }
 
 // Показ ошибок валидации

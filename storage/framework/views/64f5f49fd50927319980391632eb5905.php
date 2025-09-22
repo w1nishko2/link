@@ -424,6 +424,25 @@ function renderSections(sections) {
     const html = `
         <div class="sections-list" id="sectionsList">
             ${sections.map(section => {
+                // Для главного экрана не показываем поля заголовка и подзаголовка
+                if (section.section_key === 'hero') {
+                    return `
+                    <div class="section-item card mb-3" data-section-key="${section.section_key}">
+                        <div class="card-body">
+                            <div class="section-header mb-3">
+                                <h6 class="mb-1 fw-bold text-primary">${section.section_name}</h6>
+                                <small class="text-muted">Порядок: ${section.order}</small>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Настройки заголовка и подзаголовка для главного экрана фиксированы и не могут быть изменены.
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }
+                
                 return `
                 <div class="section-item card mb-3" data-section-key="${section.section_key}">
                     <div class="card-body">
@@ -544,11 +563,26 @@ function saveSections() {
 
     const sections = [];
     document.querySelectorAll('.section-item').forEach((item, index) => {
-        const titleValue = item.querySelector('.section-title').value;
-        const subtitleValue = item.querySelector('.section-subtitle').value;
+        const sectionKey = item.dataset.sectionKey;
+        
+        // Пропускаем главный экран при сохранении
+        if (sectionKey === 'hero') {
+            return;
+        }
+        
+        const titleSelect = item.querySelector('.section-title');
+        const subtitleSelect = item.querySelector('.section-subtitle');
+        
+        // Проверяем, что элементы существуют (для hero их может не быть)
+        if (!titleSelect || !subtitleSelect) {
+            return;
+        }
+        
+        const titleValue = titleSelect.value;
+        const subtitleValue = subtitleSelect.value;
         
         const sectionData = {
-            section_key: item.dataset.sectionKey,
+            section_key: sectionKey,
             title: titleValue === 'Пусто' ? '' : titleValue,
             subtitle: subtitleValue === 'Пусто' ? '' : subtitleValue
         };

@@ -28,7 +28,7 @@
     "author": {
         "@type": "Person",
         "name": "{{ $user->name }}",
-        "url": "{{ route('user.page', $user->username) }}"
+        "url": "{{ route('user.show', $user->username) }}"
     },
     "url": "{{ route('articles.index', $user->username) }}",
     @if($articles->count() > 0)
@@ -58,7 +58,7 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{{ route('user.page', $user->username) }}">
+                <a href="{{ route('user.show', $user->username) }}">
                     <i class="bi bi-house"></i> {{ $user->name }}
                 </a>
             </li>
@@ -159,7 +159,7 @@
             </div>
             <h3 class="h4 text-muted mb-3">Статьи не найдены</h3>
             <p class="text-muted mb-4">У {{ $user->name }} пока нет опубликованных статей</p>
-            <a href="{{ route('user.page', $user->username) }}" class="btn 
+            <a href="{{ route('user.show', $user->username) }}" class="btn 
                 <i class="bi bi-arrow-left"></i> Вернуться на главную
             </a>
         </div>
@@ -169,7 +169,7 @@
     <div class="text-center mt-5">
         <div class="row justify-content-center">
             <div class="col-auto">
-                <a href="{{ route('user.page', $user->username) }}" class="btn btn-outline-secondary">
+                <a href="{{ route('user.show', $user->username) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Назад к профилю
                 </a>
             </div>

@@ -34,7 +34,7 @@
             <span class="d-none d-sm-inline">Сохранить настройки</span>
             <span class="d-sm-none">Сохранить</span>
         </button>
-        <a href="<?php echo e(route('user.page', $user->username)); ?>" target="_blank" class="btn btn-outline-info flex-fill">
+        <a href="<?php echo e(route('user.show', $user->username)); ?>" target="_blank" class="btn btn-outline-info flex-fill">
             <i class="bi bi-eye me-2"></i>
             Предпросмотр страницы
         </a>

@@ -77,12 +77,34 @@
                 </article>
             @endforeach
 
-            {{-- Показываем сообщение только если нет статей и нет дефолтного блока --}}
+            {{-- Показываем информативную пустышку только если нет статей и нет дефолтного блока --}}
             @if($articles->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id))
-                <div class="text-center py-5">
-                    <h4>Статьи не найдены</h4>
-                    <p class="text-muted">Здесь будут отображаться статьи</p>
-                </div>
+                <article class="article-preview placeholder-content">
+                    <div class="article-item">
+                        <div class="article-image">
+                            <img src="/hero.png" 
+                                 alt="Скоро здесь появятся статьи" 
+                                 loading="lazy" 
+                                 width="300"
+                                 height="200"
+                                 decoding="async">
+                        </div>
+                        <div class="article-content">
+                            <h3 class="article-title">Статьи скоро появятся</h3>
+                            <p class="">{{ $pageUser->name }} работает над наполнением этого раздела. Заходите позже, чтобы прочитать интересные материалы!</p>
+                            <div class="article-meta">
+                                <time class="">
+                                    <span>{{ now()->format('d') }}</span>
+                                    <span>{{ now()->format('M') }}</span>
+                                </time>
+                                <span class="article-author">
+                                    <span>Автор: {{ $pageUser->name }}</span>
+                                </span>
+                                <span class="article-read-time">Ожидаем...</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
             @endif
         </div>
 

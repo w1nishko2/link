@@ -30,7 +30,7 @@
     "author": {
         "@type": "Person",
         "name": "{{ $article->user->name }}",
-        "url": "{{ route('user.page', $article->user->username) }}"
+        "url": "{{ route('user.show', $article->user->username) }}"
     },
     "publisher": {
         "@type": "Organization",
@@ -73,7 +73,7 @@
             "@type": "ListItem",
             "position": 1,
             "name": "{{ $article->user->name }}",
-            "item": "{{ route('user.page', $article->user->username) }}"
+            "item": "{{ route('user.show', $article->user->username) }}"
         },
         {
             "@type": "ListItem",

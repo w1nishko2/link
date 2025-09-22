@@ -60,13 +60,19 @@
                                     @if ($service->price)
                                         <div class="service-price">{{ $service->formatted_price }}</div>
                                     @endif
-                                    @if ($service->button_text && $service->button_link)
-                                        <a href="{{ $service->button_link }}" 
-                                           class="service-button btn btn-primary btn-sm"
-                                           target="{{ str_starts_with($service->button_link, 'http') ? '_blank' : '_self' }}"
-                                           rel="{{ str_starts_with($service->button_link, 'http') ? 'noopener noreferrer' : '' }}">
-                                            {{ $service->button_text }}
-                                        </a>
+                                    @if ($service->button_text)
+                                        @if ($service->button_link)
+                                            <a href="{{ $service->button_link }}" 
+                                               class="service-button btn btn-primary btn-sm"
+                                               target="{{ str_starts_with($service->button_link, 'http') ? '_blank' : '_self' }}"
+                                               rel="{{ str_starts_with($service->button_link, 'http') ? 'noopener noreferrer' : '' }}">
+                                                {{ $service->button_text }}
+                                            </a>
+                                        @else
+                                            <button class="service-button btn btn-primary btn-sm" type="button">
+                                                {{ $service->button_text }}
+                                            </button>
+                                        @endif
                                     @endif
                                 </div>
                             </div>
@@ -74,12 +80,25 @@
                     </div>
                 @endforeach
 
-                {{-- Показываем сообщение только если нет услуг и пользователь не владелец --}}
+                {{-- Показываем информативную пустышку только если нет услуг и пользователь не владелец --}}
                 @if($services->count() === 0 && (!$currentUser || $currentUser->id !== $pageUser->id))
                     <div class="swiper-slide">
-                        <div class="service-card text-center">
-                            <h3>Услуги не найдены</h3>
-                            <p>Здесь будут отображены услуги</p>
+                        <div class="service-card placeholder-content">
+                            <div class="service-image">
+                                <img src="/hero.png" 
+                                     alt="Скоро здесь будут услуги" 
+                                     loading="lazy"
+                                     width="300"
+                                     height="600"
+                                     decoding="async">
+                            </div>
+                            <div class="service-content">
+                                <h3>Услуги скоро появятся</h3>
+                                <p>{{ $pageUser->name }} готовит описание своих услуг. Возвращайтесь позже, чтобы узнать о доступных предложениях!</p>
+                                <div class="service-bottom">
+                                    <div class="service-price">Готовим прайс...</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @endif

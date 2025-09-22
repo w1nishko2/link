@@ -47,17 +47,14 @@ class PhotoEditor {
             <div class="photo-editor-modal" id="photoEditorModal">
                 <div class="photo-editor-content">
                     <div class="photo-editor-header">
-                        <h2 class="photo-editor-title" id="editorTitle">Редактор изображений</h2>
                         <button class="photo-editor-close" id="closeEditor">&times;</button>
                     </div>
                     
                     <div class="photo-editor-steps" id="editorSteps" style="display: none;">
                         <div class="step-indicator" id="step1">
-                            <span class="step-number">1</span>
                             <span>Рилс (9:16)</span>
                         </div>
                         <div class="step-indicator" id="step2">
-                            <span class="step-number">2</span>
                             <span>Десктоп (16:9)</span>
                         </div>
                     </div>
@@ -65,17 +62,13 @@ class PhotoEditor {
                     <div class="photo-editor-body">
                         <div class="editor-toolbar">
                             <div class="toolbar-section">
-                               
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="imageInput" class="file-input" accept="image/*">
-                                    <label for="imageInput" class="file-input-button">
-                                        Выбрать файл
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="toolbar-section">
                                 <div class="action-buttons">
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="imageInput" class="file-input" accept="image/*">
+                                        <label for="imageInput" class="file-input-button">
+                                             Файл
+                                        </label>
+                                    </div>
                                     <button class="action-button secondary" id="resetButton">Сбросить</button>
                                     <button class="action-button primary" id="cropButton" disabled>
                                         <span id="cropButtonText">Обрезать</span>
@@ -252,17 +245,14 @@ class PhotoEditor {
         this.editType = type;
         this.currentStep = 1;
         
-        // Настройка заголовка и шагов
-        const title = document.getElementById('editorTitle');
+        // Настройка шагов
         const steps = document.getElementById('editorSteps');
         
         if (type === 'hero') {
-            title.textContent = 'Редактор фона (Hero)';
             steps.style.display = 'flex';
             this.maxSteps = 2;
             this.setFormat('reel');
         } else if (type === 'avatar') {
-            title.textContent = 'Редактор аватара';
             steps.style.display = 'none';
             this.maxSteps = 1;
             this.setFormat('square');

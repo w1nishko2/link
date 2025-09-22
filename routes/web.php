@@ -3,22 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
-// Маршрут для персональных страниц пользователей (публичный) - используем префикс "user"
-Route::middleware(['throttle:60,1'])->group(function () {
-    Route::get('/user/{username}', [App\Http\Controllers\HomeController::class, 'show'])->name('user.show');
-    
-    // Маршрут для галереи пользователя
-    Route::get('/user/{username}/gallery', [App\Http\Controllers\HomeController::class, 'gallery'])->name('user.gallery');
-    Route::get('/user/{username}/gallery/{image}', [App\Http\Controllers\HomeController::class, 'galleryImage'])->name('user.gallery.image');
-    
-    // Маршруты для услуг
-    Route::get('/user/{username}/services', [App\Http\Controllers\HomeController::class, 'services'])->name('user.services');
-    Route::get('/user/{username}/services/{service}', [App\Http\Controllers\HomeController::class, 'serviceDetail'])->name('user.service.detail');
-    
-    // Маршруты для статей
-    Route::get('/user/{username}/articles', [App\Http\Controllers\ArticleController::class, 'index'])->name('articles.index');
-    Route::get('/user/{username}/article/{slug}', [App\Http\Controllers\ArticleController::class, 'show'])->name('articles.show');
-});
 
 // Роуты для фоторедактора (требуют авторизации)
 Route::middleware('auth')->prefix('photo-editor')->group(function () {
@@ -132,7 +116,15 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
 // Маршрут для персональных страниц пользователей (публичный) - используем префикс "user"
 Route::middleware(['throttle:60,1'])->group(function () {
-    Route::get('/user/{username}', [App\Http\Controllers\HomeController::class, 'userPage'])->name('user.page');
+    Route::get('/user/{username}', [App\Http\Controllers\HomeController::class, 'userPage'])->name('user.show');
+    
+    // Маршрут для галереи пользователя
+    Route::get('/user/{username}/gallery', [App\Http\Controllers\HomeController::class, 'gallery'])->name('user.gallery');
+    Route::get('/user/{username}/gallery/{image}', [App\Http\Controllers\HomeController::class, 'galleryImage'])->name('user.gallery.image');
+    
+    // Маршруты для услуг
+    Route::get('/user/{username}/services', [App\Http\Controllers\HomeController::class, 'services'])->name('user.services');
+    Route::get('/user/{username}/services/{service}', [App\Http\Controllers\HomeController::class, 'serviceDetail'])->name('user.service.detail');
     
     // Маршрут для просмотра всех статей всех пользователей с поиском
     Route::get('/articles', [App\Http\Controllers\AllArticlesController::class, 'index'])->name('articles.all');

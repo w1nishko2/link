@@ -327,7 +327,7 @@ class AdminController extends Controller
                 'is_active' => true
             ]);
 
-            $redirectUrl = route('user.page', $user->username) . '#gallery';
+            $redirectUrl = route('user.show', $user->username) . '#gallery';
             return redirect($redirectUrl)->with('success', 'Изображение добавлено в галерею!');
         } catch (\Exception $e) {
             Log::error('Ошибка добавления изображения: ' . $e->getMessage());
@@ -387,7 +387,7 @@ class AdminController extends Controller
             // Обновляем остальные поля
             $image->update($request->only(['title', 'alt_text', 'order_index', 'is_active']));
 
-            $redirectUrl = route('user.page', auth()->user()->username) . '#gallery';
+            $redirectUrl = route('user.show', auth()->user()->username) . '#gallery';
             return redirect($redirectUrl)->with('success', 'Изображение обновлено!');
         } catch (\Exception $e) {
             Log::error('Ошибка обновления изображения: ' . $e->getMessage());
@@ -424,7 +424,7 @@ class AdminController extends Controller
 
         Log::info('Изображение успешно удалено', ['image_id' => $image->id]);
 
-        $redirectUrl = route('user.page', auth()->user()->username) . '#gallery';
+        $redirectUrl = route('user.show', auth()->user()->username) . '#gallery';
         return redirect($redirectUrl)->with('success', 'Изображение удалено!');
     }
 
@@ -504,10 +504,16 @@ class AdminController extends Controller
             'button_link' => 'nullable|string|max:255',
         ]);
 
-        $data = $request->only(['title', 'description', 'price', 'price_type', 'order_index', 'button_text', 'button_link']);
+        $data = $request->only(['title', 'description', 'price', 'price_type', 'button_text', 'button_link']);
         $data['user_id'] = $user->id;
-        // Используем прямой запрос к базе вместо отношения
-        $data['order_index'] = $data['order_index'] ?: Service::where('user_id', $user->id)->count();
+        
+        // Обрабатываем order_index отдельно
+        if ($request->filled('order_index') && is_numeric($request->input('order_index'))) {
+            $data['order_index'] = $request->input('order_index');
+        } else {
+            // Используем прямой запрос к базе вместо отношения
+            $data['order_index'] = Service::where('user_id', $user->id)->count();
+        }
 
         if ($request->hasFile('image')) {
             // Валидируем изображение
@@ -530,7 +536,7 @@ class AdminController extends Controller
 
         Service::create($data);
 
-        $redirectUrl = route('user.page', $user->username) . '#services';
+        $redirectUrl = route('user.show', $user->username) . '#services';
         return redirect($redirectUrl)->with('success', 'Услуга добавлена!');
     }
 
@@ -585,7 +591,12 @@ class AdminController extends Controller
             'button_link' => 'nullable|string|max:255',
         ]);
 
-        $data = $request->only(['title', 'description', 'price', 'price_type', 'order_index', 'is_active', 'button_text', 'button_link']);
+        $data = $request->only(['title', 'description', 'price', 'price_type', 'is_active', 'button_text', 'button_link']);
+        
+        // Добавляем order_index только если он не null
+        if ($request->filled('order_index')) {
+            $data['order_index'] = $request->input('order_index');
+        }
 
         if ($request->hasFile('image')) {
             // Валидируем изображение
@@ -609,7 +620,7 @@ class AdminController extends Controller
 
         $service->update($data);
 
-        $redirectUrl = route('user.page', $user->username) . '#services';
+        $redirectUrl = route('user.show', $user->username) . '#services';
         return redirect($redirectUrl)->with('success', 'Услуга обновлена!');
     }
 
@@ -631,7 +642,7 @@ class AdminController extends Controller
 
         $service->delete();
 
-        $redirectUrl = route('user.page', $user->username) . '#services';
+        $redirectUrl = route('user.show', $user->username) . '#services';
         return redirect($redirectUrl)->with('success', 'Услуга удалена!');
     }
 
@@ -721,25 +732,28 @@ class AdminController extends Controller
 
         Article::create($data);
 
-        $redirectUrl = route('user.page', $user->username) . '#articles';
+        $redirectUrl = route('user.show', $user->username) . '#articles';
         return redirect($redirectUrl)->with('success', 'Статья добавлена!');
     }
 
     public function articlesEdit($user, Article $article)
     {
-        // if ($article->user_id !== auth()->user()->id) {
-        //     abort(403);
-        // }
+        // Проверяем права доступа
+        if ($article->user_id !== auth()->user()->id) {
+            abort(403, 'Доступ запрещен');
+        }
 
         $currentUserId = auth()->user()->id;
-        return view('admin.articles.edit', compact('article', 'currentUserId'));
+        $user = auth()->user(); // Добавляем переменную user для использования в blade шаблоне
+        return view('admin.articles.edit', compact('article', 'currentUserId', 'user'));
     }
 
     public function articlesUpdate(Request $request, $user, Article $article)
     {
-        // if ($article->user_id !== auth()->user()->id) {
-        //     abort(403);
-        // }
+        // Проверяем права доступа
+        if ($article->user_id !== auth()->user()->id) {
+            abort(403, 'Доступ запрещен');
+        }
 
         $request->validate([
             'title' => 'required|string|max:150',
@@ -783,7 +797,9 @@ class AdminController extends Controller
 
         $article->update($data);
 
-        $redirectUrl = route('user.page', $user->username) . '#articles';
+        // Получаем объект пользователя для редиректа
+        $userObj = auth()->user();
+        $redirectUrl = route('user.show', $userObj->username) . '#articles';
         return redirect($redirectUrl)->with('success', 'Статья обновлена!');
     }
 
@@ -799,7 +815,7 @@ class AdminController extends Controller
 
         $article->delete();
 
-        $redirectUrl = route('user.page', auth()->user()->username) . '#articles';
+        $redirectUrl = route('user.show', auth()->user()->username) . '#articles';
         return redirect($redirectUrl)->with('success', 'Статья удалена!');
     }
 
@@ -867,7 +883,7 @@ class AdminController extends Controller
 
         Banner::create($data);
 
-        $redirectUrl = route('user.page', auth()->user()->username) . '#banners';
+        $redirectUrl = route('user.show', auth()->user()->username) . '#banners';
         return redirect($redirectUrl)->with('success', 'Баннер добавлен!');
     }
 
@@ -920,7 +936,7 @@ class AdminController extends Controller
 
         $banner->update($data);
 
-        $redirectUrl = route('user.page', auth()->user()->username) . '#banners';
+        $redirectUrl = route('user.show', auth()->user()->username) . '#banners';
         return redirect($redirectUrl)->with('success', 'Баннер обновлен!');
     }
 
@@ -936,7 +952,7 @@ class AdminController extends Controller
 
         $banner->delete();
 
-        $redirectUrl = route('user.page', auth()->user()->username) . '#banners';
+        $redirectUrl = route('user.show', auth()->user()->username) . '#banners';
         return redirect($redirectUrl)->with('success', 'Баннер удален!');
     }
 

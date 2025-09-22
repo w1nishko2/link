@@ -1,3 +1,5 @@
+
+
 <?php $__env->startSection('title', $pageUser->name . ' - ' . $pageUser->username . ' | Персональная страница'); ?>
 <?php $__env->startSection('description', $pageUser->bio ? Str::limit(strip_tags($pageUser->bio), 160) : 'Персональная страница ' . $pageUser->name . '. Услуги, статьи, портфолио и контакты.'); ?>
 <?php $__env->startSection('keywords', 'персональная страница, ' . strtolower($pageUser->name) . ', услуги, портфолио, контакты, ' . strtolower($pageUser->username)); ?>
@@ -13,7 +15,7 @@
 <?php $__env->startSection('twitter_description', $pageUser->bio ? Str::limit(strip_tags($pageUser->bio), 160) : 'Персональная страница с услугами и портфолио'); ?>
 <?php $__env->startSection('twitter_image', $pageUser->avatar ? asset('storage/' . $pageUser->avatar) : asset('/hero.png')); ?>
 
-<?php $__env->startSection('canonical_url', route('user.page', $pageUser->username)); ?>
+<?php $__env->startSection('canonical_url', route('user.show', $pageUser->username)); ?>
 
 <?php $__env->startPush('head'); ?>
 <!-- Structured Data (JSON-LD) -->
@@ -24,7 +26,7 @@
     "name": "<?php echo e($pageUser->name); ?>",
     "alternateName": "<?php echo e($pageUser->username); ?>",
     "description": "<?php echo e($pageUser->bio ? strip_tags($pageUser->bio) : 'Персональная страница специалиста'); ?>",
-    "url": "<?php echo e(route('user.page', $pageUser->username)); ?>",
+    "url": "<?php echo e(route('user.show', $pageUser->username)); ?>",
     <?php if($pageUser->avatar): ?>
     "image": "<?php echo e(asset('storage/' . $pageUser->avatar)); ?>",
     <?php endif; ?>
@@ -52,12 +54,12 @@
     "provider": {
         "@type": "Person",
         "name": "<?php echo e($pageUser->name); ?>",
-        "url": "<?php echo e(route('user.page', $pageUser->username)); ?>"
+        "url": "<?php echo e(route('user.show', $pageUser->username)); ?>"
     },
     "areaServed": "Online",
     "availableChannel": {
         "@type": "ServiceChannel",
-        "serviceUrl": "<?php echo e(route('user.page', $pageUser->username)); ?>"
+        "serviceUrl": "<?php echo e(route('user.show', $pageUser->username)); ?>"
     }
 }
 </script>
@@ -74,9 +76,9 @@
     "author": {
         "@type": "Person",
         "name": "<?php echo e($pageUser->name); ?>",
-        "url": "<?php echo e(route('user.page', $pageUser->username)); ?>"
+        "url": "<?php echo e(route('user.show', $pageUser->username)); ?>"
     },
-    "url": "<?php echo e(route('user.page', $pageUser->username)); ?>#gallery"
+    "url": "<?php echo e(route('user.show', $pageUser->username)); ?>#gallery"
 }
 </script>
 <?php endif; ?>
@@ -92,9 +94,9 @@
     "author": {
         "@type": "Person",
         "name": "<?php echo e($pageUser->name); ?>",
-        "url": "<?php echo e(route('user.page', $pageUser->username)); ?>"
+        "url": "<?php echo e(route('user.show', $pageUser->username)); ?>"
     },
-    "url": "<?php echo e(route('user.page', $pageUser->username)); ?>#articles",
+    "url": "<?php echo e(route('user.show', $pageUser->username)); ?>#articles",
     "blogPost": [
         <?php $__currentLoopData = $articles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $article): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
         {

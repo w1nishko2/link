@@ -31,22 +31,53 @@
         'resources/js/admin-toggles.js',
         'resources/js/admin-images.js',
         'resources/js/admin-forms.js',
-        'resources/js/admin-services.js',
+        'resources/js/admin-articles.js',
         'resources/js/admin-gallery.js',
         'resources/js/admin-banners.js',
-        'resources/js/admin-articles.js'
     ])
     
     <style>
-       
+        .mobile-back-btn {
+            background: none;
+            border: none;
+            color: #495057;
+            font-size: 1.25rem;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .mobile-back-btn:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #007bff;
+        }
+        
+        .mobile-back-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
     </style>
 </head>
 <body>
     <!-- Mobile Header -->
     <div class="mobile-header d-md-none">
-        <button class="mobile-menu-btn" type="button" onclick="toggleSidebar()">
-            <i class="bi bi-list"></i>
-        </button>
+        @php
+            $isCreateOrEditPage = request()->routeIs('admin.*.create') || request()->routeIs('admin.*.edit');
+        @endphp
+        
+        @if($isCreateOrEditPage)
+            <button class="mobile-back-btn" type="button" onclick="history.back()">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+        @else
+            <button class="mobile-menu-btn" type="button" onclick="toggleSidebar()">
+                <i class="bi bi-list"></i>
+            </button>
+        @endif
         <h5 class="mb-0">
             @if(request()->routeIs('admin.analytics*'))
                 Аналитика
@@ -84,7 +115,7 @@
                 Настройки
             @endif
         </h5>
-        <button class="mobile-menu-btn" type="button" onclick="window.open('{{ route('user.page', ['username' => auth()->user()->username]) }}', '_blank')">
+        <button class="mobile-menu-btn" type="button" onclick="window.open('{{ route('user.show', ['username' => auth()->user()->username]) }}', '_blank')">
             <i class="bi bi-eye"></i>
         </button>
     </div>
@@ -151,7 +182,7 @@
                 <hr class="my-4">
                 
                 <div class="nav flex-column">
-                    <a class="nav-link" href="{{ route('user.page', ['username' => auth()->user()->username]) }}" target="_blank">
+                    <a class="nav-link" href="{{ route('user.show', ['username' => auth()->user()->username]) }}" target="_blank">
                         <i class="bi bi-eye me-2"></i>
                         Посмотреть страницу
                     </a>

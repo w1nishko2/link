@@ -129,6 +129,17 @@
                         </a>
                     </div>
                     @auth
+                        <!-- Меню для авторизованных пользователей -->
+                        <div class="navbar-nav ms-auto">
+                            <a class="nav-link" href="{{ route('admin.analytics', ['user' => auth()->id()]) }}" title="Мой кабинет">
+                                <i class="bi bi-gear me-1"></i>
+                                <span class="d-none d-md-inline">Мой кабинет</span>
+                            </a>
+                            <a class="nav-link" href="{{ route('user.show', ['username' => auth()->user()->username]) }}" title="Моя страница">
+                                <i class="bi bi-person me-1"></i>
+                                <span class="d-none d-md-inline">Моя страница</span>
+                            </a>
+                        </div>
                     @else
                         <!-- Меню для неавторизованных пользователей -->
                         <div class="navbar-nav ms-auto">
@@ -145,9 +156,9 @@
                 </div>
             </nav>
         @endif
-        <main class="">
+       
             @yield('content')
-        </main>
+        
     </div>
 
     <!-- Banner Modal -->
@@ -241,7 +252,7 @@
                                 <!-- Цена услуги -->
                                 <div id="servicePriceContainer" class="mt-3" style="display: none;">
                                     <div class="service-price-block">
-                                        <h4 id="servicePrice" class="text-primary"></h4>
+                                        <h4 id="servicePrice" class=""></h4>
                                     </div>
                                 </div>
 
@@ -283,11 +294,11 @@
                         spaceBetween: 20,
                     },
                     768: {
-                        slidesPerView: 2.1,
+                        slidesPerView: 2.2,
                         spaceBetween: 20,
                     },
                     1024: {
-                        slidesPerView: 2.1,
+                        slidesPerView: 2.3,
                         spaceBetween: 20,
                     }
                 }
@@ -305,27 +316,27 @@
                 },
                 breakpoints: {
                     320: {
-                        slidesPerView: 1.1,
+                        slidesPerView: 1.4,
                         spaceBetween: 20,
                     },
                     480: {
-                        slidesPerView: 2.1,
+                        slidesPerView: 2.2,
                         spaceBetween:20,
                     },
                     700: {
-                          slidesPerView: 2.1,
+                          slidesPerView: 3.4,
                         spaceBetween: 20,
                     },
                     768: {
-                        slidesPerView: 2.1,
+                        slidesPerView: 2.8,
                         spaceBetween: 20,
                     },
                     1024: {
-                        slidesPerView: 2.1,
+                        slidesPerView: 2.7,
                         spaceBetween: 20,
                     },
                     1200: {
-                        slidesPerView: 3.2,
+                        slidesPerView: 3.5,
                         spaceBetween: 20,
                     }
                 }
@@ -367,7 +378,7 @@
             const gallerySwiper = document.querySelector('.gallery-swiper');
             if (gallerySwiper) {
                 const swiper = new Swiper('.gallery-swiper', {
-                    slidesPerView: 1.2,
+                    slidesPerView: 1.4,
                     spaceBetween: 20,
                     loop: false, // Отключаем цикличность
                     initialSlide: 0, // Начинаем с первого слайда
@@ -382,29 +393,29 @@
                     },
                     breakpoints: {
                         320: {
-                            slidesPerView: 1.1,
+                            slidesPerView: 1.2,
                             spaceBetween: 20,
                             centeredSlides: false, // Убираем центрирование для лучшего доступа к первому слайду
                         },
                         480: {
-                            slidesPerView: 2.1,
+                            slidesPerView: 1.6,
                             spaceBetween: 20,
                             centeredSlides: false,
                         },
                         640: {
-                             slidesPerView: 2.1,
+                             slidesPerView: 2.2,
                             spaceBetween: 20,
                         },
                         768: {
-                            slidesPerView: 2.5,
+                            slidesPerView: 2.2,
                             spaceBetween: 20,
                         },
                         1024: {
-                            slidesPerView: 3,
+                            slidesPerView: 3.2,
                             spaceBetween: 20,
                         },
                         1200: {
-                            slidesPerView: 3,
+                            slidesPerView: 3.2,
                             spaceBetween: 20,
                         }
                     },
@@ -774,7 +785,7 @@
 
         function generateQRCode() {
             const qrContainer = document.getElementById('qrcode');
-            const pageUrl = "{{ route('user.page', ['username' => auth()->user()->username]) }}";
+            const pageUrl = "{{ route('user.show', ['username' => auth()->user()->username]) }}";
             
             // Очищаем контейнер
             qrContainer.innerHTML = '';
@@ -941,6 +952,52 @@
                 console.error('Ошибка при копировании', err);
             }
         }
+
+        function downloadQRCode() {
+            const canvas = document.querySelector('#qrcode canvas');
+            const downloadBtn = document.querySelector('.qr-download-btn');
+            const downloadText = downloadBtn.querySelector('.download-text');
+            
+            if (!canvas) {
+                console.error('QR код не найден');
+                return;
+            }
+            
+            try {
+                // Создаем ссылку для скачивания
+                const link = document.createElement('a');
+                link.download = 'qr-code-{{ auth()->user()->username }}.png';
+                link.href = canvas.toDataURL('image/png');
+                
+                // Симулируем клик по ссылке
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Показываем обратную связь пользователю
+                downloadText.textContent = 'Скачано!';
+                downloadBtn.classList.add('btn-success');
+                downloadBtn.classList.remove('btn-outline-success');
+                
+                setTimeout(() => {
+                    downloadText.textContent = 'Скачать QR';
+                    downloadBtn.classList.remove('btn-success');
+                    downloadBtn.classList.add('btn-outline-success');
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Ошибка при скачивании QR-кода:', err);
+                downloadText.textContent = 'Ошибка!';
+                downloadBtn.classList.add('btn-danger');
+                downloadBtn.classList.remove('btn-outline-success');
+                
+                setTimeout(() => {
+                    downloadText.textContent = 'Скачать QR';
+                    downloadBtn.classList.remove('btn-danger');
+                    downloadBtn.classList.add('btn-outline-success');
+                }, 2000);
+            }
+        }
         @endauth
 
         // Функция для поддержания активности сессии
@@ -996,12 +1053,18 @@
                          
                             <div class="qr-url">
                                 <input type="text" class="form-control qr-url-input" 
-                                       value="{{ route('user.page', ['username' => auth()->user()->username]) }}" 
+                                       value="{{ route('user.show', ['username' => auth()->user()->username]) }}" 
                                        readonly id="pageUrl">
-                                <button class="btn btn-outline-primary qr-copy-btn" onclick="copyToClipboard()">
-                                    <i class="bi bi-copy"></i>
-                                    <span class="copy-text">Копировать</span>
-                                </button>
+                                <div class="qr-buttons">
+                                    <button class="btn btn-outline-primary qr-copy-btn" onclick="copyToClipboard()">
+                                        <i class="bi bi-copy"></i>
+                                        <span class="copy-text">Копировать</span>
+                                    </button>
+                                    <button class="btn btn-outline-success qr-download-btn" onclick="downloadQRCode()">
+                                        <i class="bi bi-download"></i>
+                                        <span class="download-text">Скачать QR</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                 </div>

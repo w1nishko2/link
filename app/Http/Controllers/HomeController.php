@@ -48,7 +48,7 @@ class HomeController extends Controller
     {
         // Перенаправляем на персональную страницу пользователя
         $user = auth()->user();
-        return redirect()->route('user.page', ['username' => $user->username]);
+        return redirect()->route('user.show', ['username' => $user->username]);
     }
 
     /**
@@ -224,7 +224,7 @@ class HomeController extends Controller
                 ]);
             }
             
-            return redirect()->route('user.page', ['username' => $username])
+            return redirect()->route('user.show', ['username' => $username])
                             ->with('success', 'Профиль успешно обновлен!');
                             
         } catch (ModelNotFoundException $e) {

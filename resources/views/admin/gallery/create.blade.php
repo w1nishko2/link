@@ -152,13 +152,6 @@
 </style>
 
 @section('content')
-<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
-    <h1 class="h4 mb-0">Создание изображения</h1>
-    <a href="{{ route('admin.gallery', $currentUserId) }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Назад к галерее
-    </a>
-</div>
-
 <!-- Скрытая форма для отправки данных -->
 <form id="image-form" action="{{ route('admin.gallery.store', $currentUserId) }}" method="POST" enctype="multipart/form-data" style="display: none;">
     @csrf
@@ -220,7 +213,7 @@
                                         <i class="bi bi-plus"></i> Добавить описание
                                     </button>
                                     
-                                    <div class="d-flex gap-2">
+                                    <div class="d-flex gap-2 " style="width: 100%">
                                         <!-- Дополнительные настройки -->
                                         <button type="button" 
                                                 class="btn btn-sm " 

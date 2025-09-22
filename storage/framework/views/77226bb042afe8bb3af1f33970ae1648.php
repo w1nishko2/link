@@ -73,8 +73,24 @@
                         </a>
                     </div>
                 <?php else: ?>
-                    <div class="text-center">
-                        <p class="text-muted">Галерея пуста</p>
+                    <div class="gallery-swiper swiper">
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide">
+                                <figure class="gallery-item placeholder-content">
+                                    <img src="/hero.png" 
+                                         alt="Скоро здесь будет галерея работ" 
+                                         loading="lazy" 
+                                         width="300"
+                                         height="200"
+                                         decoding="async">
+                                    <div class="gallery-item-overlay">
+                                        <figcaption class="gallery-item-text">
+                                            <?php echo e($pageUser->name); ?> готовит галерею своих работ. Заходите позже, чтобы посмотреть на впечатляющие проекты!
+                                        </figcaption>
+                                    </div>
+                                </figure>
+                            </div>
+                        </div>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>

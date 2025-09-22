@@ -3,6 +3,185 @@
 @section('title', 'Редактирование статьи - ' . config('app.name'))
 @section('description', 'Редактирование статьи: ' . $article->title)
 
+<style>
+/* Стили для редактируемых элементов */
+.editable-title, .editable-excerpt, .editable-content {
+    cursor: text;
+    border: 2px dashed transparent;
+    border-radius: 4px;
+    padding: 8px;
+    margin: -8px;
+    transition: all 0.2s ease;
+    min-height: 1.5rem;
+}
+
+.editable-title:hover, .editable-excerpt:hover, .editable-content:hover {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.editable-title:focus, .editable-excerpt:focus, .editable-content:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Убираем стандартные стили contenteditable */
+.editable-title[contenteditable="true"]:empty:before,
+.editable-excerpt[contenteditable="true"]:empty:before,
+.editable-content[contenteditable="true"]:empty:before {
+    content: attr(placeholder);
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Стили для изображения */
+.article-image {
+    position: relative;
+    cursor: pointer;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.article-image:hover {
+    border-color: #007bff;
+}
+
+.article-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.article-image:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-overlay i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.no-image {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+/* Фиксированная панель действий */
+.action-panel {
+    position: relative;
+    z-index: 1000;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 15px;
+}
+
+/* Стили для автора */
+.author-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.author-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.author-name {
+    font-weight: 600;
+}
+
+.article-date {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.read-time {
+    margin-left: 10px;
+}
+
+/* Стили для мета-информации */
+.article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.article-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .article-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+/* Индикатор загрузки */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.loading-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+</style>
 @section('content')
     <main class="" role="main">
         <!-- Скрытая форма для отправки данных -->
@@ -14,189 +193,142 @@
             <input type="hidden" name="content" id="hidden-content">
             <input type="hidden" name="read_time" id="hidden-read-time" value="{{ $article->read_time ?? 1 }}">
             <input type="hidden" name="is_published" id="hidden-is-published" value="{{ $article->is_published ? '1' : '0' }}">
-            <input type="file" name="image" id="image-input" accept="image/*" style="display: none;">
+            <input type="file" name="image" id="hidden-image" accept="image/*">
         </form>
-
-        <!-- Индикатор автосохранения -->
-        <div class="saving-indicator">
-            <i class="bi bi-check-circle me-1"></i>
-            Сохранено
-        </div>
-
-        <!-- Панель инструментов -->
-        <div class="toolbar">
-            <div class="container-fluid">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('admin.articles.index', $currentUserId) }}" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-arrow-left me-1"></i>
-                            Назад к списку
-                        </a>
-                        <button type="button" class="btn btn-outline-info btn-sm" id="auto-save">
-                            <i class="bi bi-cloud-arrow-up me-1"></i>
-                            Автосохранение
-                        </button>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-primary btn-sm" id="save-draft">
-                            <i class="bi bi-file-earmark me-1"></i>
-                            Сохранить черновик
-                        </button>
-                        <button type="button" class="btn btn-primary btn-sm" id="save-publish">
-                            <i class="bi bi-send me-1"></i>
-                            {{ $article->is_published ? 'Обновить' : 'Опубликовать' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Основной контент -->
         <div class="container-fluid">
             <div class="row">
-                <div class="col-lg-8">
-                    <!-- Заголовок статьи -->
-                    <div class="mb-4">
-                        <h1 id="article-title" class="editable-title" contenteditable="true" data-placeholder="Введите заголовок статьи...">
-                            {{ $article->title }}
-                        </h1>
-                    </div>
+                <div class="col-lg-10 mx-auto">
+                  
+                    
+                    <article class="article-wrapper" itemscope itemtype="https://schema.org/Article">
+                        <!-- Заголовок и мета-информация -->
+                        <header class="article-header">
+                            <h1 class="article-title editable-title" 
+                                contenteditable="true" 
+                                placeholder="Введите заголовок статьи..."
+                                data-max-length="150"
+                                onclick="selectText(this)">{{ $article->title }}</h1>
 
-                    <!-- Краткое описание -->
-                    <div class="mb-4">
-                        <p id="article-excerpt" class="editable-excerpt" contenteditable="true" data-placeholder="Краткое описание статьи...">
-                            {{ $article->excerpt }}
-                        </p>
-                    </div>
+                            <div class="article-meta">
+                                <div class="author-section">
+                                    <div class="author-avatar">
+                                        @if($user->avatar)
+                                            <img src="{{ asset('storage/' . $user->avatar) }}" alt="Аватар {{ $user->name }}" class="rounded-circle">
+                                        @else
+                                            <i class="bi bi-person-circle"></i>
+                                        @endif
+                                    </div>
+                                   
+                                </div>
+                                <div class="article-actions">
+                                    <button type="button" class="btn  btn-sm" onclick="selectImage()">
+                                        <i class="bi bi-image me-1"></i>Изменить изображение
+                                    </button>
+                                </div>
+                            </div>
+                        </header>
 
-                    <!-- Область изображения -->
-                    <div class="mb-4">
-                        <div class="article-image">
+                        <!-- Изображение статьи -->
+                        <div class="article-image mb-4" onclick="selectImage()" id="article-image-container">
                             @if($article->image_path)
-                                <img src="{{ asset('storage/' . $article->image_path) }}" alt="Изображение статьи">
+                                <img src="{{ asset('storage/' . $article->image_path) }}" alt="Изображение статьи" class="img-fluid rounded">
                                 <div class="image-overlay">
-                                    <i class="bi bi-camera"></i>
+                                    <i class="bi bi-camera-fill"></i>
                                     <span>Изменить изображение</span>
                                 </div>
                             @else
-                                <div class="image-placeholder">
-                                    <i class="bi bi-camera"></i>
-                                    <p class="mb-0">Нажмите, чтобы добавить изображение</p>
+                                <div class="no-image">
+                                    <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                    <p class="mt-2 mb-0">Нажмите, чтобы добавить изображение</p>
+                                </div>
+                                <div class="image-overlay">
+                                    <i class="bi bi-camera-fill"></i>
+                                    <span>Добавить изображение</span>
                                 </div>
                             @endif
                         </div>
-                    </div>
 
-                    <!-- Редактор контента -->
-                    <div class="mb-4">
-                        <div id="content-editor" style="min-height: 400px;">
+                        <!-- Краткое описание -->
+                        <div class="mb-4">
+                            <p class="lead editable-excerpt" 
+                               contenteditable="true" 
+                               placeholder="Введите краткое описание статьи..."
+                               data-max-length="300"
+                               onclick="selectText(this)">{{ $article->excerpt }}</p>
+                        </div>
+
+                        <!-- Содержание статьи -->
+                        <div class="article-content editable-content" 
+                             contenteditable="true" 
+                             placeholder="Введите содержание статьи..."
+                             onclick="selectText(this)">
                             {!! $article->content !!}
                         </div>
-                    </div>
-                </div>
 
-                <div class="col-lg-4">
-                    <!-- Боковая панель с настройками -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="bi bi-gear me-2"></i>
-                                Настройки публикации
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label">Статус</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" id="status-draft" value="draft" {{ !$article->is_published ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="status-draft">
-                                        Черновик
-                                    </label>
+                        <!-- Мета-информация в конце -->
+                        <footer class="article-footer mt-5">
+                          
+                                <div class="col-md-6">
+                                    <div class="article-tags">
+                                        <small class="text-muted">
+                                            Статус: <span class="badge {{ $article->is_published ? 'bg-success' : 'bg-warning' }}">{{ $article->is_published ? 'Опубликовано' : 'Черновик' }}</span>
+                                        </small>
+                                         <small class="text-muted">
+                                        Автор: {{ $user->name }}
+                                    </small>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" id="status-published" value="published" {{ $article->is_published ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="status-published">
-                                        Опубликовано
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="read-time" class="form-label">Время чтения (мин)</label>
-                                <input type="number" class="form-control" id="read-time" value="{{ $article->read_time ?? 1 }}" min="1" max="60">
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Последнее обновление</label>
-                                <small class="d-block text-muted">
-                                    {{ $article->updated_at->format('d.m.Y H:i') }}
-                                </small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Предварительный просмотр</label>
-                                <a href="{{ route('articles.show', $article) }}" target="_blank" class="btn btn-outline-secondary w-100">
-                                    <i class="bi bi-eye me-1"></i>
-                                    Просмотр
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Информация о статистике -->
-                    <div class="card mt-3">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">
-                                <i class="bi bi-graph-up me-2"></i>
-                                Статистика
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <small class="text-muted d-block">
-                                <i class="bi bi-calendar me-1"></i>
-                                Создано: {{ $article->created_at->format('d.m.Y') }}
-                            </small>
-                            <small class="text-muted d-block">
-                                <i class="bi bi-clock me-1"></i>
-                                Автосохранение каждые 30 секунд
-                            </small>
-                            <small class="text-muted d-block">
-                                <i class="bi bi-shield-check me-1"></i>
-                                Данные сохраняются локально
-                            </small>
-                        </div>
-                    </div>
+                               
+                            
+                        </footer>
+                    </article>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Модальное окно загрузки -->
-    <div id="loading-overlay" class="loading-modal" style="display: none;">
-        <div class="loading-content">
-            <div class="spinner-border text-primary mb-3" role="status">
-                <span class="visually-hidden">Загрузка...</span>
-            </div>
-            <h5>Сохранение статьи...</h5>
-            <p>Пожалуйста, подождите</p>
+    <!-- Фиксированная панель действий -->
+    <div class="action-panel">
+        <div class="d-grid gap-2">
+            <button type="button" class="btn " onclick="saveArticle(true)">
+                <i class="bi bi-cloud-upload me-2"></i>
+                {{ $article->is_published ? 'Сохранить изменения' : 'Опубликовать' }}
+            </button>
+            <button type="button" class="btn " onclick="saveArticle(false)">
+                <i class="bi bi-save me-2"></i>
+                Сохранить как черновик
+            </button>
+         
         </div>
     </div>
-@endsection
 
-@section('scripts')
-<script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
-<script>
-// Данные статьи для редактирования
-window.articleData = {
-    title: '{{ addslashes($article->title) }}',
-    excerpt: '{{ addslashes($article->excerpt) }}',
-    content: `{!! addslashes($article->content) !!}`,
-    isPublished: {{ $article->is_published ? 'true' : 'false' }},
-    imagePath: '{{ $article->image_path }}',
-    readTime: {{ $article->read_time ?? 1 }},
-    updateUrl: '{{ route("admin.articles.update", [$currentUserId, $article->id]) }}',
-    articleId: {{ $article->id }}
-};
-</script>
-@vite(['resources/css/admin-content.css', 'resources/js/admin-articles-extended.js'])
+    <!-- Индикатор загрузки -->
+    <div id="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
+    @vite(['resources/js/admin-articles.js'])
+    <script>
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Начальное состояние формы с данными статьи
+            const initialState = {
+                title: '{{ addslashes($article->title) }}',
+                excerpt: '{{ addslashes($article->excerpt) }}',
+                content: `{!! addslashes($article->content) !!}`,
+                isPublished: {{ $article->is_published ? 'true' : 'false' }},
+                readTime: {{ $article->read_time ?? 1 }}
+            };
+
+            // Инициализируем страницу
+            initArticlePage(initialState);
+        });
+    </script>
 @endsection

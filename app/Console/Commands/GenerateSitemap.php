@@ -24,7 +24,7 @@ class GenerateSitemap extends Command
         foreach ($users as $user) {
             // Главная страница пользователя
             $sitemap .= $this->generateUrlEntry(
-                route('user.page', $user->username),
+                route('user.show', $user->username),
                 $user->updated_at,
                 'weekly',
                 '0.8'

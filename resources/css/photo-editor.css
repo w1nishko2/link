@@ -44,7 +44,7 @@
     padding: 20px;
     border-bottom: 1px solid #e0e0e0;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     background: #f8f9fa;
     border-radius: 12px 12px 0 0;
@@ -57,18 +57,29 @@
 }
 
 .photo-editor-close {
+    position: absolute;
+    top: 7px;
+    right: 10px;
     background: none;
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
     color: #666;
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    z-index: 1000;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .photo-editor-close:hover {
     background-color: #e9ecef;
+    color: #333;
+    transform: scale(1.1);
 }
 
 /* Шаги редактирования для hero фона */
@@ -343,11 +354,11 @@
 
 @media (max-width: 480px) {
     .format-container.reel {
-        zoom: 0.45 !important; /* 540px → 243px, 960px → 432px */
+        zoom: 0.69 !important; /* 540px → 243px, 960px → 432px */
     }
     
     .format-container.desktop {
-        zoom: 0.3 !important; /* 800px → 240px, 450px → 135px */
+        zoom: 0.5 !important; /* 800px → 240px, 450px → 135px */
     }
     
     .format-container.square {
@@ -357,15 +368,15 @@
 
 @media (max-width: 400px) {
     .format-container.reel {
-        zoom: 0.4 !important; /* 540px → 216px, 960px → 384px */
+        zoom: 0.8 !important; /* 540px → 216px, 960px → 384px */
     }
     
     .format-container.desktop {
-        zoom: 0.28 !important; /* 800px → 224px, 450px → 126px */
+        zoom: 0.42 !important; /* 800px → 224px, 450px → 126px */
     }
     
     .format-container.square {
-        zoom: 0.35 !important; /* 600px → 210px, 600px → 210px */
+        zoom: 0.55 !important; /* 600px → 210px, 600px → 210px */
     }
 }
 
@@ -600,8 +611,7 @@
     
     /* Добавляем визуальную подсказку для touch */
     .format-container:not(.has-image)::after {
-        content: "Загрузите изображение и используйте жесты:\A• Одним пальцем - перетаскивание\A• Двумя пальцами - масштабирование\A• Свайп вниз - закрыть редактор";
-        white-space: pre;
+         white-space: pre;
         text-align: center;
         color: #666;
         font-size: 12px;
@@ -657,7 +667,7 @@
     }
     
     .photo-editor-header {
-        padding: 8px 10px;
+        padding: 0;
     }
     
     .photo-editor-title {

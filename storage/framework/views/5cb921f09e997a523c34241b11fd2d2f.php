@@ -3,20 +3,12 @@
 <?php $__env->startSection('title', 'Редактирование услуги - ' . config('app.name')); ?>
 <?php $__env->startSection('description', 'Редактирование описания и настроек услуги'); ?>
 
+
 <!-- Swiper CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-<?php echo app('Illuminate\Foundation\Vite')(['resources/css/services-reels.css', 'resources/css/admin-services.css', 'resources/js/admin-services.js']); ?>
+<?php echo app('Illuminate\Foundation\Vite')(['resources/css/services-reels.css']); ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
-    
-    <a href="<?php echo e(route('admin.services', $currentUserId)); ?>" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-2"></i>
-        <span class="d-none d-sm-inline">Назад к услугам</span>
-        <span class="d-sm-none">Назад</span>
-    </a>
-</div>
-
 <!-- Скрытая форма для отправки данных -->
 <form id="service-form" action="<?php echo e(route('admin.services.update', [$currentUserId, $service])); ?>" method="POST" enctype="multipart/form-data" style="display: none;">
     <?php echo csrf_field(); ?>
@@ -30,73 +22,75 @@
     <input type="hidden" name="order_index" id="hidden-order-index">
     <input type="file" name="image" id="hidden-image" accept="image/*">
 </form>
+
 <div class="row justify-content-center">
     <div class="col-lg-8 col-xl-4">
-        
-            <div class="swiper services-swiper" id="edit-services-swiper">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <div class="service-card editable-card" id="editable-service-card">
-                            <!-- Изображение с возможностью загрузки -->
-                            <div class="service-image editable-image" onclick="selectImage()">
-                                <img id="service-image" 
-                                     src="<?php echo e($service->image_path ? asset('storage/' . $service->image_path) : '/hero.png'); ?>" 
-                                     alt="Изображение услуги" 
-                                     loading="lazy"
-                                     width="300"
-                                     height="600"
-                                     decoding="async">
-                                <div class="image-overlay">
-                                    <i class="bi bi-camera-fill"></i>
-                                    <span>Изменить изображение</span>
-                                </div>
-                            </div>
-                            
-                            <div class="service-content">
-                                <!-- Редактируемое название -->
-                                <h3 class="editable-title" 
-                                    contenteditable="true" 
-                                    placeholder="Введите название услуги..."
-                                    data-max-length="100"
-                                    onclick="selectText(this)"><?php echo e($service->title); ?></h3>
-                                
-                                <!-- Редактируемое описание -->
-                                <p class="editable-description" 
-                                   contenteditable="true" 
-                                   placeholder="Введите описание услуги..."
-                                   data-max-length="500"
-                                   onclick="selectText(this)"><?php echo e($service->description); ?></p>
-                                
-                                <div class="service-bottom">
-                                    <!-- Редактируемая цена -->
-                                    <div class="service-price editable-price" 
-                                         contenteditable="true" 
-                                         placeholder="Цена"
-                                         onclick="selectText(this)"
-                                         style="display: <?php echo e($service->price ? 'block' : 'none'); ?>;margin:0;"><?php echo e($service->formatted_price ?? ''); ?></div>
-                                    
-                                    <div class="service-buttons" style="flex-wrap: nowrap">
-                                        <!-- Кнопка добавления цены -->
-                                        <button type="button" class="btn btn-outline-success btn-sm add-price-button" 
-                                                onclick="addPriceInCard()" id="add-price-card-btn"
-                                                style="display: <?php echo e($service->price ? 'none' : 'inline-block'); ?>;">
-                                            <i class="bi bi-tag me-1"></i> Добавить цену
-                                        </button>
-                                        
-                                        <!-- Редактируемая кнопка -->
-                                        <div class="service-button btn btn-primary btn-sm editable-button" 
-                                             onclick="editButton()">
-                                            <?php echo e($service->button_text ?? 'Кнопка'); ?>
+                            <div class="swiper services-swiper" id="edit-services-swiper">
+                                <div class="swiper-wrapper">
+                                    <div class="swiper-slide">
+                                        <div class="service-card editable-card" id="editable-service-card">
+                                            <!-- Изображение с возможностью загрузки -->
+                                            <div class="service-image editable-image" onclick="selectImage()">
+                                                <img id="service-image" 
+                                                     src="<?php echo e($service->image_path ? asset('storage/' . $service->image_path) : '/hero.png'); ?>" 
+                                                     alt="Изображение услуги" 
+                                                     loading="lazy"
+                                                     width="300"
+                                                     height="600"
+                                                     decoding="async">
+                                                <div class="image-overlay">
+                                                    <i class="bi bi-camera-fill"></i>
+                                                    <span>Выбрать изображение</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="service-content">
+                                                <!-- Редактируемое название -->
+                                                <h3 class="editable-title" 
+                                                    contenteditable="true" 
+                                                    placeholder="Введите название услуги..."
+                                                    data-max-length="100"
+                                                    data-field="title"
+                                                    onclick="selectText(this)"><?php echo e($service->title); ?></h3>
+                                                
+                                                <!-- Редактируемое описание -->
+                                                <p class="editable-description" 
+                                                   contenteditable="true" 
+                                                   placeholder="Введите описание услуги..."
+                                                   data-max-length="500"
+                                                   data-field="description"
+                                                   onclick="selectText(this)"><?php echo e($service->description); ?></p>
+                                                
+                                                <div class="service-bottom">
+                                                    <!-- Редактируемая цена -->
+                                                    <div class="service-price editable-price" 
+                                                         contenteditable="true" 
+                                                         placeholder="Цена"
+                                                         data-field="price"
+                                                         onclick="selectText(this)"
+                                                         style="display: <?php echo e($service->price ? 'block' : 'none'); ?>;margin:0;"><?php echo e($service->price ?? ''); ?></div>
+                                                    
+                                                    <div class="service-buttons" style="flex-wrap: nowrap">
+                                                        <!-- Кнопка добавления цены -->
+                                                        <button type="button" class="btn btn-outline-success btn-sm add-price-button" 
+                                                                onclick="addPriceInCard()" id="add-price-card-btn"
+                                                                style="display: <?php echo e($service->price ? 'none' : 'inline-block'); ?>;">
+                                                            <i class="bi bi-tag me-1"></i> Добавить цену
+                                                        </button>
+                                                        
+                                                        <!-- Редактируемая кнопка -->
+                                                        <div class="service-button btn btn-primary btn-sm editable-button" 
+                                                             onclick="editButton()">
+                                                            <?php echo e($service->button_text ?? 'Кнопка'); ?>
 
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
             <div class="card-footer">
                 <div class="row">
                     <div class="col-12">
@@ -104,7 +98,7 @@
                         <div class="d-grid gap-2">
                             <button type="button" class="btn btn-primary" onclick="saveService()">
                                 <i class="bi bi-check-circle me-2"></i>
-                                Обновить услугу
+                                Сохранить услугу
                             </button>
                             <a href="<?php echo e(route('admin.services', $currentUserId)); ?>" class="btn btn-outline-secondary btn-sm">
                                 Отмена
@@ -113,9 +107,6 @@
                     </div>
                 </div>
             </div>
-        
-        
-        <!-- Дополнительные настройки (скрыты по умолчанию) -->
         <div class="card mt-3" id="advanced-settings" style="display: none;">
             <div class="card-header">
                 <h6 class="card-title mb-0">Дополнительные настройки</h6>
@@ -123,11 +114,10 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-12 mb-3">
-                        <!-- Управление ценой -->
                         <label class="form-label">Управление ценой</label>
                         <div class="d-grid">
-                            <button type="button" class="btn btn-outline-success btn-sm" onclick="togglePrice()" id="price-toggle">
-                                <i class="bi bi-tag me-1"></i> <?php echo e($service->price ? 'Убрать цену' : 'Добавить цену'); ?>
+                            <button type="button" class="btn <?php echo e($service->price ? 'btn-outline-danger' : 'btn-outline-success'); ?> btn-sm" onclick="togglePrice()" id="price-toggle">
+                                <i class="bi bi-tag<?php echo e($service->price ? '-fill' : ''); ?> me-1"></i> <?php echo e($service->price ? 'Убрать цену' : 'Добавить цену'); ?>
 
                             </button>
                         </div>
@@ -170,13 +160,13 @@
                     <label class="form-label">Текст кнопки</label>
                     <select class="form-select" id="button-text-select">
                         <option value="">Выберите текст</option>
-                        <option value="Заказать услугу" <?php echo e($service->button_text == 'Заказать услугу' ? 'selected' : ''); ?>>Заказать услугу</option>
-                        <option value="Связаться с нами" <?php echo e($service->button_text == 'Связаться с нами' ? 'selected' : ''); ?>>Связаться с нами</option>
-                        <option value="Узнать подробнее" <?php echo e($service->button_text == 'Узнать подробнее' ? 'selected' : ''); ?>>Узнать подробнее</option>
-                        <option value="Написать в WhatsApp" <?php echo e($service->button_text == 'Написать в WhatsApp' ? 'selected' : ''); ?>>Написать в WhatsApp</option>
-                        <option value="Написать в Telegram" <?php echo e($service->button_text == 'Написать в Telegram' ? 'selected' : ''); ?>>Написать в Telegram</option>
-                        <option value="Позвонить" <?php echo e($service->button_text == 'Позвонить' ? 'selected' : ''); ?>>Позвонить</option>
-                        <option value="Отправить email" <?php echo e($service->button_text == 'Отправить email' ? 'selected' : ''); ?>>Отправить email</option>
+                        <option value="Заказать услугу">Заказать услугу</option>
+                        <option value="Связаться с нами">Связаться с нами</option>
+                        <option value="Узнать подробнее">Узнать подробнее</option>
+                        <option value="Написать в WhatsApp">Написать в WhatsApp</option>
+                        <option value="Написать в Telegram">Написать в Telegram</option>
+                        <option value="Позвонить">Позвонить</option>
+                        <option value="Отправить email">Отправить email</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -184,70 +174,29 @@
                     <select class="form-select" id="button-link-select">
                         <option value="">Выберите ссылку</option>
                         <?php if($user->phone): ?>
-                            <option value="tel:<?php echo e($user->phone); ?>" <?php echo e($service->button_link == 'tel:' . $user->phone ? 'selected' : ''); ?>>Телефон: <?php echo e($user->phone); ?></option>
+                            <option value="tel:<?php echo e($user->phone); ?>">Телефон: <?php echo e($user->phone); ?></option>
                         <?php endif; ?>
                         <?php if($user->email): ?>
-                            <option value="mailto:<?php echo e($user->email); ?>" <?php echo e($service->button_link == 'mailto:' . $user->email ? 'selected' : ''); ?>>Email: <?php echo e($user->email); ?></option>
+                            <option value="mailto:<?php echo e($user->email); ?>">Email: <?php echo e($user->email); ?></option>
                         <?php endif; ?>
                         <?php if($user->telegram_url): ?>
-                            <option value="<?php echo e($user->telegram_url); ?>" <?php echo e($service->button_link == $user->telegram_url ? 'selected' : ''); ?>>Telegram</option>
+                            <option value="<?php echo e($user->telegram_url); ?>">Telegram</option>
                         <?php endif; ?>
                         <?php if($user->whatsapp_url): ?>
-                            <option value="<?php echo e($user->whatsapp_url); ?>" <?php echo e($service->button_link == $user->whatsapp_url ? 'selected' : ''); ?>>WhatsApp</option>
+                            <option value="<?php echo e($user->whatsapp_url); ?>">WhatsApp</option>
                         <?php endif; ?>
                         <?php if($user->vk_url): ?>
-                            <option value="<?php echo e($user->vk_url); ?>" <?php echo e($service->button_link == $user->vk_url ? 'selected' : ''); ?>>VK</option>
+                            <option value="<?php echo e($user->vk_url); ?>">VK
                         <?php endif; ?>
                         <?php if($user->instagram_url): ?>
-                            <option value="<?php echo e($user->instagram_url); ?>" <?php echo e($service->button_link == $user->instagram_url ? 'selected' : ''); ?>>Instagram</option>
+                            <option value="<?php echo e($user->instagram_url); ?>">Instagram</option>
                         <?php endif; ?>
                         <?php if($user->website_url): ?>
-                            <option value="<?php echo e($user->website_url); ?>" <?php echo e($service->button_link == $user->website_url ? 'selected' : ''); ?>>Сайт</option>
+                            <option value="<?php echo e($user->website_url); ?>">Сайт</option>
                         <?php endif; ?>
                         <?php $__currentLoopData = $user->socialLinks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $socialLink): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <option value="<?php echo e($socialLink->url); ?>" <?php echo e($service->button_link == $socialLink->url ? 'selected' : ''); ?>><?php echo e($socialLink->service_name); ?></option>
+                            <option value="<?php echo e($socialLink->url); ?>"><?php echo e($socialLink->service_name); ?></option>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary" onclick="applyButtonSettings()">Применить</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для настройки кнопки -->
-<div class="modal fade" id="buttonModal" tabindex="-1" aria-labelledby="buttonModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="buttonModalLabel">Настройка кнопки</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="button-text-select" class="form-label">Текст кнопки</label>
-                    <select class="form-select" id="button-text-select">
-                        <option value="">Выберите текст кнопки</option>
-                        <option value="Подробнее">Подробнее</option>
-                        <option value="Заказать">Заказать</option>
-                        <option value="Узнать больше">Узнать больше</option>
-                        <option value="Связаться">Связаться</option>
-                        <option value="Получить консультацию">Получить консультацию</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="button-link-select" class="form-label">Ссылка</label>
-                    <select class="form-select" id="button-link-select">
-                        <option value="">Выберите действие</option>
-                        <option value="#contact">Контакты</option>
-                        <option value="#order">Форма заказа</option>
-                        <option value="tel:+7">Позвонить</option>
-                        <option value="mailto:info@example.com">Написать email</option>
-                        <option value="https://wa.me/">WhatsApp</option>
-                        <option value="https://t.me/">Telegram</option>
                     </select>
                 </div>
             </div>
@@ -267,7 +216,6 @@
         </div>
     </div>
 </div>
-
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('scripts'); ?>
@@ -275,44 +223,391 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 <script>
-// Инициализация страницы редактирования услуг с данными из сервера
+// Глобальные переменные
+let editSwiper;
+let selectedImageFile = null;
+
+// Состояние формы
+const formState = {
+    title: '<?php echo e($service->title); ?>',
+    description: '<?php echo e($service->description); ?>',
+    price: '<?php echo e($service->price ?? ''); ?>',
+    priceType: '<?php echo e($service->price_type ?? 'fixed'); ?>',
+    buttonText: '<?php echo e($service->button_text ?? 'Кнопка'); ?>',
+    buttonLink: '<?php echo e($service->button_link ?? ''); ?>',
+    orderIndex: '<?php echo e($service->order_index ?? ''); ?>',
+    hasPrice: <?php echo e($service->price ? 'true' : 'false'); ?>,
+    hasButton: true
+};
+
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-    const initialState = {
-        title: '<?php echo e($service->title); ?>',
-        description: '<?php echo e($service->description); ?>',
-        price: '<?php echo e($service->price ?? ""); ?>',
-        priceType: '<?php echo e($service->price_type ?? "fixed"); ?>',
-        hasPrice: <?php echo e($service->price ? 'true' : 'false'); ?>,
-        buttonText: '<?php echo e($service->button_text); ?>',
-        buttonLink: '<?php echo e($service->button_link); ?>',
-        orderIndex: '<?php echo e($service->order_index ?? 1); ?>'
-    };
-    
-    // Инициализируем страницы услуг
     initializeSwiper();
     bindEvents();
+    loadOldValues();
     
-    // Загружаем старые значения если есть ошибки валидации
-    <?php if(old()): ?>
-        const oldValues = <?php echo json_encode(old(), 15, 512) ?>;
-        Object.keys(oldValues).forEach(key => {
-            const element = document.querySelector(`[data-field="${key}"]`);
-            if (element && oldValues[key]) {
-                element.textContent = oldValues[key];
-            }
-        });
-    <?php endif; ?>
-    
-    // Показываем ошибки если они есть
-    <?php if($errors->any()): ?>
-        const errorMessages = <?php echo json_encode($errors->all(), 15, 512) ?>;
-        if (errorMessages.length > 0) {
-            showNotification('Исправьте ошибки:\n' + errorMessages.join('\n'), 'error');
-        }
-    <?php endif; ?>
+    // Обновляем отображение цены с учетом типа цены
+    if (formState.hasPrice && formState.price) {
+        updatePriceDisplay();
+    }
 });
+
+// Инициализация Swiper
+function initializeSwiper() {
+    editSwiper = new Swiper('#edit-services-swiper', {
+        slidesPerView: 1,
+        spaceBetween: 0,
+        loop: false,
+        allowTouchMove: false,
+        breakpoints: {
+            320: {
+                slidesPerView: 1,
+                spaceBetween: 0,
+            }
+        }
+    });
+}
+
+// Привязка событий
+function bindEvents() {
+    // Редактируемые элементы
+    const titleElement = document.querySelector('.editable-title');
+    const descriptionElement = document.querySelector('.editable-description');
+    const priceElement = document.querySelector('.editable-price');
+    
+    // События для title
+    titleElement.addEventListener('input', function() {
+        const text = this.textContent.trim();
+        if (text.length > 100) {
+            this.textContent = text.substring(0, 100);
+        }
+        formState.title = this.textContent.trim();
+        updateHiddenFields();
+    });
+    
+    titleElement.addEventListener('blur', function() {
+        if (this.textContent.trim() === '') {
+            this.textContent = 'Название услуги';
+            formState.title = '';
+        }
+    });
+    
+    // События для description
+    descriptionElement.addEventListener('input', function() {
+        const text = this.textContent.trim();
+        if (text.length > 500) {
+            this.textContent = text.substring(0, 500);
+        }
+        formState.description = this.textContent.trim();
+        updateHiddenFields();
+    });
+    
+    descriptionElement.addEventListener('blur', function() {
+        if (this.textContent.trim() === '' || this.textContent.trim() === 'Описание услуги. Нажмите, чтобы редактировать.') {
+            this.textContent = 'Описание услуги. Нажмите, чтобы редактировать.';
+            formState.description = '';
+        }
+    });
+    
+    // События для price
+    priceElement.addEventListener('input', function() {
+        let text = this.textContent.replace(/[^\d.,]/g, '');
+        this.textContent = text;
+        formState.price = text;
+        updatePriceDisplay();
+        updateHiddenFields();
+    });
+    
+    // События для дополнительных настроек
+    document.getElementById('price-type-select').addEventListener('change', function() {
+        formState.priceType = this.value;
+        updatePriceDisplay();
+        updateHiddenFields();
+    });
+    
+    document.getElementById('order-input').addEventListener('input', function() {
+        formState.orderIndex = this.value;
+        updateHiddenFields();
+    });
+}
+
+// Загрузка старых значений (если есть ошибки валидации)
+function loadOldValues() {
+    <?php if(old('title')): ?>
+        document.querySelector('.editable-title').textContent = "<?php echo e(old('title')); ?>";
+        formState.title = "<?php echo e(old('title')); ?>";
+    <?php endif; ?>
+    
+    <?php if(old('description')): ?>
+        document.querySelector('.editable-description').textContent = "<?php echo e(old('description')); ?>";
+        formState.description = "<?php echo e(old('description')); ?>";
+    <?php endif; ?>
+    
+    <?php if(old('price')): ?>
+        formState.price = "<?php echo e(old('price')); ?>";
+        formState.hasPrice = true;
+        document.querySelector('.editable-price').textContent = "<?php echo e(old('price')); ?>";
+        document.querySelector('.editable-price').style.display = 'block';
+        document.getElementById('add-price-card-btn').style.display = 'none';
+        updatePriceDisplay();
+    <?php endif; ?>
+    
+    <?php if(old('price_type')): ?>
+        formState.priceType = "<?php echo e(old('price_type')); ?>";
+        document.getElementById('price-type-select').value = "<?php echo e(old('price_type')); ?>";
+    <?php endif; ?>
+    
+    <?php if(old('button_text') && old('button_link')): ?>
+        formState.buttonText = "<?php echo e(old('button_text')); ?>";
+        formState.buttonLink = "<?php echo e(old('button_link')); ?>";
+        document.querySelector('.editable-button').textContent = "<?php echo e(old('button_text')); ?>";
+    <?php endif; ?>
+    
+    <?php if(old('order_index')): ?>
+        formState.orderIndex = "<?php echo e(old('order_index')); ?>";
+        document.getElementById('order-input').value = "<?php echo e(old('order_index')); ?>";
+    <?php endif; ?>
+    
+    updateHiddenFields();
+}
+
+// Выбор изображения
+function selectImage() {
+    document.getElementById('hidden-image').click();
+}
+
+// Обработка выбора изображения
+document.getElementById('hidden-image').addEventListener('change', function(e) {
+    if (e.target.files && e.target.files[0]) {
+        selectedImageFile = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('service-image').src = e.target.result;
+        }
+        reader.readAsDataURL(selectedImageFile);
+    }
+});
+
+// Выделение текста при клике
+function selectText(element) {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
+// Добавление цены прямо в карточке
+function addPriceInCard() {
+    const priceElement = document.querySelector('.service-price');
+    const addPriceButton = document.getElementById('add-price-card-btn');
+    
+    // Показать поле цены
+    priceElement.style.display = 'block';
+    formState.hasPrice = true;
+    
+    // Скрыть кнопку добавления цены
+    addPriceButton.style.display = 'none';
+    
+    // Установить начальное значение
+    if (!formState.price) {
+        priceElement.textContent = '0';
+        formState.price = '0';
+    }
+    
+    // Обновить отображение и скрытые поля
+    updatePriceDisplay();
+    updateHiddenFields();
+    
+    // Фокус на поле цены для редактирования
+    priceElement.focus();
+    selectText(priceElement);
+}
+
+// Переключение цены
+function togglePrice() {
+    const priceElement = document.querySelector('.service-price');
+    const toggleButton = document.getElementById('price-toggle');
+    const addPriceCardButton = document.getElementById('add-price-card-btn');
+    
+    if (formState.hasPrice) {
+        // Скрыть цену
+        priceElement.style.display = 'none';
+        formState.hasPrice = false;
+        formState.price = '';
+        toggleButton.innerHTML = '<i class="bi bi-tag me-1"></i> Добавить цену';
+        toggleButton.classList.remove('btn-outline-danger');
+        toggleButton.classList.add('btn-outline-success');
+        
+        // Показать кнопку добавления цены в карточке
+        addPriceCardButton.style.display = 'inline-block';
+    } else {
+        // Показать цену
+        priceElement.style.display = 'block';
+        formState.hasPrice = true;
+        if (!formState.price) {
+            priceElement.textContent = '0';
+            formState.price = '0';
+        }
+        toggleButton.innerHTML = '<i class="bi bi-tag-fill me-1"></i> Убрать цену';
+        toggleButton.classList.remove('btn-outline-success');
+        toggleButton.classList.add('btn-outline-danger');
+        updatePriceDisplay();
+        
+        // Скрыть кнопку добавления цены в карточке
+        addPriceCardButton.style.display = 'none';
+    }
+    
+    updateHiddenFields();
+}
+
+// Редактирование кнопки
+function editButton() {
+    // Заполняем модальное окно текущими значениями
+    document.getElementById('button-text-select').value = formState.buttonText || '';
+    document.getElementById('button-link-select').value = formState.buttonLink || '';
+    
+    // Показываем модальное окно
+    const modal = new bootstrap.Modal(document.getElementById('buttonModal'));
+    modal.show();
+}
+
+// Применение настроек кнопки
+function applyButtonSettings() {
+    const buttonText = document.getElementById('button-text-select').value;
+    const buttonLink = document.getElementById('button-link-select').value;
+    
+    if (buttonText && buttonLink) {
+        formState.buttonText = buttonText;
+        formState.buttonLink = buttonLink;
+        
+        const buttonElement = document.querySelector('.editable-button');
+        buttonElement.textContent = buttonText;
+        
+        updateHiddenFields();
+        
+        // Закрываем модальное окно
+        const modal = bootstrap.Modal.getInstance(document.getElementById('buttonModal'));
+        modal.hide();
+    } else {
+        alert('Пожалуйста, выберите текст и ссылку для кнопки');
+    }
+}
+
+// Обновление отображения цены
+function updatePriceDisplay() {
+    if (!formState.hasPrice || !formState.price) return;
+    
+    const priceElement = document.querySelector('.service-price');
+    const numPrice = parseFloat(formState.price);
+    
+    if (isNaN(numPrice)) return;
+    
+    const formatted = new Intl.NumberFormat('ru-RU').format(numPrice);
+    
+    switch(formState.priceType) {
+        case 'hourly':
+            priceElement.textContent = `${formatted} ₽/час`;
+            break;
+        case 'project':
+            priceElement.textContent = `от ${formatted} ₽`;
+            break;
+        case 'fixed':
+        default:
+            priceElement.textContent = `${formatted} ₽`;
+            break;
+    }
+}
+
+// Переключение дополнительных настроек
+function toggleAdvanced() {
+    const advancedSettings = document.getElementById('advanced-settings');
+    if (advancedSettings.style.display === 'none') {
+        advancedSettings.style.display = 'block';
+    } else {
+        advancedSettings.style.display = 'none';
+    }
+}
+
+// Обновление скрытых полей формы
+function updateHiddenFields() {
+    document.getElementById('hidden-title').value = formState.title;
+    document.getElementById('hidden-description').value = formState.description;
+    document.getElementById('hidden-price').value = formState.hasPrice ? formState.price : '';
+    document.getElementById('hidden-price-type').value = formState.priceType;
+    document.getElementById('hidden-button-text').value = formState.buttonText;
+    document.getElementById('hidden-button-link').value = formState.buttonLink;
+    document.getElementById('hidden-order-index').value = formState.orderIndex;
+}
+
+// Валидация и сохранение
+function saveService() {
+    // Проверяем обязательные поля
+    if (!formState.title || formState.title === 'Название услуги') {
+        alert('Пожалуйста, введите название услуги');
+        document.querySelector('.editable-title').focus();
+        return;
+    }
+    
+    if (!formState.description || formState.description === 'Описание услуги. Нажмите, чтобы редактировать.') {
+        alert('Пожалуйста, введите описание услуги');
+        document.querySelector('.editable-description').focus();
+        return;
+    }
+    
+    // Проверяем кнопку (текст и ссылка обязательны)
+    if (!formState.buttonText || !formState.buttonLink) {
+        alert('Пожалуйста, настройте кнопку (текст и ссылку)');
+        editButton();
+        return;
+    }
+    
+    // Показываем индикатор загрузки
+    showLoading();
+    
+    // Обновляем скрытые поля и отправляем форму
+    updateHiddenFields();
+    document.getElementById('service-form').submit();
+}
+
+// Показать индикатор загрузки
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+// Скрыть индикатор загрузки
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// Показ ошибок валидации
+<?php if($errors->any()): ?>
+    document.addEventListener('DOMContentLoaded', function() {
+        let errorMessages = [];
+        <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            errorMessages.push("<?php echo e($error); ?>");
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        
+        if (errorMessages.length > 0) {
+            alert('Ошибки:\n' + errorMessages.join('\n'));
+        }
+    });
+<?php endif; ?>
 </script>
-  
+
+<style>
+    .swiper.services-swiper {
+        padding: 20px !important;
+    }
+    .service-buttons {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    align-content: center;
+}
+</style>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('admin.layout', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\link\resources\views/admin/services/edit.blade.php ENDPATH**/ ?>

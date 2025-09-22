@@ -15,7 +15,7 @@
 @section('twitter_description', $pageUser->bio ? Str::limit(strip_tags($pageUser->bio), 160) : 'Персональная страница с услугами и портфолио')
 @section('twitter_image', $pageUser->avatar ? asset('storage/' . $pageUser->avatar) : asset('/hero.png'))
 
-@section('canonical_url', route('user.page', $pageUser->username))
+@section('canonical_url', route('user.show', $pageUser->username))
 
 @push('head')
 <!-- Structured Data (JSON-LD) -->
@@ -26,7 +26,7 @@
     "name": "{{ $pageUser->name }}",
     "alternateName": "{{ $pageUser->username }}",
     "description": "{{ $pageUser->bio ? strip_tags($pageUser->bio) : 'Персональная страница специалиста' }}",
-    "url": "{{ route('user.page', $pageUser->username) }}",
+    "url": "{{ route('user.show', $pageUser->username) }}",
     @if($pageUser->avatar)
     "image": "{{ asset('storage/' . $pageUser->avatar) }}",
     @endif
@@ -54,12 +54,12 @@
     "provider": {
         "@type": "Person",
         "name": "{{ $pageUser->name }}",
-        "url": "{{ route('user.page', $pageUser->username) }}"
+        "url": "{{ route('user.show', $pageUser->username) }}"
     },
     "areaServed": "Online",
     "availableChannel": {
         "@type": "ServiceChannel",
-        "serviceUrl": "{{ route('user.page', $pageUser->username) }}"
+        "serviceUrl": "{{ route('user.show', $pageUser->username) }}"
     }
 }
 </script>
@@ -76,9 +76,9 @@
     "author": {
         "@type": "Person",
         "name": "{{ $pageUser->name }}",
-        "url": "{{ route('user.page', $pageUser->username) }}"
+        "url": "{{ route('user.show', $pageUser->username) }}"
     },
-    "url": "{{ route('user.page', $pageUser->username) }}#gallery"
+    "url": "{{ route('user.show', $pageUser->username) }}#gallery"
 }
 </script>
 @endif
@@ -94,9 +94,9 @@
     "author": {
         "@type": "Person",
         "name": "{{ $pageUser->name }}",
-        "url": "{{ route('user.page', $pageUser->username) }}"
+        "url": "{{ route('user.show', $pageUser->username) }}"
     },
-    "url": "{{ route('user.page', $pageUser->username) }}#articles",
+    "url": "{{ route('user.show', $pageUser->username) }}#articles",
     "blogPost": [
         @foreach($articles as $index => $article)
         {

@@ -20,7 +20,7 @@
     "isEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-Cl3Gbrdn.css",
+    "file": "assets/app-BPhnsQdb.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -60,12 +60,12 @@
     "isEntry": true
   },
   "resources/css/photo-editor.css": {
-    "file": "assets/photo-editor-sMoc4GS-.css",
+    "file": "assets/photo-editor-Bthc--GW.css",
     "src": "resources/css/photo-editor.css",
     "isEntry": true
   },
   "resources/css/services-reels.css": {
-    "file": "assets/services-reels-CFSrb_N9.css",
+    "file": "assets/services-reels-BqVunTf3.css",
     "src": "resources/css/services-reels.css",
     "isEntry": true
   },
@@ -80,7 +80,7 @@
     "isEntry": true
   },
   "resources/js/admin-articles.js": {
-    "file": "assets/admin-articles-DfU1MS-p.js",
+    "file": "assets/admin-articles-D7oD-jpJ.js",
     "name": "admin-articles",
     "src": "resources/js/admin-articles.js",
     "isEntry": true
@@ -104,7 +104,7 @@
     "isEntry": true
   },
   "resources/js/admin-images.js": {
-    "file": "assets/admin-images-BrdYEGHH.js",
+    "file": "assets/admin-images-QtMtcThz.js",
     "name": "admin-images",
     "src": "resources/js/admin-images.js",
     "isEntry": true
@@ -151,16 +151,34 @@
     "src": "resources/js/mobile-navigation.js",
     "isEntry": true
   },
+  "resources/js/modal-scroll-lock.js": {
+    "file": "assets/modal-scroll-lock-l0sNRNKZ.js",
+    "name": "modal-scroll-lock",
+    "src": "resources/js/modal-scroll-lock.js",
+    "isEntry": true
+  },
   "resources/js/photo-editor.js": {
-    "file": "assets/photo-editor-GIhK9htH.js",
+    "file": "assets/photo-editor-FqnBLLKM.js",
     "name": "photo-editor",
     "src": "resources/js/photo-editor.js",
+    "isEntry": true
+  },
+  "resources/js/pwa-installer.js": {
+    "file": "assets/pwa-installer-Dm77jdNT.js",
+    "name": "pwa-installer",
+    "src": "resources/js/pwa-installer.js",
     "isEntry": true
   },
   "resources/js/theme-manager.js": {
     "file": "assets/theme-manager-l0sNRNKZ.js",
     "name": "theme-manager",
     "src": "resources/js/theme-manager.js",
+    "isEntry": true
+  },
+  "resources/js/upload-progress.js": {
+    "file": "assets/upload-progress-B41n8TD0.js",
+    "name": "upload-progress",
+    "src": "resources/js/upload-progress.js",
     "isEntry": true
   }
 }

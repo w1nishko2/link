@@ -23,20 +23,22 @@ export default defineConfig({
                 'resources/css/variables.css',
                 
                 'resources/js/app.js',
+                  'resources/js/upload-progress.js',
                 'resources/js/admin-articles.js',
                 'resources/js/admin-banners.js',
                 'resources/js/admin-forms.js',
                 'resources/js/admin-gallery.js',
                 'resources/js/admin-images.js',
                 'resources/js/admin-loading.js',
-               
+                'resources/js/modal-scroll-lock.js',
                 'resources/js/admin-toggles.js',
                 'resources/js/bootstrap.js',
                 'resources/js/interactive-editing.js',
                 'resources/js/long-press-editor.js',
                 'resources/js/mobile-navigation.js',
                 'resources/js/photo-editor.js',
-                'resources/js/theme-manager.js'
+                'resources/js/theme-manager.js',
+                  'resources/js/pwa-installer.js'
             ],
             refresh: true,
         }),

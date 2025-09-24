@@ -5,12 +5,23 @@
     <meta name="author" content="<?php echo $__env->yieldContent('author', config('app.name')); ?>">
     <meta name="robots" content="<?php echo $__env->yieldContent('robots', 'index, follow'); ?>">
     
-    <!-- Additional SEO Meta Tags -->
+    <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#2A5885">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-title" content="Linkink">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-TileColor" content="#2A5885">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="<?php echo e(asset('icons/icon-152x152.svg')); ?>">
+    <link rel="apple-touch-icon" sizes="192x192" href="<?php echo e(asset('icons/icon-192x192.svg')); ?>">
+    
+    <!-- Splash Screen for iOS -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-startup-image" href="<?php echo e(asset('hero.png')); ?>">
     
     <!-- Preconnect для улучшения производительности -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -18,7 +29,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
     
     <!-- Дополнительные мета-теги для мобильных устройств -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -68,6 +79,9 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="<?php echo e(asset('favicon.ico')); ?>">
     <link rel="apple-touch-icon" href="<?php echo e(asset('favicon.ico')); ?>">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="<?php echo e(asset('manifest.json')); ?>">
 
     <!-- DNS Prefetch for Performance -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -87,8 +101,52 @@
     <!-- QR Code Library with round dots -->
     <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
 
+    <!-- iOS Safari Fixes -->
+    <style>
+        /* Фиксы для iPhone - предотвращение плавающего эффекта */
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+            overscroll-behavior-x: none;
+            touch-action: pan-y;
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body {
+            /* Для iOS Safari: предотвращает bounce-эффект */
+            overscroll-behavior: contain;
+            /* Включаем аппаратное ускорение */
+            transform: translate3d(0,0,0);
+            -webkit-transform: translate3d(0,0,0);
+        }
+
+        /* Фикс для 100vh на iOS */
+        :root {
+            --vh: 1vh;
+        }
+        
+        @media (max-width: 768px) {
+            .full-vh {
+                height: calc(var(--vh, 1vh) * 100);
+            }
+            
+            /* Дополнительные фиксы для iOS */
+            * {
+                -webkit-touch-callout: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Предотвращаем горизонтальное перетаскивание */
+            .container, .container-fluid {
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+        }
+    </style>
+
     <!-- Scripts -->
-    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/css/services-reels.css', 'resources/js/app.js']); ?>
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/css/services-reels.css', 'resources/css/pwa.css', 'resources/js/app.js', 'resources/js/modal-scroll-lock.js', 'resources/js/pwa-installer.js']); ?>
     
     
     <?php if(isset($pageUser) && isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id): ?>
@@ -100,6 +158,20 @@
 
     <!-- Additional Head Content -->
     <?php echo $__env->yieldPushContent('head'); ?>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker зарегистрирован успешно: ', registration.scope);
+                    }, function(err) {
+                        console.log('ServiceWorker регистрация не удалась: ', err);
+                    });
+            });
+        }
+    </script>
 </head>
 
 <body>
@@ -293,15 +365,24 @@
     <!-- Bootstrap JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <!-- Передача данных о владельце страницы в JavaScript -->
+    <script>
+        // Данные пользователя для JavaScript
+        window.isOwner = <?php echo json_encode(isset($pageUser) && isset($currentUser) && $currentUser && $currentUser->id === $pageUser->id, 15, 512) ?>;
+        window.pageUserId = <?php echo json_encode(isset($pageUser) ? $pageUser->id : null, 15, 512) ?>;
+        window.currentUserId = <?php echo json_encode(isset($currentUser) ? $currentUser->id : null, 15, 512) ?>;
+    </script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализация...');
+            console.log('DOM загружен, инициализация...', 'isOwner:', window.isOwner);
 
             const bannersSwiper = new Swiper('.banners-swiper', {
                 slidesPerView: 2.4,
                 spaceBetween: 20,
                 loop: false, // Отключаем цикличность
-                initialSlide: 0, // Начинаем с первого слайда
+                initialSlide: window.isOwner ? 1 : 0, // Пропускаем первый дефолтный блок для владельца
                 navigation: {
                     nextEl: '.banners-swiper .swiper-button-next',
                     prevEl: '.banners-swiper .swiper-button-prev',
@@ -327,7 +408,7 @@
                 slidesPerView: 2.4,
                 spaceBetween: 20,
                 loop: false, // Отключаем цикличность
-                initialSlide: 0, // Начинаем с первого слайда
+                initialSlide: window.isOwner ? 1 : 0, // Пропускаем первый дефолтный блок для владельца
                 navigation: {
                     nextEl: '.services-swiper .swiper-button-next',
                     prevEl: '.services-swiper .swiper-button-prev',
@@ -399,7 +480,7 @@
                     slidesPerView: 1.4,
                     spaceBetween: 20,
                     loop: false, // Отключаем цикличность
-                    initialSlide: 0, // Начинаем с первого слайда
+                    initialSlide: window.isOwner ? 1 : 0, // Пропускаем первый дефолтный блок для владельца
                     navigation: {
                         nextEl: '.gallery-swiper .swiper-button-next',
                         prevEl: '.gallery-swiper .swiper-button-prev',
@@ -1112,6 +1193,88 @@
                 document.body.classList.remove('mobile-sidebar-open');
             }
         });
+    </script>
+
+    <!-- iOS Safari Touch Fixes -->
+    <script>
+        // Фикс для 100vh на iOS
+        function setVh() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        // Устанавливаем при загрузке и изменении размера
+        setVh();
+        window.addEventListener('resize', setVh);
+        window.addEventListener('orientationchange', function() {
+            setTimeout(setVh, 100); // Небольшая задержка для корректного расчета
+        });
+
+        // Предотвращаем горизонтальный скролл на iOS
+        let lastTouchX = 0;
+        let preventHorizontalScroll = false;
+
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                lastTouchX = e.touches[0].clientX;
+                preventHorizontalScroll = false;
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 1) {
+                const touchX = e.touches[0].clientX;
+                const diffX = Math.abs(touchX - lastTouchX);
+                const diffY = Math.abs(e.touches[0].clientY - (window.lastTouchY || 0));
+                
+                // Если горизонтальное движение больше вертикального
+                if (diffX > diffY && diffX > 10) {
+                    // Проверяем, не находимся ли мы в элементе, который должен скроллиться горизонтально
+                    const target = e.target.closest('.swiper, .swiper-container, .horizontal-scroll');
+                    if (!target) {
+                        e.preventDefault();
+                        preventHorizontalScroll = true;
+                    }
+                }
+                
+                lastTouchX = touchX;
+                window.lastTouchY = e.touches[0].clientY;
+            }
+        }, { passive: false });
+
+        // Дополнительная защита от случайных горизонтальных свайпов
+        document.addEventListener('touchend', function(e) {
+            preventHorizontalScroll = false;
+        }, { passive: true });
+
+        // Предотвращаем двойное касание для зума (если нужно)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Фикс для Safari: предотвращаем резиновое поведение при скролле
+        document.addEventListener('touchmove', function(e) {
+            // Разрешаем скролл только если пользователь не на границе контента
+            const target = e.target;
+            const scrollableParent = target.closest('.scrollable, body');
+            
+            if (scrollableParent === document.body) {
+                const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+                const clientHeight = document.documentElement.clientHeight || window.innerHeight;
+                
+                // Предотвращаем overscroll в начале и конце страницы
+                if ((scrollTop <= 0 && e.touches[0].clientY > window.lastTouchY) ||
+                    (scrollTop + clientHeight >= scrollHeight && e.touches[0].clientY < window.lastTouchY)) {
+                    // Не блокируем, так как может помешать нормальному скроллу
+                }
+            }
+        }, { passive: true });
     </script>
 
     <?php echo $__env->yieldContent('scripts'); ?>

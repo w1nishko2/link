@@ -28,11 +28,11 @@ class PhotoEditor {
             pinchCenter: { x: 0, y: 0 }
         };
 
-        // Форматы для обрезки (увеличенные размеры для лучшего качества)
+        // Форматы для обрезки - визуальные размеры совпадают с пропорциями вывода
         this.formats = {
-            reel: { width: 540, height: 960, ratio: 9/16, name: 'Рилс (9:16)', outputWidth: 1080, outputHeight: 1920 },
-            desktop: { width: 800, height: 450, ratio: 16/9, name: 'Десктоп (16:9)', outputWidth: 1920, outputHeight: 1080 },
-            square: { width: 600, height: 600, ratio: 1, name: 'Квадрат (1:1)', outputWidth: 1080, outputHeight: 1080 }
+            reel: { width: 405, height: 720, ratio: 9/16, name: 'Рилс (9:16)', outputWidth: 1080, outputHeight: 1920 },
+            desktop: { width: 640, height: 360, ratio: 16/9, name: 'Десктоп (16:9)', outputWidth: 1920, outputHeight: 1080 },
+            square: { width: 480, height: 480, ratio: 1, name: 'Квадрат (1:1)', outputWidth: 1080, outputHeight: 1080 }
         };
 
         this.init();
@@ -63,12 +63,12 @@ class PhotoEditor {
                         <div class="editor-toolbar">
                             <div class="toolbar-section">
                                 <div class="action-buttons">
-                                    <div class="file-input-wrapper">
+                                  
                                         <input type="file" id="imageInput" class="file-input" accept="image/*">
                                         <label for="imageInput" class="file-input-button">
                                              Файл
                                         </label>
-                                    </div>
+                                 
                                     <button class="action-button secondary" id="resetButton">Сбросить</button>
                                     <button class="action-button primary" id="cropButton" disabled>
                                         <span id="cropButtonText">Обрезать</span>
@@ -261,6 +261,9 @@ class PhotoEditor {
         this.updateStepIndicators();
         this.modal.classList.add('show');
         
+        // Блокируем скролл страницы
+        document.body.classList.add('modal-open');
+        
         // Привязываем touch события только при открытии редактора
         this.bindImageEvents();
         
@@ -270,10 +273,6 @@ class PhotoEditor {
         // Привязываем клавиатурные сокращения только при открытии
         this.keyboardHandler = (e) => this.handleKeyboard(e);
         document.addEventListener('keydown', this.keyboardHandler);
-        
-        // НЕ блокируем скролл на мобильных устройствах для лучшего UX
-        // Пользователь сможет скроллить страницу и закрывать модальное окно
-        // Блокировка touch действий происходит только внутри области редактирования
     }
 
     close() {
@@ -283,8 +282,9 @@ class PhotoEditor {
         }
         
         this.modal.classList.remove('show');
-        // Всегда восстанавливаем скролл
-        document.body.style.overflow = '';
+        
+        // Разблокируем скролл страницы
+        document.body.classList.remove('modal-open');
         
         // ВАЖНО: Отвязываем все touch события при закрытии редактора
         this.unbindImageEvents();
@@ -310,9 +310,8 @@ class PhotoEditor {
         container.classList.remove('reel', 'desktop', 'square');
         container.classList.add(formatKey);
         
-        // Обновляем размеры контейнера
-        container.style.width = format.width + 'px';
-        container.style.height = format.height + 'px';
+        // НЕ устанавливаем размеры через style - позволяем CSS управлять размерами
+        // Это обеспечивает точное соответствие визуального контейнера и области обрезки
         
         // Если есть изображение, обновляем его отображение
         if (this.image) {
@@ -374,17 +373,39 @@ class PhotoEditor {
     }
 
     autoFitImage() {
-        const format = this.formats[this.currentFormat];
-        const scaleX = format.width / this.image.width;
-        const scaleY = format.height / this.image.height;
-        const scale = Math.max(scaleX, scaleY);
-        
-        this.imageState.scale = scale;
-        this.imageState.x = 0;
-        this.imageState.y = 0;
-        this.imageState.rotation = 0;
-        
-        this.updateImageDisplay();
+        // Небольшая задержка для правильного получения размеров контейнера
+        setTimeout(() => {
+            const container = document.getElementById('formatContainer');
+            
+            // Получаем реальные размеры контейнера из DOM
+            const containerRect = container.getBoundingClientRect();
+            let containerWidth = containerRect.width;
+            let containerHeight = containerRect.height;
+            
+            // Если размеры нулевые, используем стили
+            if (containerWidth === 0 || containerHeight === 0) {
+                const computedStyle = window.getComputedStyle(container);
+                containerWidth = parseInt(computedStyle.width) || this.formats[this.currentFormat].width;
+                containerHeight = parseInt(computedStyle.height) || this.formats[this.currentFormat].height;
+            }
+            
+            console.log('Container dimensions:', containerWidth, 'x', containerHeight);
+            console.log('Image dimensions:', this.image.width, 'x', this.image.height);
+            
+            // Рассчитываем масштаб для заполнения контейнера
+            const scaleX = containerWidth / this.image.width;
+            const scaleY = containerHeight / this.image.height;
+            const scale = Math.max(scaleX, scaleY);
+            
+            console.log('Calculated scale:', scale);
+            
+            this.imageState.scale = scale;
+            this.imageState.x = 0;
+            this.imageState.y = 0;
+            this.imageState.rotation = 0;
+            
+            this.updateImageDisplay();
+        }, 100);
     }
 
     resetImageState() {
@@ -408,13 +429,21 @@ class PhotoEditor {
 
     updateImageDisplay() {
         const imageElement = document.getElementById('editorImage');
-        const transform = `translate(${this.imageState.x}px, ${this.imageState.y}px) 
+        
+        // КРИТИЧНО: правильное позиционирование относительно центра контейнера
+        // Сначала центрируем изображение, потом применяем трансформации
+        const transform = `translate(-50%, -50%) 
+                          translate(${this.imageState.x}px, ${this.imageState.y}px) 
                           scale(${this.imageState.scale}) 
                           rotate(${this.imageState.rotation}deg)`;
         
         imageElement.style.transform = transform;
         imageElement.style.width = this.image.width + 'px';
         imageElement.style.height = this.image.height + 'px';
+        
+        // Убираем top и left из CSS, так как они теперь в transform
+        imageElement.style.top = '50%';
+        imageElement.style.left = '50%';
     }
 
     startDrag(event) {
@@ -716,12 +745,22 @@ class PhotoEditor {
 
     createCroppedCanvas() {
         const format = this.formats[this.currentFormat];
+        const container = document.getElementById('formatContainer');
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
+        
+        // Получаем реальные размеры контейнера
+        const containerRect = container.getBoundingClientRect();
+        const containerWidth = containerRect.width;
+        const containerHeight = containerRect.height;
         
         // Используем выходные размеры для высокого качества
         const outputWidth = format.outputWidth || format.width;
         const outputHeight = format.outputHeight || format.height;
+        
+        console.log('Cropping - Container:', containerWidth, 'x', containerHeight);
+        console.log('Cropping - Output:', outputWidth, 'x', outputHeight);
+        console.log('Cropping - Scale factors:', outputWidth / containerWidth, 'x', outputHeight / containerHeight);
         
         canvas.width = outputWidth;
         canvas.height = outputHeight;
@@ -731,8 +770,9 @@ class PhotoEditor {
         ctx.imageSmoothingQuality = 'high';
         
         // Рассчитываем коэффициент масштабирования для выходного размера
-        const scaleFactorX = outputWidth / format.width;
-        const scaleFactorY = outputHeight / format.height;
+        // Теперь используем реальные размеры контейнера, а не конфигурационные
+        const scaleFactorX = outputWidth / containerWidth;
+        const scaleFactorY = outputHeight / containerHeight;
         
         // Сохраняем контекст
         ctx.save();

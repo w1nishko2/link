@@ -1,9 +1,8 @@
-
 <section class="articles" id="articles" aria-label="Статьи блога">
     <div class="container">
         <?php if((isset($section) && (!empty(trim($section->title)) || !empty(trim($section->subtitle)))) || !isset($section)): ?>
-        <header class="articles-header">
-            <?php if(isset($section)): ?>
+        <header class="banners-header mb-4 ">
+             <?php if(isset($section)): ?>
                 <?php if(!empty(trim($section->title))): ?>
                     <h2><?php echo e($section->title); ?></h2>
                 <?php endif; ?>
@@ -19,7 +18,6 @@
         <?php endif; ?>
 
         <div class="articles-list">
-            
             <?php if($currentUser && $currentUser->id === $pageUser->id): ?>
                 <a href="<?php echo e(route('admin.articles.create', $currentUser->id)); ?>" class="owner-default-block article-add">
                     <div class="owner-default-icon"></div>
@@ -109,7 +107,6 @@
                 </article>
             <?php endif; ?>
         </div>
-
         <?php if($articles->count() > 0): ?>
         <div class="articles-footer text-center mt-5">
             <a href="<?php echo e(route('articles.index', ['username' => $pageUser->username])); ?>" class="btn btn-outline-primary">Все статьи</a>

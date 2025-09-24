@@ -24,7 +24,7 @@
     <div class="row">
         @foreach($articles as $article)
             <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card h-100">
+                <div class=" h-100">
                    
                         <img src="{{ asset('storage/' . $article->image_path) }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ $article->title }}">
                  

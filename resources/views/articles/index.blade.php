@@ -84,7 +84,7 @@
         <div class="row g-4">
             @foreach($articles as $article)
                 <div class="col-lg-4 col-md-6">
-                    <article class="card h-100 article-card" itemscope itemtype="https://schema.org/Article">
+                    <article class=" h-100 article-card" itemscope itemtype="https://schema.org/Article">
                         <a href="{{ route('articles.show', ['username' => $user->username, 'slug' => $article->slug]) }}" class="text-decoration-none">
                             <!-- Изображение статьи -->
                             <div class="card-img-top position-relative" style="height: 200px; overflow: hidden;">

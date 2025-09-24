@@ -166,26 +166,61 @@ function selectImage() {
 }
 
 /**
- * Обработка файла изображения
+ * Обработка файла изображения с оптимизацией
  * @param {File} file - Файл изображения
  */
 function handleArticleImageFile(file) {
+    // Валидация файла
+    if (!file.type.startsWith('image/')) {
+        showUploadError('Пожалуйста, выберите файл изображения');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) { // 10MB
+        showUploadError('Размер файла не должен превышать 10MB');
+        return;
+    }
+    
     selectedArticleImage = file;
     
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const container = document.getElementById('article-image-container');
-        if (container) {
-            container.innerHTML = `
-                <img src="${e.target.result}" alt="Изображение статьи" class="img-fluid rounded">
-                <div class="image-overlay">
-                    <i class="bi bi-camera-fill"></i>
-                    <span>Изменить изображение</span>
+    const container = document.getElementById('article-image-container') || document.querySelector('.article-image');
+    if (container) {
+        // Показываем индикатор загрузки
+        container.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Создание превью...</span>
                 </div>
-            `;
+                <span class="ms-2">Обработка изображения...</span>
+            </div>
+        `;
+        
+        // Создаем оптимизированное превью
+        if (window.createOptimizedPreview) {
+            window.createOptimizedPreview(file, null, function(file, optimizedDataUrl) {
+                container.innerHTML = `
+                    <img src="${optimizedDataUrl}" alt="Изображение статьи" class="img-fluid rounded">
+                    <div class="image-overlay">
+                        <i class="bi bi-camera-fill"></i>
+                        <span>Изменить изображение</span>
+                    </div>
+                `;
+            });
+        } else {
+            // Fallback для обычного превью
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                container.innerHTML = `
+                    <img src="${e.target.result}" alt="Изображение статьи" class="img-fluid rounded">
+                    <div class="image-overlay">
+                        <i class="bi bi-camera-fill"></i>
+                        <span>Изменить изображение</span>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
         }
-    };
-    reader.readAsDataURL(file);
+    }
     
     // Обновляем скрытое поле
     const hiddenImage = document.getElementById('hidden-image');
@@ -277,7 +312,7 @@ function validateArticleForm(isPublishing = false) {
 }
 
 /**
- * Сохранение статьи
+ * Сохранение статьи с прогресс-баром
  * @param {boolean} publish - Флаг публикации
  */
 function saveArticle(publish = false) {
@@ -288,8 +323,9 @@ function saveArticle(publish = false) {
         return;
     }
 
-    // Показываем индикатор загрузки
-    showArticleLoading();
+    // Показываем прогресс-бар
+    const progressInterval = window.simulateUploadProgress ? 
+        window.simulateUploadProgress(3000) : null;
 
     // Устанавливаем статус публикации
     articleFormState.isPublished = publish;
@@ -300,10 +336,35 @@ function saveArticle(publish = false) {
     // Отправляем форму
     const form = document.getElementById('article-form');
     if (form) {
-        form.submit();
+        // Если есть изображение, показываем дополнительное время обработки
+        if (selectedArticleImage && selectedArticleImage.size > 1024 * 1024) { // > 1MB
+            setTimeout(() => {
+                if (window.completeUploadProgress) {
+                    window.completeUploadProgress();
+                }
+                form.submit();
+            }, 1500); // Дополнительное время для больших файлов
+        } else {
+            setTimeout(() => {
+                if (window.completeUploadProgress) {
+                    window.completeUploadProgress();
+                }
+                form.submit();
+            }, 800);
+        }
     } else {
-        hideArticleLoading();
-        alert('Ошибка: форма не найдена');
+        if (window.showUploadError) {
+            window.showUploadError('Ошибка: форма не найдена');
+        } else {
+            alert('Ошибка: форма не найдена');
+        }
+        
+        if (progressInterval) {
+            clearInterval(progressInterval);
+        }
+        if (window.hideProgressBar) {
+            window.hideProgressBar();
+        }
     }
 }
 

@@ -43,21 +43,23 @@ php_flag file_uploads On
     AddOutputFilterByType DEFLATE application/json
 </IfModule>
 
-# Кеширование для улучшения производительности
+# Кеширование отключено для предотвращения проблем со стилизацией
 <IfModule mod_expires.c>
     ExpiresActive on
-    ExpiresByType text/css "access plus 1 year"
-    ExpiresByType application/javascript "access plus 1 year"
-    ExpiresByType application/x-javascript "access plus 1 year"
-    ExpiresByType text/javascript "access plus 1 year"
-    ExpiresByType image/png "access plus 1 month"
-    ExpiresByType image/jpg "access plus 1 month"
-    ExpiresByType image/jpeg "access plus 1 month"
-    ExpiresByType image/gif "access plus 1 month"
-    ExpiresByType image/svg+xml "access plus 1 month"
-    ExpiresByType image/webp "access plus 1 month"
-    ExpiresByType application/pdf "access plus 1 month"
-    ExpiresByType text/html "access plus 1 hour"
+    # Отключаем кеширование CSS и JS файлов
+    ExpiresByType text/css "access plus 0 seconds"
+    ExpiresByType application/javascript "access plus 0 seconds"
+    ExpiresByType application/x-javascript "access plus 0 seconds"
+    ExpiresByType text/javascript "access plus 0 seconds"
+    # Минимальное кеширование для изображений
+    ExpiresByType image/png "access plus 1 hour"
+    ExpiresByType image/jpg "access plus 1 hour"
+    ExpiresByType image/jpeg "access plus 1 hour"
+    ExpiresByType image/gif "access plus 1 hour"
+    ExpiresByType image/svg+xml "access plus 1 hour"
+    ExpiresByType image/webp "access plus 1 hour"
+    ExpiresByType application/pdf "access plus 1 hour"
+    ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
 # Добавляем заголовки безопасности
@@ -67,8 +69,22 @@ php_flag file_uploads On
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     
-    # Добавляем Cache-Control для статических ресурсов
-    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
-        Header set Cache-Control "public, max-age=31536000"
+    # Отключаем кеширование для CSS и JS файлов
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+    
+    # Минимальное кеширование для изображений и шрифтов
+    <FilesMatch "\.(png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
+        Header set Cache-Control "public, max-age=3600"
+    </FilesMatch>
+    
+    # Отключаем кеширование для HTML файлов
+    <FilesMatch "\.(html|htm|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
     </FilesMatch>
 </IfModule>

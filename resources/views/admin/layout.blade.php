@@ -27,6 +27,7 @@
         'resources/css/app.css', 
         'resources/css/admin.css',
         'resources/js/app.js',
+        'resources/js/modal-scroll-lock.js',
         'resources/js/admin-loading.js',
         'resources/js/admin-toggles.js',
         'resources/js/admin-images.js',
@@ -61,6 +62,8 @@
             box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
         }
     </style>
+    
+    @yield('styles')
 </head>
 <body>
     <!-- Mobile Header -->

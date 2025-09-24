@@ -17,7 +17,7 @@ function triggerFileInput(inputId = 'image-input') {
 }
 
 /**
- * Обрабатывает выбор изображения
+ * Обрабатывает выбор изображения с оптимизацией
  * @param {Event} event - Событие изменения input файла
  * @param {string} previewContainerId - ID контейнера для предпросмотра
  * @param {Function} callback - Дополнительная функция обратного вызова
@@ -43,41 +43,129 @@ function handleImageSelect(event, previewContainerId = 'image-preview-container'
         event.target.value = '';
         return;
     }
-    
-    // Создание предпросмотра
+
+    // Показываем индикатор загрузки
+    showImageLoadingState(previewContainerId);
+
+    // Создание оптимизированного предпросмотра
+    createOptimizedPreview(file, previewContainerId, callback);
+}
+
+/**
+ * Создает оптимизированный предпросмотр изображения
+ */
+function createOptimizedPreview(file, previewContainerId, callback = null) {
     const reader = new FileReader();
+    
     reader.onload = function(e) {
-        const previewContainer = document.getElementById(previewContainerId);
-        if (previewContainer) {
-            // Обновляем изображение в контейнере
-            const img = previewContainer.querySelector('img');
-            if (img) {
-                img.src = e.target.result;
-            } else {
-                // Создаем новое изображение если его нет
-                const newImg = document.createElement('img');
-                newImg.src = e.target.result;
-                newImg.style.width = '100%';
-                newImg.style.height = '100%';
-                newImg.style.objectFit = 'cover';
-                newImg.style.borderRadius = '12px';
-                previewContainer.appendChild(newImg);
-            }
+        // Создаем canvas для оптимизации предпросмотра
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
             
-            // Убираем placeholder если есть
-            const placeholder = previewContainer.querySelector('.no-image, .image-no-image');
-            if (placeholder) {
-                placeholder.style.display = 'none';
+            // Вычисляем оптимальные размеры для превью
+            const maxWidth = 800;
+            const maxHeight = 600;
+            let { width, height } = calculateOptimalSize(this.width, this.height, maxWidth, maxHeight);
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Рисуем оптимизированное изображение
+            ctx.drawImage(this, 0, 0, width, height);
+            
+            // Получаем оптимизированный data URL
+            const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            
+            // Обновляем превью
+            updatePreviewContainer(previewContainerId, optimizedDataUrl);
+            
+            // Вызываем callback
+            if (callback && typeof callback === 'function') {
+                callback(file, optimizedDataUrl);
             }
-        }
+        };
         
-        // Вызываем callback если передан
-        if (callback && typeof callback === 'function') {
-            callback(file, e.target.result);
-        }
+        img.src = e.target.result;
     };
     
     reader.readAsDataURL(file);
+}
+
+/**
+ * Вычисляет оптимальный размер изображения
+ */
+function calculateOptimalSize(width, height, maxWidth, maxHeight) {
+    if (width <= maxWidth && height <= maxHeight) {
+        return { width, height };
+    }
+    
+    const ratio = Math.min(maxWidth / width, maxHeight / height);
+    return {
+        width: Math.round(width * ratio),
+        height: Math.round(height * ratio)
+    };
+}
+
+/**
+ * Показывает состояние загрузки изображения
+ */
+function showImageLoadingState(previewContainerId) {
+    const previewContainer = document.getElementById(previewContainerId);
+    if (previewContainer) {
+        // Добавляем спиннер загрузки
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'image-loading';
+        loadingDiv.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        `;
+        loadingDiv.innerHTML = `
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+        `;
+        previewContainer.appendChild(loadingDiv);
+    }
+}
+
+/**
+ * Обновляет контейнер предпросмотра
+ */
+function updatePreviewContainer(previewContainerId, imageSrc) {
+    const previewContainer = document.getElementById(previewContainerId);
+    if (!previewContainer) return;
+    
+    // Убираем индикатор загрузки
+    const loadingDiv = previewContainer.querySelector('.image-loading');
+    if (loadingDiv) {
+        loadingDiv.remove();
+    }
+    
+    // Обновляем изображение в контейнере
+    const img = previewContainer.querySelector('img');
+    if (img) {
+        img.src = imageSrc;
+    } else {
+        // Создаем новое изображение если его нет
+        const newImg = document.createElement('img');
+        newImg.src = imageSrc;
+        newImg.style.width = '100%';
+        newImg.style.height = '100%';
+        newImg.style.objectFit = 'cover';
+        newImg.style.borderRadius = '12px';
+        previewContainer.appendChild(newImg);
+    }
+    
+    // Убираем placeholder если есть
+    const placeholder = previewContainer.querySelector('.no-image, .image-no-image');
+    if (placeholder) {
+        placeholder.style.display = 'none';
+    }
 }
 
 /**

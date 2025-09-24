@@ -217,7 +217,7 @@ section.hero {
     width: 100%;
     height: 100%;
     border-radius: var(--border-radius-round);
-    border: 3px solid var(--bs-gray-200) !important;
+    border: 3px solid #ffffff !important;
     overflow: hidden;
     object-fit: cover;
 }
@@ -1943,6 +1943,7 @@ ul.hero-links {
 @media (max-width: 768px) {
     .hero-info {
         width: 100% !important;
+        margin: 0 !important;
         padding-top: 0 !important;
         text-align: center;
     }
@@ -2890,7 +2891,7 @@ section {
 
     /* Ð£Ð²ÐµÐ»Ð¸Ñ‡Ð¸Ð²Ð°ÐµÐ¼ Ñ€Ð°Ð·Ð¼ÐµÑ€ ÑˆÑ€Ð¸Ñ„Ñ‚Ð° Ð´Ð»Ñ Ð¸Ð¼ÐµÐ½Ð¸ Ð¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»Ñ Ð½Ð° Ð¼Ð¾Ð±Ð¸Ð»ÑŒÐ½Ñ‹Ñ… */
     .hero-info h1 {
-        font-size: 1.8rem !important;
+        font-size: 1.6rem !important;
         font-weight: 700 !important;
         margin-bottom: 8px !important;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
@@ -2898,7 +2899,7 @@ section {
 
     /* Ð£Ð»ÑƒÑ‡ÑˆÐ°ÐµÐ¼ Ñ‡Ð¸Ñ‚Ð°ÐµÐ¼Ð¾ÑÑ‚ÑŒ Ñ‚ÐµÐºÑÑ‚Ð° */
     .hero-info p {
-        font-size: 1rem !important;
+        font-size: 0.9rem !important;
         line-height: 1.4 !important;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
@@ -2944,7 +2945,7 @@ section {
 
 @media (max-width: 480px) {
     .gallery {
-        padding: 20px 0px;
+        padding: 20px 0px 0px 0px;
     }
 
     .gallery-block {
@@ -3175,7 +3176,7 @@ section {
     }
 
     .articles-list {
-        margin-top: 25px;
+        margin-top: 0;
     }
 
     .article-item {
@@ -4121,7 +4122,7 @@ ul.hero-links {
 
 .article-content {
     display: flex;
-    font-size: 1.1rem;
+    font-size: 0.7rem;
     line-height: 1.8;
     width: 100%;
     max-height: 100%;
@@ -4151,7 +4152,7 @@ ul.hero-links {
 }
 
 .article-content h3 {
-    font-size: 1.5rem;
+    font-size: 0.9rem;
 }
 
 .article-content p {
@@ -5268,7 +5269,7 @@ h3.article-title {
 }
 
 .banners-banner::after {
-    content: 'Ð¡Ð¼Ð¾Ñ‚Ñ€ÐµÑ‚ÑŒ';
+    content: 'Смотреть';
     position: absolute;
     top: 50%;
     left: 50%;
@@ -5389,6 +5390,10 @@ h3.article-title {
 
 /* ÃƒÂÃ‚ÂÃƒÂÃ‚Â´ÃƒÂÃ‚Â°ÃƒÂÃ‚Â¿Ãƒâ€˜Ã¢â‚¬Å¡ÃƒÂÃ‚Â¸ÃƒÂÃ‚Â²ÃƒÂÃ‚Â½ÃƒÂÃ‚Â¾Ãƒâ€˜Ã‚ÂÃƒâ€˜Ã¢â‚¬Å¡Ãƒâ€˜Ã…â€™ ÃƒÂÃ‚Â´ÃƒÂÃ‚Â»Ãƒâ€˜Ã‚Â ÃƒÂÃ‚Â¼ÃƒÂÃ‚Â¾ÃƒÂÃ‚Â±ÃƒÂÃ‚Â¸ÃƒÂÃ‚Â»Ãƒâ€˜Ã…â€™ÃƒÂÃ‚Â½Ãƒâ€˜Ã¢â‚¬Â¹Ãƒâ€˜Ã¢â‚¬Â¦ Ãƒâ€˜Ã†â€™Ãƒâ€˜Ã‚ÂÃƒâ€˜Ã¢â‚¬Å¡Ãƒâ€˜Ã¢â€šÂ¬ÃƒÂÃ‚Â¾ÃƒÂÃ‚Â¹Ãƒâ€˜Ã‚ÂÃƒâ€˜Ã¢â‚¬Å¡ÃƒÂÃ‚Â² */
 @media (max-width: 768px) {
+    .swiper {
+        overflow: visible !important;
+    }
+
     #profileTabs {
         display: flex;
         overflow-x: auto;
@@ -6101,6 +6106,7 @@ img.preview-image {
     .hero .container {
         position: relative;
         top: 0px;
+        overflow: visible;
         z-index: 50;
     }
 
@@ -6309,11 +6315,11 @@ img.preview-image {
     display: flex;
     gap: 20px;
     align-items: center;
-    justify-content: center;
     padding: 2rem;
     flex-direction: column;
     align-content: center;
     border-radius: 0 !important;
+    justify-content: center;
 }
 
 .qr-container {
@@ -6716,11 +6722,6 @@ img.preview-image {
     overflow: hidden;
 }
 
-/* =======================================
-   Service Modal Styles - Post Style
-   Ð¡Ñ‚Ð¸Ð»Ð¸ Ð´Ð»Ñ Ð¼Ð¾Ð´Ð°Ð»ÑŒÐ½Ð¾Ð³Ð¾ Ð¾ÐºÐ½Ð° ÑƒÑÐ»ÑƒÐ³ Ð² ÑÑ‚Ð¸Ð»Ðµ Ð¿Ð¾ÑÑ‚Ð°
-   ======================================= */
-/* ÐžÑÐ½Ð¾Ð²Ð½Ð¾Ð¹ ÐºÐ¾Ð½Ñ‚ÐµÐ¹Ð½ÐµÑ€ Ð¼Ð¾Ð´Ð°Ð»ÑŒÐ½Ð¾Ð³Ð¾ Ð¾ÐºÐ½Ð° */
 .service-modal-content {
     border: none;
     border-radius: 15px;
@@ -6729,6 +6730,8 @@ img.preview-image {
     overflow: hidden;
     position: relative;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 100%;
+    word-wrap: break-word;
 }
 
 /* ÐšÐ½Ð¾Ð¿ÐºÐ° Ð·Ð°ÐºÑ€Ñ‹Ñ‚Ð¸Ñ */
@@ -6784,6 +6787,8 @@ img.preview-image {
 .service-post-content {
     padding: 20px;
     background: white;
+    min-width: 0;
+    overflow-wrap: break-word;
 }
 
 /* Ð—Ð°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº Ð¿Ð¾ÑÑ‚Ð° Ñ Ð°Ð²Ñ‚Ð¾Ñ€Ð¾Ð¼ */
@@ -6843,6 +6848,10 @@ img.preview-image {
     line-height: 1.6;
     color: #495057;
     margin-bottom: 20px;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 /* Ð‘Ð»Ð¾Ðº Ñ†ÐµÐ½Ñ‹ ÑƒÑÐ»ÑƒÐ³Ð¸ */
@@ -6907,6 +6916,10 @@ img.preview-image {
 
     .service-post-description {
         font-size: 18px;
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
     }
 
     .service-close-btn {
@@ -6949,6 +6962,10 @@ img.preview-image {
 
     .service-post-description {
         font-size: 15px;
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
     }
 
     .service-close-btn {
@@ -7069,7 +7086,7 @@ img.preview-image {
 }
 
 section.services {
-    padding-top: 30px;
+    padding-top: 0px;
 }
 
 /* Ð¡Ñ‚Ð¸Ð»Ð¸ Ð´Ð»Ñ Ñ€ÐµÐ´Ð°ÐºÑ‚Ð¸Ñ€ÑƒÐµÐ¼Ñ‹Ñ… ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² */
@@ -7087,7 +7104,7 @@ section.services {
 }
 
 .editable-name::after, .editable-bio::after {
-    content: "âœï¸";
+    content: "редактировать";
     position: absolute;
     right: -25px;
     top: 50%;
@@ -7107,7 +7124,7 @@ section.services {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 100vh;
     background: rgba(0, 0, 0, 0.8);
     display: flex;
     align-items: center;
@@ -7256,4 +7273,69 @@ section.services {
 .article-header h1 {
     font-size: 28px;
     padding-bottom: 30px;
+}
+
+/* Правила для переноса длинных слов */
+h1, h2, h3, h4, h5, h6, p, span .service-post-description {
+    /* Позволяет переносить длинные слова */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    /* Дополнительно для очень длинных строк без пробелов */
+    word-break: break-word;
+    /* Включает перенос по дефисам */
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    /* Предотвращает горизонтальный скролл */
+    max-width: 100%;
+    /* overflow-x: hidden; */
+}
+
+/* Дополнительные правила для особо проблемных случаев */
+h1, h2, h3, h4, h5, h6 .service-post-description {
+    /* Для заголовков более агрессивный перенос если нужно */
+    word-break: break-word;
+}
+
+p, span .service-post-description {
+    /* Для текстовых блоков более мягкий перенос */
+    word-break: break-word;
+}
+
+/* Для ссылок и других инлайн элементов */
+a, em, strong, i, b .service-post-description {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* ========================================
+   БЛОКИРОВКА СКРОЛЛА ДЛЯ МОДАЛЬНЫХ ОКОН
+   ======================================== */
+/* Глобальная блокировка скролла при открытых модальных окнах */
+body.modal-open {
+    overflow: hidden !important;
+}
+
+/* Компенсация исчезновения скроллбара на десктопе */
+@media (min-width: 768px) {
+    body.modal-open {
+        padding-right: 17px;
+        /* Стандартная ширина скроллбара в большинстве браузеров */
+    }
+}
+
+/* На мобильных устройствах обычно нет видимого скроллбара */
+@media (max-width: 767.98px) {
+    body.modal-open {
+        padding-right: 0;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        left: 0;
+    }
+}
+
+.modal {
+    height: 100vh;
 }

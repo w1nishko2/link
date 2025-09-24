@@ -311,7 +311,7 @@
     </div>
 
     <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
-    @vite(['resources/js/admin-articles.js'])
+    @vite(['resources/js/admin-images.js', 'resources/js/upload-progress.js', 'resources/js/admin-articles.js'])
     <script>
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {

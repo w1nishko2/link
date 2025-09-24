@@ -23,7 +23,7 @@
         <div class="swiper edit-swiper">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
-                    <div class="card h-100" style="min-height: 500px;">
+                    <div class=" h-100" style="min-height: 500px;">
                         <!-- Область изображения -->
                         <div class="image-container" style="height: 300px; position: relative;">
                             <div id="image-preview" class="image-current w-100 h-100" onclick="selectImage()">

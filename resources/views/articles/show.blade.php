@@ -212,7 +212,7 @@
                         <div class="row">
                             @foreach($relatedArticles as $related)
                                 <div class="col-md-6 col-lg-4 mb-3">
-                                    <article class="card h-100" itemscope itemtype="https://schema.org/Article">
+                                    <article class=" h-100" itemscope itemtype="https://schema.org/Article">
                                         @if($related->image_path)
                                             <img src="{{ asset('storage/' . $related->image_path) }}" class="card-img-top" style="height: 150px; object-fit: cover;" alt="{{ $related->title }}" itemprop="image">
                                         @endif

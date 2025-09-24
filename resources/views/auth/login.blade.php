@@ -18,10 +18,11 @@
                                name="phone" 
                                value="{{ old('phone') }}" 
                                required 
-                               placeholder="+7 (___) ___-__-__"
-                               title="Формат: +7 (999) 999-99-99"
+                               placeholder="+7 (900) 123-45-67"
+                               title="Российский номер телефона"
+                               maxlength="18"
                                autofocus>
-                        <div class="form-text">Формат: +7 (904) 448-22-83</div>
+                        <div class="form-text">Введите российский номер телефона</div>
                         
                         @error('phone')
                             <div class="invalid-feedback">
@@ -77,80 +78,127 @@
 document.addEventListener('DOMContentLoaded', function() {
     const phoneInput = document.getElementById('phone');
     
-    function phoneMask(input) {
-        let value = input.value.replace(/\D/g, '');
+    // Улучшенная маска для российских номеров
+    function formatRussianPhone(value) {
+        // Убираем все нецифровые символы
+        let cleaned = value.replace(/\D/g, '');
         
-        // Если начинается с 8, заменяем на 7
-        if (value.startsWith('8')) {
-            value = '7' + value.slice(1);
+        // Обрабатываем разные варианты ввода
+        if (cleaned.startsWith('8') && cleaned.length === 11) {
+            // Заменяем 8 на 7 для российских номеров
+            cleaned = '7' + cleaned.slice(1);
+        } else if (!cleaned.startsWith('7') && cleaned.length === 10) {
+            // Добавляем 7 к 10-значным номерам
+            cleaned = '7' + cleaned;
+        } else if (cleaned.startsWith('9') && cleaned.length === 10) {
+            // Если номер начинается с 9 и имеет 10 цифр, добавляем 7
+            cleaned = '7' + cleaned;
         }
         
-        // Если не начинается с 7, добавляем 7
-        if (!value.startsWith('7') && value.length > 0) {
-            value = '7' + value;
+        // Ограничиваем до 11 цифр
+        if (cleaned.length > 11) {
+            cleaned = cleaned.slice(0, 11);
         }
         
         // Форматируем номер
-        let formattedValue = '';
-        if (value.length > 0) {
-            formattedValue = '+7';
-            if (value.length > 1) {
-                formattedValue += ' (' + value.slice(1, 4);
-                if (value.length > 4) {
-                    formattedValue += ') ' + value.slice(4, 7);
-                    if (value.length > 7) {
-                        formattedValue += '-' + value.slice(7, 9);
-                        if (value.length > 9) {
-                            formattedValue += '-' + value.slice(9, 11);
+        if (cleaned.length === 0) return '';
+        
+        let formatted = '+7';
+        if (cleaned.length > 1) {
+            formatted += ' (' + cleaned.slice(1, 4);
+            if (cleaned.length >= 4) {
+                formatted += ')';
+                if (cleaned.length > 4) {
+                    formatted += ' ' + cleaned.slice(4, 7);
+                    if (cleaned.length > 7) {
+                        formatted += '-' + cleaned.slice(7, 9);
+                        if (cleaned.length > 9) {
+                            formatted += '-' + cleaned.slice(9, 11);
                         }
                     }
                 }
             }
         }
         
-        return formattedValue;
+        return formatted;
     }
     
+    // Обработка ввода
     phoneInput.addEventListener('input', function(e) {
-        const cursorPosition = e.target.selectionStart;
+        const cursorPos = e.target.selectionStart;
         const oldValue = e.target.value;
-        const newValue = phoneMask(e.target);
+        const formatted = formatRussianPhone(e.target.value);
         
-        e.target.value = newValue;
-        
-        // Корректируем позицию курсора
-        if (newValue.length < oldValue.length) {
-            e.target.setSelectionRange(cursorPosition - 1, cursorPosition - 1);
-        } else if (newValue.length > oldValue.length) {
-            e.target.setSelectionRange(cursorPosition + 1, cursorPosition + 1);
-        } else {
-            e.target.setSelectionRange(cursorPosition, cursorPosition);
+        if (formatted !== oldValue) {
+            e.target.value = formatted;
+            
+            // Корректируем позицию курсора
+            let newCursorPos = cursorPos;
+            if (formatted.length > oldValue.length) {
+                newCursorPos = cursorPos + (formatted.length - oldValue.length);
+            } else if (formatted.length < oldValue.length) {
+                newCursorPos = Math.max(3, cursorPos - (oldValue.length - formatted.length));
+            }
+            
+            // Не позволяем курсору быть перед +7
+            newCursorPos = Math.max(3, newCursorPos);
+            e.target.setSelectionRange(newCursorPos, newCursorPos);
         }
     });
     
+    // Обработка клавиш
     phoneInput.addEventListener('keydown', function(e) {
-        // Разрешаем: backspace, delete, tab, escape, enter
-        if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
-            // Разрешаем: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-            (e.keyCode === 65 && e.ctrlKey === true) ||
-            (e.keyCode === 67 && e.ctrlKey === true) ||
-            (e.keyCode === 86 && e.ctrlKey === true) ||
-            (e.keyCode === 88 && e.ctrlKey === true) ||
-            // Разрешаем: стрелки
-            (e.keyCode >= 35 && e.keyCode <= 39)) {
+        const cursorPos = e.target.selectionStart;
+        
+        // Разрешаем служебные клавиши
+        if ([8, 9, 27, 13, 46].includes(e.keyCode) || 
+            (e.keyCode === 65 && e.ctrlKey) || // Ctrl+A
+            (e.keyCode === 67 && e.ctrlKey) || // Ctrl+C
+            (e.keyCode === 86 && e.ctrlKey) || // Ctrl+V
+            (e.keyCode === 88 && e.ctrlKey) || // Ctrl+X
+            (e.keyCode >= 35 && e.keyCode <= 40)) { // Home, End, стрелки
+            
+            // Не позволяем удалять +7
+            if (e.keyCode === 8 && cursorPos <= 3) { // Backspace
+                e.preventDefault();
+            }
             return;
         }
         
-        // Запрещаем все, кроме цифр
-        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+        // Разрешаем только цифры
+        if (e.shiftKey || (e.keyCode < 48 || e.keyCode > 57) && (e.keyCode < 96 || e.keyCode > 105)) {
             e.preventDefault();
         }
     });
     
-    // Применяем маску к существующему значению при загрузке страницы
+    // Обработка вставки
+    phoneInput.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        const formatted = formatRussianPhone(paste);
+        e.target.value = formatted;
+        e.target.dispatchEvent(new Event('input'));
+    });
+    
+    // Применяем форматирование к существующему значению
     if (phoneInput.value) {
-        phoneInput.value = phoneMask(phoneInput);
+        phoneInput.value = formatRussianPhone(phoneInput.value);
     }
+    
+    // Устанавливаем начальное значение при фокусе на пустом поле
+    phoneInput.addEventListener('focus', function(e) {
+        if (!e.target.value) {
+            e.target.value = '+7 (';
+            e.target.setSelectionRange(4, 4);
+        }
+    });
+    
+    // Очищаем поле при потере фокуса, если введен только код страны
+    phoneInput.addEventListener('blur', function(e) {
+        if (e.target.value === '+7 (' || e.target.value === '+7') {
+            e.target.value = '';
+        }
+    });
 });
 </script>
 @endsection

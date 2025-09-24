@@ -3,8 +3,6 @@
 <?php $__env->startSection('title', 'Управление галереей - ' . config('app.name')); ?>
 <?php $__env->startSection('description', 'Управление изображениями галереи: загрузка, редактирование, организация'); ?>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-
 <?php $__env->startSection('content'); ?>
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
      <a href="<?php echo e(route('admin.gallery.create', $currentUserId)); ?>" class="btn btn-primary">
@@ -15,70 +13,35 @@
 </div>
 
 <?php if($images->count() > 0): ?>
-    <!-- Блок со слайдером изображений -->
-    <div class="row justify-content-center mb-4">
-        <div class="col-12">
-            <div class="swiper gallery-swiper" id="gallery-preview-swiper" style="padding:0; padding-left: 0 !important">
-                <div class="swiper-wrapper">
-                    <?php $__currentLoopData = $images; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <div class="swiper-slide">
-                            <div class="card h-100 gallery-image clickable-card" onclick="editImage(<?php echo e($image->id); ?>)">
-                                <div class="image-container position-relative">
-                                    <?php if($image->image_path): ?>
-                                        <img src="<?php echo e(asset('storage/' . $image->image_path)); ?>" 
-                                             class="card-img-top" 
-                                             alt="<?php echo e($image->alt_text ?? $image->title); ?>"
-                                             style="height: 350px; object-fit: cover;">
-                                    <?php else: ?>
-                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-muted" 
-                                             style="height: 350px;">
-                                            <i class="bi bi-image display-4"></i>
-                                        </div>
-                                    <?php endif; ?>
-                                    
-                          
-                                    <div class="edit-overlay">
-                                        <i class="bi bi-pencil-square"></i>
-                                        <span>Редактировать</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="card-body">
-                                    <h6 class="card-title"><?php echo e($image->title ?? 'Без названия'); ?></h6>
-                                    <?php if($image->alt_text): ?>
-                                        <p class="card-text text-muted small"><?php echo e($image->alt_text); ?></p>
-                                    <?php endif; ?>
-                                    
-                                    <!-- Действия с изображением -->
-                                    <div class="d-flex justify-content-between align-items-center mt-2">
-                                        <small class="text-muted">
-                                            <?php echo e($image->created_at->format('d.m.Y')); ?>
-
-                                        </small>
-                                        <div class="btn-group" role="group">
-                                            <button type="button" 
-                                                    class="btn btn-sm 
-                                                    onclick="event.stopPropagation(); editImage(<?php echo e($image->id); ?>)"
-                                                    title="Редактировать">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-outline-danger" 
-                                                    onclick="event.stopPropagation(); deleteImage(<?php echo e($image->id); ?>)"
-                                                    title="Удалить">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+    <!-- Сетка изображений 2x2 -->
+    <div class="gallery-grid">
+        <?php $__currentLoopData = $images; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <div class="gallery-item">
+                <div class="gallery-image-wrapper" data-image-id="<?php echo e($image->id); ?>">
+                    <div class="image-container">
+                        <?php if($image->image_path): ?>
+                            <img src="<?php echo e(asset('storage/' . $image->image_path)); ?>" 
+                                 class="gallery-image" 
+                                 alt="<?php echo e($image->alt_text ?? $image->title); ?>">
+                        <?php else: ?>
+                            <div class="gallery-image placeholder-image d-flex align-items-center justify-content-center bg-light text-muted">
+                                <i class="bi bi-image display-4"></i>
                             </div>
+                        <?php endif; ?>
+                        
+                        <!-- Скрытая кнопка удаления -->
+                        <div class="action-buttons">
+                            <button type="button" 
+                                    class="btn btn-danger btn-sm action-btn delete-btn" 
+                                    onclick="deleteImage(<?php echo e($image->id); ?>)"
+                                    title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
                 </div>
-                <div class="swiper-button-next"></div>
-                <div class="swiper-button-prev"></div>
             </div>
-        </div>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
 <?php else: ?>
     <div class="text-center py-5">
@@ -94,144 +57,306 @@
 
 <?php $__env->stopSection(); ?>
 
-<?php $__env->startSection('scripts'); ?>
-<!-- Swiper JS -->
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
+<?php $__env->startSection('styles'); ?>
 <style>
-/* Стили для кликабельных карточек */
-.clickable-card {
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* Основные стили для сетки галереи */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 2rem;
+}
+
+/* Стили для элементов галереи */
+.gallery-item {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Строго квадратное соотношение */
+}
+
+.gallery-image-wrapper {
+    width: 100%;
+    height: 100%;
     position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    background: #f8f9fa;
 }
 
-.clickable-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+/* Контейнер изображения строго 1:1 */
+.image-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
-.edit-overlay {
+.gallery-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.3s ease;
+}
+
+.placeholder-image {
+    width: 100%;
+    height: 100%;
+}
+
+/* Анимация при нажатии */
+.gallery-image-wrapper.pressed .gallery-image {
+    transform: scale(0.95);
+}
+
+/* Кнопка действия - скрыта по умолчанию */
+.action-buttons {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+/* Показываем кнопки при долгом нажатии */
+.gallery-image-wrapper.show-actions .action-buttons {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Затемнение фона при показе кнопок */
+.gallery-image-wrapper.show-actions::before {
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 5;
+    transition: all 0.3s ease;
+}
+
+/* Стили кнопок */
+.action-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: white;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: inherit;
-}
-
-.image-container {
-    position: relative;
-    overflow: hidden;
-}
-
-.clickable-card:hover .edit-overlay {
-    opacity: 1;
-}
-
-.edit-overlay i {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-.edit-overlay span {
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-/* Стили для навигации слайдера */
-.swiper-button-next,
-.swiper-button-prev {
-    color: #007bff;
-    background: rgba(255, 255, 255, 0.9);
-    width: 40px;
-    height: 40px;
-    margin-top: -20px;
-    border-radius: 50%;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.swiper-button-next:after,
-.swiper-button-prev:after {
     font-size: 18px;
-    font-weight: 600;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-/* Убираем пагинацию */
-.swiper-pagination {
-    display: none;
+.action-btn:hover {
+    transform: scale(1.1);
 }
 
-/* Настройки высоты слайдера */
-.gallery-swiper {
-    width: 100%;
-    height: 400px;
-    padding: 20px 0;
+.action-btn:active {
+    transform: scale(0.95);
 }
 
-@media (max-width: 768px) {
-    .gallery-swiper {
-        height: 350px;
+.delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+}
+
+/* Адаптивность для планшетов */
+@media (max-width: 991.98px) {
+    .gallery-grid {
+        gap: 12px;
+    }
+    
+    .action-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
     }
 }
 
-@media (max-width: 480px) {
-    .gallery-swiper {
-        height: 350px;
+/* Адаптивность для мобильных устройств */
+@media (max-width: 575.98px) {
+    .gallery-grid {
+        gap: 10px;
     }
+    
+    .action-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+}
+
+/* Адаптивность для очень маленьких экранов */
+@media (max-width: 375px) {
+    .gallery-grid {
+        gap: 8px;
+    }
+}
+
+/* Анимация появления кнопок */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.gallery-image-wrapper.show-actions .action-buttons {
+    animation: fadeInScale 0.3s ease forwards;
 }
 </style>
+<?php $__env->stopSection(); ?>
 
+<?php $__env->startSection('scripts'); ?>
 <script>
-// Инициализация Swiper
 document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('gallery-preview-swiper')) {
-        new Swiper('#gallery-preview-swiper', {
-            slidesPerView: 1,
-            spaceBetween: 20,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            breakpoints: {
-                576: {
-                    slidesPerView: 2,
-                    spaceBetween: 20,
-                },
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 20,
-                },
-                992: {
-                    slidesPerView: 3,
-                    spaceBetween: 20,
-                },
-                1200: {
-                    slidesPerView: 4,
-                    spaceBetween: 25,
-                },
-                1400: {
-                    slidesPerView: 4,
-                    spaceBetween: 25,
-                },
-            },
-            autoHeight: false,
-            centeredSlides: false,
-            loop: false,
-            grabCursor: true,
-            watchOverflow: true,
-            resistance: true,
-            resistanceRatio: 0.85,
+    // Переменные для отслеживания долгого нажатия
+    let touchTimeout;
+    let currentActiveWrapper = null;
+    const LONG_PRESS_DELAY = 500; // 500ms для долгого нажатия
+
+    // Получаем все обертки изображений
+    const imageWrappers = document.querySelectorAll('.gallery-image-wrapper');
+
+    imageWrappers.forEach(wrapper => {
+        let isLongPress = false;
+        let touchStartTime = 0;
+
+        // Touch события для мобильных устройств
+        wrapper.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            touchStartTime = Date.now();
+            isLongPress = false;
+            
+            // Добавляем класс для анимации нажатия
+            wrapper.classList.add('pressed');
+            
+            // Устанавливаем таймер для долгого нажатия
+            touchTimeout = setTimeout(() => {
+                isLongPress = true;
+                showActionButtons(wrapper);
+                
+                // Добавляем вибрацию если поддерживается
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }, LONG_PRESS_DELAY);
+        });
+
+        wrapper.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            const touchDuration = Date.now() - touchStartTime;
+            
+            // Убираем класс анимации нажатия
+            wrapper.classList.remove('pressed');
+            
+            // Отменяем таймер если он еще активен
+            clearTimeout(touchTimeout);
+            
+            // Если это не долгое нажатие - переходим к редактированию
+            if (!isLongPress && touchDuration < LONG_PRESS_DELAY) {
+                hideActionButtons();
+                const imageId = wrapper.dataset.imageId;
+                editImage(imageId);
+            }
+        });
+
+        wrapper.addEventListener('touchmove', function(e) {
+            // Отменяем долгое нажатие при движении пальца
+            clearTimeout(touchTimeout);
+            wrapper.classList.remove('pressed');
+        });
+
+        // Mouse события для десктопа (долгое нажатие мышью)
+        wrapper.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            touchStartTime = Date.now();
+            isLongPress = false;
+            
+            wrapper.classList.add('pressed');
+            
+            touchTimeout = setTimeout(() => {
+                isLongPress = true;
+                showActionButtons(wrapper);
+            }, LONG_PRESS_DELAY);
+        });
+
+        wrapper.addEventListener('mouseup', function(e) {
+            e.preventDefault();
+            const pressDuration = Date.now() - touchStartTime;
+            
+            wrapper.classList.remove('pressed');
+            clearTimeout(touchTimeout);
+            
+            // Если это не долгое нажатие - переходим к редактированию
+            if (!isLongPress && pressDuration < LONG_PRESS_DELAY) {
+                hideActionButtons();
+                const imageId = wrapper.dataset.imageId;
+                editImage(imageId);
+            }
+        });
+
+        wrapper.addEventListener('mouseleave', function(e) {
+            clearTimeout(touchTimeout);
+            wrapper.classList.remove('pressed');
+        });
+    });
+
+    // Функция показа кнопок действий
+    function showActionButtons(wrapper) {
+        // Скрываем кнопки у других изображений
+        hideActionButtons();
+        
+        // Показываем кнопки для текущего изображения
+        wrapper.classList.add('show-actions');
+        currentActiveWrapper = wrapper;
+    }
+
+    // Функция скрытия кнопок действий
+    function hideActionButtons() {
+        if (currentActiveWrapper) {
+            currentActiveWrapper.classList.remove('show-actions');
+            currentActiveWrapper = null;
+        }
+        
+        // Скрываем все кнопки на всякий случай
+        imageWrappers.forEach(wrapper => {
+            wrapper.classList.remove('show-actions');
         });
     }
+
+    // Скрываем кнопки при клике вне изображений
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.gallery-image-wrapper')) {
+            hideActionButtons();
+        }
+    });
+
+    // Скрываем кнопки при прокрутке
+    window.addEventListener('scroll', function() {
+        hideActionButtons();
+    });
 });
 
 // Функция для редактирования изображения

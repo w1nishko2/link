@@ -1,9 +1,8 @@
-{{-- Секция Статьи --}}
 <section class="articles" id="articles" aria-label="Статьи блога">
     <div class="container">
         @if((isset($section) && (!empty(trim($section->title)) || !empty(trim($section->subtitle)))) || !isset($section))
-        <header class="articles-header">
-            @if(isset($section))
+        <header class="banners-header mb-4 ">
+             @if(isset($section))
                 @if(!empty(trim($section->title)))
                     <h2>{{ $section->title }}</h2>
                 @endif
@@ -19,7 +18,6 @@
         @endif
 
         <div class="articles-list">
-            {{-- Дефолтный блок для создания статьи (только для владельца) --}}
             @if ($currentUser && $currentUser->id === $pageUser->id)
                 <a href="{{ route('admin.articles.create', $currentUser->id) }}" class="owner-default-block article-add">
                     <div class="owner-default-icon"></div>
@@ -107,7 +105,6 @@
                 </article>
             @endif
         </div>
-
         @if($articles->count() > 0)
         <div class="articles-footer text-center mt-5">
             <a href="{{ route('articles.index', ['username' => $pageUser->username]) }}" class="btn btn-outline-primary">Все статьи</a>

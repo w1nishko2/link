@@ -166,7 +166,7 @@
         <div class="swiper edit-swiper">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
-                    <div class="card h-100" style="min-height: 500px;">
+                    <div class=" h-100" style="min-height: 500px;">
                         <!-- Область изображения -->
                         <div class="image-container" style="height: 300px; position: relative;">
                             <div id="image-preview" class="image-no-image w-100 h-100" onclick="selectImage()">
@@ -281,6 +281,7 @@
 <?php $__env->startSection('scripts'); ?>
 <!-- Swiper JS -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<?php echo app('Illuminate\Foundation\Vite')(['resources/js/admin-images.js', 'resources/js/upload-progress.js']); ?>
 
 <script>
 // Глобальные переменные
@@ -425,17 +426,40 @@ document.getElementById('hidden-image').addEventListener('change', function(e) {
         
         // Валидируем файл
         if (!validateImageFile(file)) {
+            if (window.showUploadError) {
+                window.showUploadError('Неподдерживаемый тип файла или слишком большой размер');
+            }
             return;
         }
         
-        // Показываем превью
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.getElementById('image-preview');
-            preview.innerHTML = `<img src="${e.target.result}" class="w-100 h-100" style="object-fit: cover; border-radius: 12px;" alt="Превью">`;
-            preview.onclick = selectImage; // Сохраняем возможность выбрать другое изображение
-        };
-        reader.readAsDataURL(file);
+        // Показываем индикатор загрузки превью
+        const preview = document.getElementById('image-preview');
+        preview.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="text-center">
+                    <div class="spinner-border text-primary mb-2" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <div class="small text-muted">Обработка изображения...</div>
+                </div>
+            </div>
+        `;
+        
+        // Создаем оптимизированное превью
+        if (window.createOptimizedPreview) {
+            window.createOptimizedPreview(file, null, function(file, optimizedDataUrl) {
+                preview.innerHTML = `<img src="${optimizedDataUrl}" class="w-100 h-100" style="object-fit: cover; border-radius: 12px;" alt="Превью">`;
+                preview.onclick = selectImage; // Сохраняем возможность выбрать другое изображение
+            });
+        } else {
+            // Fallback для обычного превью
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" class="w-100 h-100" style="object-fit: cover; border-radius: 12px;" alt="Превью">`;
+                preview.onclick = selectImage; // Сохраняем возможность выбрать другое изображение
+            };
+            reader.readAsDataURL(file);
+        }
         
         // Активируем кнопку сохранения
         document.getElementById('save-button').disabled = false;
@@ -514,6 +538,10 @@ function saveImage() {
         return;
     }
     
+    // Показываем прогресс-бар
+    const progressInterval = window.simulateUploadProgress ? 
+        window.simulateUploadProgress(selectedImageFile.size > 1024 * 1024 ? 4000 : 2500) : null;
+    
     // Показываем индикатор загрузки
     showLoading();
     
@@ -532,6 +560,9 @@ function saveImage() {
         body: formData
     })
     .then(response => {
+        if (window.completeUploadProgress) {
+            window.completeUploadProgress();
+        }
         if (response.redirected) {
             // Если сервер отправил редирект, переходим туда
             window.location.href = response.url;

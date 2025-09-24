@@ -1,0 +1,150 @@
+/* PWA Стили */
+
+/* Кнопка установки PWA */
+.pwa-install-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--bs-primary, #2A5885);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(42, 88, 133, 0.3);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.pwa-install-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(42, 88, 133, 0.4);
+}
+
+.pwa-install-button:active {
+    transform: translateY(0);
+}
+
+/* Анимации для PWA */
+@keyframes slideInFromRight {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Стили для PWA режима (когда приложение установлено) */
+@media (display-mode: standalone) {
+    body {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    /* Скрываем кнопку установки в standalone режиме */
+    .pwa-install-button {
+        display: none !important;
+    }
+}
+
+/* iOS Safari в fullscreen режиме */
+@media (display-mode: fullscreen) {
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* Notification стили для PWA */
+.pwa-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    animation: slideInFromRight 0.3s ease;
+}
+
+.pwa-notification.error {
+    background: #dc3545;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.pwa-notification.info {
+    background: #17a2b8;
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .pwa-install-button {
+        bottom: 15px;
+        right: 15px;
+        padding: 10px 16px;
+        font-size: 13px;
+        border-radius: 20px;
+    }
+    
+    .pwa-notification {
+        top: 15px;
+        right: 15px;
+        left: 15px;
+        font-size: 13px;
+        padding: 10px 16px;
+    }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 480px) {
+    .pwa-install-button {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        border-radius: 15px;
+        justify-content: center;
+    }
+}
+
+/* Стили для iOS добавления на домашний экран */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+    .pwa-install-button {
+        background: rgba(42, 88, 133, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+}
